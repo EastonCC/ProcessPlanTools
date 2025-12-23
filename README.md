@@ -8,7 +8,7 @@ Visit the live site at: [https://eastoncc.github.io/ProcessPlanTools/](https://e
 
 ## Tools
 
-- **Formula Helper**: Adds formatting to formulas to make it easier for you to read and debug. 
+- **Formula Editor**: Quickly and neatly write up and edit formulas. They will be formatted nicely with syntax coloring and can be copied with or without the formatting. 
 
 ## Development
 
