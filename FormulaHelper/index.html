@@ -3,65 +3,643 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formula Formatter - ProcessPlanTools</title>
+<title>ProcessPlan Formula Helper</title>
 <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; padding:20px; display:flex; justify-content:center; align-items:center; }
-    .container { background:white; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:40px; max-width:1200px; width:100%; }
-    h1 { color:#333; margin-bottom:10px; font-size:2em; }
-    .subtitle { color:#666; margin-bottom:30px; font-size:1.1em; }
-    .editor-section { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
-    .input-group { display:flex; flex-direction:column; }
-    .input-group h2 { font-size:1.2em; color:#444; margin-bottom:10px; }
-    textarea { width:100%; height:400px; padding:15px; border:2px solid #ddd; border-radius:8px; font-family:'Consolas','Monaco','Courier New',monospace; font-size:14px; resize:vertical; transition:border-color 0.3s; }
-    textarea:focus { outline:none; border-color:#667eea; }
-    .output-container { width:100%; height:400px; padding:15px; border:2px solid #ddd; border-radius:8px; background:#f8f8f8; overflow:auto; font-family:'Consolas','Monaco','Courier New',monospace; font-size:14px; }
-    pre { margin:0; white-space:pre-wrap; word-wrap:break-word; }
-    .button-group { display:flex; gap:15px; justify-content:center; }
-    button { padding:12px 30px; font-size:16px; font-weight:600; border:none; border-radius:8px; cursor:pointer; transition:all 0.3s; color:white; }
-    .format-btn { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); }
-    .format-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,0.4); }
-    .copy-btn { background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%); }
-    .copy-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(245,87,108,0.4); }
-    .clear-btn { background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%); }
-    .clear-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(79,172,254,0.4); }
-    button:active { transform:translateY(0); }
-    .notification { position:fixed; top:20px; right:20px; padding:15px 25px; background:#4caf50; color:white; border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.2); opacity:0; transform:translateY(-20px); transition:all 0.3s; pointer-events:none; font-weight:600; }
-    .notification.show { opacity:1; transform:translateY(0); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; 
+        background: #191919; 
+        color: #e0e0e0;
+        min-height: 100vh; 
+    }
+
+    /* Header */
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        border-bottom: 1px solid #333;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        background: #3b82f6;
+        border-radius: 50%;
+    }
+
+    .header-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: #e0e0e0;
+    }
+
+    .header-center {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .home-btn {
+        background: #2a2a2a;
+        border: 1px solid #404040;
+        color: #e0e0e0;
+        padding: 6px 20px;
+        border-radius: 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .home-btn:hover {
+        background: #333;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .search-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #2a2a2a;
+        border: 1px solid #404040;
+        color: #888;
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .header-icon {
+        color: #888;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .avatar {
+        width: 28px;
+        height: 28px;
+        background: #22c55e;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+    }
+
+    /* Main Content */
+    .main-content {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 32px 24px;
+    }
+
+    /* Card */
+    .card {
+        background: #232323;
+        border: 1px solid #333;
+        border-radius: 12px;
+        margin-bottom: 16px;
+    }
+
+    .card-header {
+        padding: 20px 24px;
+    }
+
+    .card-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .card-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 12px;
+        color: #888;
+        font-size: 14px;
+    }
+
+    .card-actions span {
+        cursor: pointer;
+    }
+
+    .card-actions span:hover {
+        color: #e0e0e0;
+    }
+
+    .card-description {
+        color: #888;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 8px;
+    }
+
+    .see-more {
+        color: #666;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .see-more:hover {
+        color: #888;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 24px;
+        border-top: 1px solid #333;
+    }
+
+    .card-footer-left {
+        display: flex;
+        gap: 16px;
+        color: #666;
+        font-size: 18px;
+    }
+
+    .card-footer-right {
+        color: #666;
+        font-size: 14px;
+    }
+
+    /* Editor Section */
+    .editor-card {
+        background: #232323;
+        border: 1px solid #333;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .editor-row {
+        display: flex;
+        border-bottom: 1px solid #333;
+    }
+
+    .editor-row:last-child {
+        border-bottom: none;
+    }
+
+    .editor-label {
+        width: 200px;
+        padding: 16px 24px;
+        font-size: 14px;
+        color: #e0e0e0;
+        border-right: 1px solid #333;
+        display: flex;
+        align-items: flex-start;
+        flex-shrink: 0;
+    }
+
+    .editor-content {
+        flex: 1;
+        padding: 0;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 16px;
+        background: transparent;
+        border: none;
+        color: #e0e0e0;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 13px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    textarea:focus {
+        outline: none;
+    }
+
+    textarea::placeholder {
+        color: #555;
+    }
+
+    .output-container {
+        min-height: 150px;
+        padding: 16px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        overflow: auto;
+    }
+
+    pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    /* Button Row */
+    .button-row {
+        display: flex;
+        border-bottom: 1px solid #333;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 14px 24px;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: background 0.2s;
+        border-right: 1px solid #333;
+    }
+
+    .btn:last-child {
+        border-right: none;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+    }
+
+    .btn-secondary {
+        background: #2a2a2a;
+        color: #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+        background: #333;
+    }
+
+    /* Row actions */
+    .row-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-right: 16px;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .row-action {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+    }
+
+    .row-action:hover {
+        color: #888;
+    }
 
     /* Syntax Highlighting */
-    .function { color: green; font-weight:bold; }
-    .string { color:#a31515; }
-    .number { color:#098658; }
-    .operator { color:#000; }
-    .parenthesis { color:#000; font-weight:bold; }
+    .function { color: #4ade80; font-weight: 500; }
+    .string { color: #f97316; }
+    .number { color: #60a5fa; }
+    .operator { color: #e0e0e0; }
+    .parenthesis { color: #888; }
+    .bracket { color: #a78bfa; }
 
-    @media (max-width:768px){ .editor-section{ grid-template-columns:1fr; } .container{ padding:20px; } h1{ font-size:1.5em; } }
+    /* Notification */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: #22c55e;
+        color: white;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s;
+        pointer-events: none;
+    }
+
+    .notification.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .notification.error {
+        background: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+        .editor-row {
+            flex-direction: column;
+        }
+        .editor-label {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid #333;
+            padding: 12px 16px;
+        }
+        .header-center {
+            display: none;
+        }
+        .sidebar {
+            width: 280px !important;
+        }
+    }
+
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: -350px;
+        width: 350px;
+        height: 100vh;
+        background: #232323;
+        border-left: 1px solid #333;
+        transition: right 0.3s ease;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar.open {
+        right: 0;
+    }
+
+    .sidebar-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sidebar-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .sidebar-close {
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .sidebar-close:hover {
+        color: #fff;
+    }
+
+    .sidebar-search {
+        padding: 12px 20px;
+        border-bottom: 1px solid #333;
+    }
+
+    .sidebar-search input {
+        width: 100%;
+        padding: 10px 12px;
+        background: #191919;
+        border: 1px solid #404040;
+        border-radius: 6px;
+        color: #e0e0e0;
+        font-size: 14px;
+    }
+
+    .sidebar-search input:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+
+    .sidebar-search input::placeholder {
+        color: #666;
+    }
+
+    .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+    }
+
+    .function-item {
+        border-bottom: 1px solid #2a2a2a;
+    }
+
+    .function-header {
+        padding: 12px 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s;
+    }
+
+    .function-header:hover {
+        background: #2a2a2a;
+    }
+
+    .function-name {
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 13px;
+        color: #4ade80;
+        font-weight: 500;
+    }
+
+    .function-arrow {
+        color: #666;
+        transition: transform 0.2s;
+        font-size: 12px;
+    }
+
+    .function-item.open .function-arrow {
+        transform: rotate(180deg);
+    }
+
+    .function-details {
+        display: none;
+        padding: 0 20px 16px 20px;
+        background: #1a1a1a;
+    }
+
+    .function-item.open .function-details {
+        display: block;
+    }
+
+    .function-syntax {
+        background: #191919;
+        padding: 10px 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+        color: #f97316;
+        border: 1px solid #333;
+    }
+
+    .function-description {
+        font-size: 13px;
+        color: #888;
+        line-height: 1.5;
+    }
+
+    .function-example {
+        margin-top: 10px;
+        padding: 10px 12px;
+        background: #191919;
+        border-radius: 6px;
+        border: 1px solid #333;
+    }
+
+    .function-example-label {
+        font-size: 11px;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .function-example-code {
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+        color: #e0e0e0;
+    }
+
+    .toggle-sidebar-btn {
+        position: fixed;
+        top: 12px;
+        right: 24px;
+        background: #3b82f6;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .toggle-sidebar-btn:hover {
+        background: #2563eb;
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        z-index: 999;
+    }
+
+    .sidebar-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
 </style>
 </head>
 <body>
-<div class="container">
-    <h1>Formula Formatter</h1>
-    <p class="subtitle">Format your formulas with proper indentation and syntax highlighting</p>
 
-    <div class="editor-section">
-        <div class="input-group">
-            <h2>Input Formula</h2>
-            <textarea id="input" placeholder="Enter your formula here..."></textarea>
-        </div>
-
-        <div class="input-group">
-            <h2>Formatted Output</h2>
-            <div id="output" class="output-container">
-                <pre id="formatted-code"></pre>
-            </div>
-        </div>
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <div class="status-dot"></div>
+        <span class="header-title">Formula Helper</span>
     </div>
 
-    <div class="button-group">
-        <button class="format-btn" onclick="formatFormula()">Format Formula</button>
-        <button class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
-        <button class="clear-btn" onclick="clearAll()">Clear All</button>
+</div>
+
+<!-- Sidebar Toggle Button -->
+<button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+    <span>📚</span> Functions
+</button>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <span class="sidebar-title">Function Reference</span>
+        <button class="sidebar-close" onclick="toggleSidebar()">×</button>
+    </div>
+    <div class="sidebar-search">
+        <input type="text" id="functionSearch" placeholder="Search functions..." oninput="filterFunctions()">
+    </div>
+    <div class="sidebar-content" id="functionList">
+        <!-- Functions will be populated by JavaScript -->
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Info Card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title-row">
+                <h1 class="card-title">Formula Formatter</h1>
+            </div>
+            <p class="card-description">
+                Format your ProcessPlan formulas with indentation and function highlighting. Letting you read and debug your functions easier.
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Editor Card -->
+    <div class="editor-card">
+        <!-- Buttons Row -->
+        <div class="button-row">
+            <button class="btn btn-primary" onclick="formatFormula()">Format Formula</button>
+            <button class="btn btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+        </div>
+
+        <!-- Input Row -->
+        <div class="editor-row">
+            <div class="editor-label">Input Formula</div>
+            <div class="editor-content">
+                <textarea id="input" placeholder="Enter your formula here..."></textarea>
+            </div>
+        </div>
+
+        <!-- Output Row -->
+        <div class="editor-row">
+            <div class="editor-label">Formatted Output</div>
+            <div class="editor-content">
+                <div class="output-container">
+                    <pre id="formatted-code"></pre>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -82,7 +660,7 @@ const FUNCTIONS = new Set([
     'MONTHLASTDAY','NORMALIZETEXT','NOT','NUM','NUMSPLIT','PARSE','PARTITION','RANDOMNUM','REGEXFIND','REGEXWORDSONLY',
     'REMOVECHARS','REMOVEDIACRITICS','REMOVESPACES','REMOVESYMBOLS','REPLACE','RIGHT','RIGHTOF','RIGHTOFLAST','ROUND','SPLIT',
     'SUM','TABLEAVG','TABLEJSON','TABLELOOKUP','TABLESUM','TASKLOOKUP','TASKREPORT','TITLECASE','TRIM','UPPERCASE',
-    'URLENCODE','WORDSPLIT','WORKDAY','YEAR'
+    'URLENCODE','WORDSPLIT','WORKDAY','YEAR','ICONTAINS','IEQUALS'
 ]);
 
 function formatFormula() {
@@ -94,7 +672,7 @@ function formatFormula() {
     const highlighted = applySyntaxHighlighting(formatted);
     document.getElementById('formatted-code').innerHTML = highlighted;
 
-    showNotification('Formula formatted successfully!', 'success');
+    showNotification('Formula formatted successfully!');
 }
 
 function addIndentationAndSpacing(formula) {
@@ -102,12 +680,11 @@ function addIndentationAndSpacing(formula) {
     let indentLevel = 0;
     const indentSize = 2;
     let i = 0;
-    let bracketDepth = 0; // Track [[ ]] depth to preserve spaces inside
+    let bracketDepth = 0;
 
     while (i < formula.length) {
         const char = formula[i];
 
-        // Track bracket depth for [[ ]] field references
         if (char === '[') bracketDepth++;
         if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
 
@@ -122,11 +699,9 @@ function addIndentationAndSpacing(formula) {
         } else if (char === ',' || char === ';') {
             result += char + '\n' + ' '.repeat(indentLevel * indentSize);
         } else if (char.match(/\s/)) {
-            // Preserve spaces inside brackets [[ ]], collapse outside
             if (bracketDepth > 0) {
                 result += char;
             }
-            // Skip whitespace outside brackets
         } else {
             result += char;
         }
@@ -137,7 +712,6 @@ function addIndentationAndSpacing(formula) {
     return result;
 }
 
-// Token-based syntax highlighting to avoid regex conflicts
 function applySyntaxHighlighting(code) {
     const tokens = tokenize(code);
     return tokens.map(token => {
@@ -155,6 +729,8 @@ function applySyntaxHighlighting(code) {
                 return `<span class="operator">${escaped}</span>`;
             case 'parenthesis':
                 return `<span class="parenthesis">${escaped}</span>`;
+            case 'bracket':
+                return `<span class="bracket">${escaped}</span>`;
             default:
                 return escaped;
         }
@@ -170,10 +746,9 @@ function escapeHtml(text) {
 function tokenize(code) {
     const tokens = [];
     let i = 0;
-    let functionDepthStack = []; // Stack to track nested function parentheses
+    let functionDepthStack = [];
 
     while (i < code.length) {
-        // Whitespace
         if (/\s/.test(code[i])) {
             let value = '';
             while (i < code.length && /\s/.test(code[i])) {
@@ -184,7 +759,6 @@ function tokenize(code) {
             continue;
         }
 
-        // Strings (double quotes)
         if (code[i] === '"') {
             let value = '"';
             i++;
@@ -200,7 +774,6 @@ function tokenize(code) {
             continue;
         }
 
-        // Strings (single quotes)
         if (code[i] === "'") {
             let value = "'";
             i++;
@@ -216,7 +789,6 @@ function tokenize(code) {
             continue;
         }
 
-        // Numbers
         if (/\d/.test(code[i])) {
             let value = '';
             while (i < code.length && /[\d.]/.test(code[i])) {
@@ -227,27 +799,23 @@ function tokenize(code) {
             continue;
         }
 
-        // Identifiers (could be functions)
         if (/[a-zA-Z_]/.test(code[i])) {
             let value = '';
             while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) {
                 value += code[i];
                 i++;
             }
-            // Check if followed by ( to identify as function
             if (code[i] === '(' && FUNCTIONS.has(value.toUpperCase())) {
                 tokens.push({ type: 'function', value: value + '(' });
-                functionDepthStack.push(1); // Start tracking this function's depth
-                i++; // skip the (
+                functionDepthStack.push(1);
+                i++;
             } else {
                 tokens.push({ type: 'identifier', value });
             }
             continue;
         }
 
-        // Parentheses
         if (code[i] === '(') {
-            // Increment depth for all active functions
             for (let j = 0; j < functionDepthStack.length; j++) {
                 functionDepthStack[j]++;
             }
@@ -257,14 +825,12 @@ function tokenize(code) {
         }
 
         if (code[i] === ')') {
-            // Check if this closes any function
             let isClosingFunction = false;
             for (let j = functionDepthStack.length - 1; j >= 0; j--) {
                 functionDepthStack[j]--;
                 if (functionDepthStack[j] === 0) {
-                    // This ) closes a function
                     isClosingFunction = true;
-                    functionDepthStack.splice(j, 1); // Remove from stack
+                    functionDepthStack.splice(j, 1);
                     break;
                 }
             }
@@ -278,21 +844,18 @@ function tokenize(code) {
             continue;
         }
 
-        // Operators
         if (/[+\-*\/=<>&|;,]/.test(code[i])) {
             tokens.push({ type: 'operator', value: code[i] });
             i++;
             continue;
         }
 
-        // Brackets (for field references like [[...]])
         if (code[i] === '[' || code[i] === ']') {
             tokens.push({ type: 'bracket', value: code[i] });
             i++;
             continue;
         }
 
-        // Any other character
         tokens.push({ type: 'other', value: code[i] });
         i++;
     }
@@ -303,37 +866,195 @@ function tokenize(code) {
 function copyToClipboard() {
     if (!unformattedCode) { showNotification('Please format a formula first!', 'error'); return; }
 
-    const tempTextarea = document.createElement('textarea');
-    tempTextarea.value = unformattedCode;
-    tempTextarea.style.position = 'fixed';
-    tempTextarea.style.left = '-9999px';
-    document.body.appendChild(tempTextarea);
-    tempTextarea.select();
-    tempTextarea.setSelectionRange(0, 99999);
-
-    try { document.execCommand('copy'); showNotification('Copied to clipboard!', 'success'); }
-    catch { navigator.clipboard.writeText(unformattedCode).then(() => showNotification('Copied to clipboard!', 'success')).catch(() => showNotification('Failed to copy to clipboard', 'error')); }
-
-    document.body.removeChild(tempTextarea);
+    navigator.clipboard.writeText(unformattedCode)
+        .then(() => showNotification('Copied to clipboard!'))
+        .catch(() => showNotification('Failed to copy', 'error'));
 }
 
 function clearAll() {
     document.getElementById('input').value = '';
     document.getElementById('formatted-code').innerHTML = '';
     unformattedCode = '';
-    showNotification('Cleared all fields', 'success');
+    showNotification('Cleared!');
 }
 
-function showNotification(message, type='success') {
+function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
     notification.textContent = message;
-    notification.style.background = (type==='error') ? '#f44336' : '#4caf50';
+    notification.className = 'notification' + (type === 'error' ? ' error' : '');
     notification.classList.add('show');
-    setTimeout(()=>{ notification.classList.remove('show'); }, 3000);
+    setTimeout(() => notification.classList.remove('show'), 2500);
 }
 
-document.getElementById('input').addEventListener('keydown', function(e){
-    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); formatFormula(); }
+document.getElementById('input').addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        formatFormula();
+    }
+});
+
+// Function documentation data
+const FUNCTION_DOCS = [
+    { name: 'ANYTRUE', syntax: '=ANYTRUE(IsThisFunctionTrue; IsThisFunctionTrue; etc...)', description: 'Returns true if any of the specified conditions evaluate to true.', example: '=ANYTRUE(=EQUALS([[Status]];"Complete"); EQUALS([[Status]];"Done"))' },
+    { name: 'APPEND', syntax: '=APPEND(text1; text2; ...)', description: 'Combines multiple text values into one string.', example: '=APPEND([[First Name]];" ";[[Last Name]])' },
+    { name: 'BDATE', syntax: '=BDATE(date; startDate; endDate)', description: 'Returns true if the date is between the start and end dates (exclusive).', example: '=BDATE([[Due Date]]; "2024-01-01"; "2024-12-31")' },
+    { name: 'BEDATE', syntax: '=BEDATE(date; startDate; endDate)', description: 'Returns true if the date is between or equal to the start and end dates (inclusive).', example: '=BEDATE([[Created Date]]; [[Start]]; [[End]])' },
+    { name: 'BENUM', syntax: '=BENUM(number; min; max)', description: 'Returns true if the number is between or equal to min and max (inclusive).', example: '=BENUM([[Score]]; 0; 100)' },
+    { name: 'BNUM', syntax: '=BNUM(number; min; max)', description: 'Returns true if the number is between min and max (exclusive).', example: '=BNUM([[Value]]; 10; 50)' },
+    { name: 'CALC', syntax: '=CALC(expression)', description: 'Evaluates a mathematical expression and returns the result.', example: '=CALC([[Price]] * [[Quantity]])' },
+    { name: 'CEILING', syntax: '=CEILING(number)', description: 'Rounds a number up to the nearest integer.', example: '=CEILING([[Total]] / 10)' },
+    { name: 'CONTAINS', syntax: '=CONTAINS(text; searchText)', description: 'Returns true if the text contains the search text (case-sensitive).', example: '=CONTAINS([[Description]]; "urgent")' },
+    { name: 'DATEADD', syntax: '=DATEADD(date; number; unit)', description: 'Adds a specified number of time units to a date. Units: days, weeks, months, years.', example: '=DATEADD([[Start Date]]; 30; "days")' },
+    { name: 'DATEDIFF', syntax: '=DATEDIFF(startDate; endDate; unit)', description: 'Returns the difference between two dates in the specified unit.', example: '=DATEDIFF([[Start]]; [[End]]; "days")' },
+    { name: 'DATELIST', syntax: '=DATELIST(startDate; endDate; interval)', description: 'Generates a list of dates between start and end at the specified interval.', example: '=DATELIST([[Start]]; [[End]]; "weekly")' },
+    { name: 'DATEPART', syntax: '=DATEPART(date; part)', description: 'Extracts a specific part from a date (year, month, day, hour, minute).', example: '=DATEPART([[Created Date]]; "month")' },
+    { name: 'DATEPATTERN', syntax: '=DATEPATTERN(date; pattern)', description: 'Formats a date according to the specified pattern.', example: '=DATEPATTERN([[Date]]; "MM/DD/YYYY")' },
+    { name: 'DATEROUND', syntax: '=DATEROUND(date; unit)', description: 'Rounds a date to the nearest specified unit.', example: '=DATEROUND([[Timestamp]]; "hour")' },
+    { name: 'DATESERIAL', syntax: '=DATESERIAL(year; month; day)', description: 'Creates a date from individual year, month, and day values.', example: '=DATESERIAL(2024; 12; 25)' },
+    { name: 'DATETIMEMERGE', syntax: '=DATETIMEMERGE(date; time)', description: 'Combines a date and time into a single datetime value.', example: '=DATETIMEMERGE([[Date]]; [[Time]])' },
+    { name: 'EMAILSPLIT', syntax: '=EMAILSPLIT(email; part)', description: 'Extracts parts of an email address (username or domain).', example: '=EMAILSPLIT([[Email]]; "domain")' },
+    { name: 'ENCLOSE', syntax: '=ENCLOSE(text; prefix; suffix)', description: 'Wraps text with a prefix and suffix.', example: '=ENCLOSE([[Name]]; "("; ")")' },
+    { name: 'EQUALS', syntax: '=EQUALS(value1; value2; ...)', description: 'Returns true if all values are equal to the first value.', example: '=EQUALS([[Status]]; "Approved")' },
+    { name: 'FIRSTVALUE', syntax: '=FIRSTVALUE(value1; value2; ...)', description: 'Returns the first non-empty value from the list.', example: '=FIRSTVALUE([[Preferred Name]]; [[First Name]]; "Unknown")' },
+    { name: 'FISCALMONTH', syntax: '=FISCALMONTH(date; startMonth)', description: 'Returns the fiscal month number based on fiscal year start.', example: '=FISCALMONTH([[Date]]; 7)' },
+    { name: 'FISCALYEAR', syntax: '=FISCALYEAR(date; startMonth)', description: 'Returns the fiscal year based on fiscal year start month.', example: '=FISCALYEAR([[Date]]; 7)' },
+    { name: 'FLOOR', syntax: '=FLOOR(number)', description: 'Rounds a number down to the nearest integer.', example: '=FLOOR([[Total]] / 3)' },
+    { name: 'FORMAT', syntax: '=FORMAT(value; formatString)', description: 'Formats a value according to the specified format string.', example: '=FORMAT([[Price]]; "$#,##0.00")' },
+    { name: 'GTDATE', syntax: '=GTDATE(date1; date2)', description: 'Returns true if date1 is greater than (after) date2.', example: '=GTDATE([[Due Date]]; [[Today]])' },
+    { name: 'GTEDATE', syntax: '=GTEDATE(date1; date2)', description: 'Returns true if date1 is greater than or equal to date2.', example: '=GTEDATE([[End Date]]; [[Start Date]])' },
+    { name: 'GTENUM', syntax: '=GTENUM(number1; number2)', description: 'Returns true if number1 is greater than or equal to number2.', example: '=GTENUM([[Score]]; 70)' },
+    { name: 'GTNUM', syntax: '=GTNUM(number1; number2)', description: 'Returns true if number1 is greater than number2.', example: '=GTNUM([[Total]]; 1000)' },
+    { name: 'HASVALUE', syntax: '=HASVALUE(field)', description: 'Returns true if the field contains any value (not empty).', example: '=HASVALUE([[Comments]])' },
+    { name: 'ICONTAINS', syntax: '=ICONTAINS(text; searchText)', description: 'Returns true if text contains searchText (case-insensitive).', example: '=ICONTAINS([[Name]]; "smith")' },
+    { name: 'IEQUALS', syntax: '=IEQUALS(value1; value2)', description: 'Returns true if values are equal (case-insensitive for text).', example: '=IEQUALS([[Status]]; "approved")' },
+    { name: 'IF', syntax: '=IF(condition; valueIfTrue; valueIfFalse)', description: 'Returns one value if condition is true, another if false.', example: '=IF(GTNUM([[Score]]; 70); "Pass"; "Fail")' },
+    { name: 'INSTANCECOUNT', syntax: '=INSTANCECOUNT(processName; filter)', description: 'Counts process instances matching the specified criteria.', example: '=INSTANCECOUNT("Orders"; "Status=Open")' },
+    { name: 'INSTANCETASKCOUNT', syntax: '=INSTANCETASKCOUNT(filter)', description: 'Counts tasks in process instances matching criteria.', example: '=INSTANCETASKCOUNT("Assigned=CurrentUser")' },
+    { name: 'INSTANCEUPDATE', syntax: '=INSTANCEUPDATE(field; value)', description: 'Updates a field value in the current process instance.', example: '=INSTANCEUPDATE("Status"; "Complete")' },
+    { name: 'ISCONTEXT', syntax: '=ISCONTEXT(contextName)', description: 'Returns true if currently in the specified context.', example: '=ISCONTEXT("Mobile")' },
+    { name: 'ISEMPTY', syntax: '=ISEMPTY(field)', description: 'Returns true if the field is empty or has no value.', example: '=ISEMPTY([[Notes]])' },
+    { name: 'ISPUBLICUSER', syntax: '=ISPUBLICUSER()', description: 'Returns true if the current user is a public (non-authenticated) user.', example: '=ISPUBLICUSER()' },
+    { name: 'ISTRUE', syntax: '=ISTRUE(value)', description: 'Returns true if the value evaluates to true/yes/1.', example: '=ISTRUE([[Is Active]])' },
+    { name: 'JSONENCODE', syntax: '=JSONENCODE(value)', description: 'Converts a value to a JSON-encoded string.', example: '=JSONENCODE([[Data]])' },
+    { name: 'JSONEXTRACT', syntax: '=JSONEXTRACT(json; path)', description: 'Extracts a value from JSON using the specified path.', example: '=JSONEXTRACT([[Response]]; "data.name")' },
+    { name: 'JSONFIFO', syntax: '=JSONFIFO(json; action; value)', description: 'Performs FIFO queue operations on JSON arrays.', example: '=JSONFIFO([[Queue]]; "push"; [[NewItem]])' },
+    { name: 'JSONINDEX', syntax: '=JSONINDEX(json; index)', description: 'Gets an item from a JSON array by index.', example: '=JSONINDEX([[Items]]; 0)' },
+    { name: 'JSONQUERY', syntax: '=JSONQUERY(json; query)', description: 'Queries JSON data using a query expression.', example: '=JSONQUERY([[Data]]; "items[?status==active]")' },
+    { name: 'JSONREMOVE', syntax: '=JSONREMOVE(json; path)', description: 'Removes a property or item from JSON.', example: '=JSONREMOVE([[Data]]; "tempField")' },
+    { name: 'JSONUPDATE', syntax: '=JSONUPDATE(json; path; value)', description: 'Updates a value in JSON at the specified path.', example: '=JSONUPDATE([[Data]]; "status"; "updated")' },
+    { name: 'LEFT', syntax: '=LEFT(text; numChars)', description: 'Returns the specified number of characters from the start of text.', example: '=LEFT([[Code]]; 3)' },
+    { name: 'LEFTOF', syntax: '=LEFTOF(text; delimiter)', description: 'Returns text to the left of the first occurrence of delimiter.', example: '=LEFTOF([[Email]]; "@")' },
+    { name: 'LEFTOFLAST', syntax: '=LEFTOFLAST(text; delimiter)', description: 'Returns text to the left of the last occurrence of delimiter.', example: '=LEFTOFLAST([[Path]]; "/")' },
+    { name: 'LENGTH', syntax: '=LENGTH(text)', description: 'Returns the number of characters in the text.', example: '=LENGTH([[Description]])' },
+    { name: 'LINESPLIT', syntax: '=LINESPLIT(text; index)', description: 'Splits text by line breaks and returns the line at index.', example: '=LINESPLIT([[Address]]; 1)' },
+    { name: 'LISTASLINES', syntax: '=LISTASLINES(list)', description: 'Converts a list to text with each item on a new line.', example: '=LISTASLINES([[Items]])' },
+    { name: 'LISTCOUNT', syntax: '=LISTCOUNT(list)', description: 'Returns the number of items in a list.', example: '=LISTCOUNT([[Tags]])' },
+    { name: 'LISTDIFF', syntax: '=LISTDIFF(list1; list2)', description: 'Returns items in list1 that are not in list2.', example: '=LISTDIFF([[All Items]]; [[Completed]])' },
+    { name: 'LISTINDEX', syntax: '=LISTINDEX(list; index)', description: 'Returns the item at the specified index in a list.', example: '=LISTINDEX([[Options]]; 0)' },
+    { name: 'LISTINTERSECT', syntax: '=LISTINTERSECT(list1; list2)', description: 'Returns items that appear in both lists.', example: '=LISTINTERSECT([[Skills]]; [[Required]])' },
+    { name: 'LISTITEMAPPEND', syntax: '=LISTITEMAPPEND(list; text)', description: 'Appends text to each item in the list.', example: '=LISTITEMAPPEND([[Names]]; " Jr.")' },
+    { name: 'LISTITEMCONTAINS', syntax: '=LISTITEMCONTAINS(list; searchText)', description: 'Returns items containing the search text.', example: '=LISTITEMCONTAINS([[Files]]; ".pdf")' },
+    { name: 'LISTITEMENDSWITH', syntax: '=LISTITEMENDSWITH(list; suffix)', description: 'Returns items that end with the specified suffix.', example: '=LISTITEMENDSWITH([[Files]]; ".xlsx")' },
+    { name: 'LISTITEMLEFT', syntax: '=LISTITEMLEFT(list; numChars)', description: 'Returns the left portion of each item in the list.', example: '=LISTITEMLEFT([[Codes]]; 2)' },
+    { name: 'LISTITEMLEFTOF', syntax: '=LISTITEMLEFTOF(list; delimiter)', description: 'Returns text left of delimiter for each item.', example: '=LISTITEMLEFTOF([[Emails]]; "@")' },
+    { name: 'LISTITEMPREPEND', syntax: '=LISTITEMPREPEND(list; text)', description: 'Prepends text to each item in the list.', example: '=LISTITEMPREPEND([[IDs]]; "ID-")' },
+    { name: 'LISTITEMREGEX', syntax: '=LISTITEMREGEX(list; pattern)', description: 'Returns items matching the regex pattern.', example: '=LISTITEMREGEX([[Data]]; "^[0-9]+$")' },
+    { name: 'LISTITEMRIGHT', syntax: '=LISTITEMRIGHT(list; numChars)', description: 'Returns the right portion of each item in the list.', example: '=LISTITEMRIGHT([[Files]]; 4)' },
+    { name: 'LISTITEMRIGHTOF', syntax: '=LISTITEMRIGHTOF(list; delimiter)', description: 'Returns text right of delimiter for each item.', example: '=LISTITEMRIGHTOF([[Paths]]; "/")' },
+    { name: 'LISTITEMSTARTSWITH', syntax: '=LISTITEMSTARTSWITH(list; prefix)', description: 'Returns items that start with the specified prefix.', example: '=LISTITEMSTARTSWITH([[Codes]]; "A")' },
+    { name: 'LISTJOIN', syntax: '=LISTJOIN(list; separator)', description: 'Joins list items into text with the specified separator.', example: '=LISTJOIN([[Tags]]; ", ")' },
+    { name: 'LISTMERGE', syntax: '=LISTMERGE(list1; list2; ...)', description: 'Combines multiple lists into one.', example: '=LISTMERGE([[List1]]; [[List2]])' },
+    { name: 'LISTUNIQUE', syntax: '=LISTUNIQUE(list)', description: 'Returns unique items from a list (removes duplicates).', example: '=LISTUNIQUE([[AllTags]])' },
+    { name: 'LOWERCASE', syntax: '=LOWERCASE(text)', description: 'Converts text to lowercase.', example: '=LOWERCASE([[Name]])' },
+    { name: 'LTDATE', syntax: '=LTDATE(date1; date2)', description: 'Returns true if date1 is less than (before) date2.', example: '=LTDATE([[Created]]; [[Deadline]])' },
+    { name: 'LTEDATE', syntax: '=LTEDATE(date1; date2)', description: 'Returns true if date1 is less than or equal to date2.', example: '=LTEDATE([[Start]]; [[End]])' },
+    { name: 'LTENUM', syntax: '=LTENUM(number1; number2)', description: 'Returns true if number1 is less than or equal to number2.', example: '=LTENUM([[Count]]; 10)' },
+    { name: 'LTNUM', syntax: '=LTNUM(number1; number2)', description: 'Returns true if number1 is less than number2.', example: '=LTNUM([[Age]]; 18)' },
+    { name: 'MAX', syntax: '=MAX(value1; value2; ...)', description: 'Returns the maximum value from the provided values.', example: '=MAX([[Score1]]; [[Score2]]; [[Score3]])' },
+    { name: 'MIN', syntax: '=MIN(value1; value2; ...)', description: 'Returns the minimum value from the provided values.', example: '=MIN([[Price1]]; [[Price2]])' },
+    { name: 'MONTH', syntax: '=MONTH(date)', description: 'Returns the month number (1-12) from a date.', example: '=MONTH([[Created Date]])' },
+    { name: 'MONTHDAY', syntax: '=MONTHDAY(date)', description: 'Returns the day of the month (1-31) from a date.', example: '=MONTHDAY([[Birthday]])' },
+    { name: 'MONTHLASTDAY', syntax: '=MONTHLASTDAY(date)', description: 'Returns the last day of the month for the given date.', example: '=MONTHLASTDAY([[Invoice Date]])' },
+    { name: 'NORMALIZETEXT', syntax: '=NORMALIZETEXT(text)', description: 'Normalizes text by removing extra whitespace and special characters.', example: '=NORMALIZETEXT([[Input]])' },
+    { name: 'NOT', syntax: '=NOT(condition)', description: 'Returns the opposite boolean value of the condition.', example: '=NOT(ISEMPTY([[Field]]))' },
+    { name: 'NUM', syntax: '=NUM(value)', description: 'Converts a value to a number.', example: '=NUM([[Quantity]])' },
+    { name: 'NUMSPLIT', syntax: '=NUMSPLIT(text)', description: 'Extracts numbers from text.', example: '=NUMSPLIT("Order #12345")' },
+    { name: 'PARSE', syntax: '=PARSE(text; pattern)', description: 'Parses text according to a pattern and extracts values.', example: '=PARSE([[Code]]; "{type}-{id}")' },
+    { name: 'PARTITION', syntax: '=PARTITION(list; size)', description: 'Splits a list into smaller lists of the specified size.', example: '=PARTITION([[Items]]; 10)' },
+    { name: 'RANDOMNUM', syntax: '=RANDOMNUM(min; max)', description: 'Generates a random number between min and max.', example: '=RANDOMNUM(1; 100)' },
+    { name: 'REGEXFIND', syntax: '=REGEXFIND(text; pattern)', description: 'Finds and returns text matching the regex pattern.', example: '=REGEXFIND([[Text]]; "[0-9]+")' },
+    { name: 'REGEXWORDSONLY', syntax: '=REGEXWORDSONLY(text)', description: 'Extracts only words (alphabetic characters) from text.', example: '=REGEXWORDSONLY([[Input]])' },
+    { name: 'REMOVECHARS', syntax: '=REMOVECHARS(text; chars)', description: 'Removes specified characters from text.', example: '=REMOVECHARS([[Phone]]; "-() ")' },
+    { name: 'REMOVEDIACRITICS', syntax: '=REMOVEDIACRITICS(text)', description: 'Removes diacritical marks (accents) from text.', example: '=REMOVEDIACRITICS("café")' },
+    { name: 'REMOVESPACES', syntax: '=REMOVESPACES(text)', description: 'Removes all spaces from text.', example: '=REMOVESPACES([[Code]])' },
+    { name: 'REMOVESYMBOLS', syntax: '=REMOVESYMBOLS(text)', description: 'Removes special symbols from text, keeping letters and numbers.', example: '=REMOVESYMBOLS([[Input]])' },
+    { name: 'REPLACE', syntax: '=REPLACE(text; find; replaceWith)', description: 'Replaces occurrences of find with replaceWith in text.', example: '=REPLACE([[Text]]; "old"; "new")' },
+    { name: 'RIGHT', syntax: '=RIGHT(text; numChars)', description: 'Returns the specified number of characters from the end of text.', example: '=RIGHT([[Filename]]; 4)' },
+    { name: 'RIGHTOF', syntax: '=RIGHTOF(text; delimiter)', description: 'Returns text to the right of the first occurrence of delimiter.', example: '=RIGHTOF([[Email]]; "@")' },
+    { name: 'RIGHTOFLAST', syntax: '=RIGHTOFLAST(text; delimiter)', description: 'Returns text to the right of the last occurrence of delimiter.', example: '=RIGHTOFLAST([[Path]]; "/")' },
+    { name: 'ROUND', syntax: '=ROUND(number; decimals)', description: 'Rounds a number to the specified number of decimal places.', example: '=ROUND([[Total]]; 2)' },
+    { name: 'SPLIT', syntax: '=SPLIT(text; delimiter)', description: 'Splits text into a list using the specified delimiter.', example: '=SPLIT([[Tags]]; ",")' },
+    { name: 'SUM', syntax: '=SUM(value1; value2; ...)', description: 'Returns the sum of all provided values.', example: '=SUM([[Item1]]; [[Item2]]; [[Item3]])' },
+    { name: 'TABLEAVG', syntax: '=TABLEAVG(table; column)', description: 'Calculates the average of values in a table column.', example: '=TABLEAVG([[LineItems]]; "Price")' },
+    { name: 'TABLEJSON', syntax: '=TABLEJSON(table)', description: 'Converts a table to JSON format.', example: '=TABLEJSON([[DataTable]])' },
+    { name: 'TABLELOOKUP', syntax: '=TABLELOOKUP(table; keyColumn; keyValue; returnColumn)', description: 'Looks up a value in a table and returns a corresponding value.', example: '=TABLELOOKUP([[Products]]; "SKU"; [[OrderSKU]]; "Price")' },
+    { name: 'TABLESUM', syntax: '=TABLESUM(table; column)', description: 'Calculates the sum of values in a table column.', example: '=TABLESUM([[LineItems]]; "Amount")' },
+    { name: 'TASKLOOKUP', syntax: '=TASKLOOKUP(taskName; field)', description: 'Retrieves a field value from a specific task.', example: '=TASKLOOKUP("Approval"; "Approver")' },
+    { name: 'TASKREPORT', syntax: '=TASKREPORT(filter; fields)', description: 'Generates a report of tasks matching the filter.', example: '=TASKREPORT("Status=Open"; "Name,Assigned,Due")' },
+    { name: 'TITLECASE', syntax: '=TITLECASE(text)', description: 'Converts text to title case (capitalizes first letter of each word).', example: '=TITLECASE([[name]])' },
+    { name: 'TRIM', syntax: '=TRIM(text)', description: 'Removes leading and trailing whitespace from text.', example: '=TRIM([[Input]])' },
+    { name: 'UPPERCASE', syntax: '=UPPERCASE(text)', description: 'Converts text to uppercase.', example: '=UPPERCASE([[Code]])' },
+    { name: 'URLENCODE', syntax: '=URLENCODE(text)', description: 'Encodes text for use in a URL.', example: '=URLENCODE([[Search Term]])' },
+    { name: 'WORDSPLIT', syntax: '=WORDSPLIT(text; index)', description: 'Splits text by spaces and returns the word at index.', example: '=WORDSPLIT([[Full Name]]; 0)' },
+    { name: 'WORKDAY', syntax: '=WORKDAY(startDate; days; holidays)', description: 'Calculates a date that is a specified number of workdays away.', example: '=WORKDAY([[Start]]; 5; [[Holidays]])' },
+    { name: 'YEAR', syntax: '=YEAR(date)', description: 'Returns the year from a date.', example: '=YEAR([[Created Date]])' }
+];
+
+// Sidebar functions
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+}
+
+function renderFunctions(functions) {
+    const container = document.getElementById('functionList');
+    container.innerHTML = functions.map(func => `
+        <div class="function-item" data-name="${func.name}">
+            <div class="function-header" onclick="toggleFunction(this)">
+                <span class="function-name">=${func.name}()</span>
+                <span class="function-arrow">▼</span>
+            </div>
+            <div class="function-details">
+                <div class="function-syntax">${escapeHtml(func.syntax)}</div>
+                <div class="function-description">${func.description}</div>
+                <div class="function-example">
+                    <div class="function-example-label">Example</div>
+                    <div class="function-example-code">${escapeHtml(func.example)}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function toggleFunction(header) {
+    const item = header.parentElement;
+    item.classList.toggle('open');
+}
+
+function filterFunctions() {
+    const search = document.getElementById('functionSearch').value.toLowerCase();
+    const filtered = FUNCTION_DOCS.filter(func => 
+        func.name.toLowerCase().includes(search) || 
+        func.description.toLowerCase().includes(search)
+    );
+    renderFunctions(filtered);
+}
+
+// Initialize sidebar
+document.addEventListener('DOMContentLoaded', () => {
+    renderFunctions(FUNCTION_DOCS);
 });
 </script>
 </body>
