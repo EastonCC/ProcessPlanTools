@@ -505,7 +505,7 @@
 <div class="header">
     <div class="header-left">
         <div class="status-dot"></div>
-        <span class="header-title">Formula Language</span>
+        <span class="header-title">ProcessPlan Tools | Formula Editor</span>
     </div>
     <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
         <span>📚</span> Functions
@@ -758,6 +758,9 @@ function formatFormula(formula) {
     return result;
 }
 
+
+
+
 // Tokenize for syntax highlighting
 function tokenize(code) {
     const tokens = [];
@@ -909,6 +912,13 @@ function updateEditor() {
     updateLineNumbers(code);
 }
 
+function formatLive() {
+    const raw = textarea.value;
+    const formatted = addIndentationAndSpacing(raw);
+    const highlighted = applySyntaxHighlighting(formatted);
+    formattedCode.innerHTML = highlighted;
+}
+
 // Handle paste - format the pasted content
 textarea.addEventListener('paste', (e) => {
     e.preventDefault();
@@ -941,6 +951,7 @@ document.addEventListener('click', (e) => {
 textarea.addEventListener('input', () => {
     updateEditor();
     updateAutocomplete();
+    formatLive();
 });
 
 // Sync scroll between textarea and highlight
@@ -986,25 +997,30 @@ textarea.addEventListener('keydown', (e) => {
         
         if (charBefore === '(') {
             e.preventDefault();
-            
-            // Calculate current indent level
+
             const indentLevel = getIndentLevel(textBefore);
             const indentSize = 2;
-            const newIndent = ' '.repeat((indentLevel + 1) * indentSize);
-            const closingIndent = ' '.repeat(indentLevel * indentSize);
-            
-            // Insert newline, indent, and closing paren on new line
-            const insertion = '\n' + newIndent + '\n' + closingIndent + ')';
-            
+            const newIndent = ' '.repeat(indentLevel * indentSize);
+            const closingIndent = ' '.repeat((indentLevel - 1) * indentSize);
+
+            // Check if a closing parenthesis already exists ahead
+            const hasClosingParenAhead = /^\s*\)/.test(textAfter);
+
+            const insertion =
+                '\n' +
+                newIndent +
+                (hasClosingParenAhead ? '\n' + closingIndent : '\n' + closingIndent + ')');
+
             textarea.value = textBefore + insertion + textAfter;
-            
-            // Position cursor on the indented line (after the first newline and indent)
+
+            // Cursor goes on the indented line
             const newPos = cursorPos + 1 + newIndent.length;
             textarea.setSelectionRange(newPos, newPos);
-            
+
             updateEditor();
             return;
         }
+
     }
     
     if (e.key === 'Tab') {
