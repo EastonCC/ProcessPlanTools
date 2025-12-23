@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProcessPlan Formula Helper</title>
+<title>Formula Editor - ProcessPlanTools</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -42,149 +42,32 @@
         color: #e0e0e0;
     }
 
-    .header-center {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .home-btn {
-        background: #2a2a2a;
-        border: 1px solid #404040;
-        color: #e0e0e0;
-        padding: 6px 20px;
-        border-radius: 20px;
+    .toggle-sidebar-btn {
+        background: #3b82f6;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
         font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-    }
-
-    .home-btn:hover {
-        background: #333;
-    }
-
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .search-btn {
         display: flex;
         align-items: center;
         gap: 8px;
-        background: #2a2a2a;
-        border: 1px solid #404040;
-        color: #888;
-        padding: 6px 16px;
-        border-radius: 8px;
-        font-size: 14px;
-        cursor: pointer;
     }
 
-    .header-icon {
-        color: #888;
-        font-size: 18px;
-        cursor: pointer;
-    }
-
-    .avatar {
-        width: 28px;
-        height: 28px;
-        background: #22c55e;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        font-weight: 600;
-        color: white;
+    .toggle-sidebar-btn:hover {
+        background: #2563eb;
     }
 
     /* Main Content */
     .main-content {
-        max-width: 900px;
+        max-width: 1100px;
         margin: 0 auto;
         padding: 32px 24px;
     }
 
-    /* Card */
-    .card {
-        background: #232323;
-        border: 1px solid #333;
-        border-radius: 12px;
-        margin-bottom: 16px;
-    }
-
-    .card-header {
-        padding: 20px 24px;
-    }
-
-    .card-title-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 12px;
-    }
-
-    .card-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #fff;
-    }
-
-    .card-actions {
-        display: flex;
-        gap: 12px;
-        color: #888;
-        font-size: 14px;
-    }
-
-    .card-actions span {
-        cursor: pointer;
-    }
-
-    .card-actions span:hover {
-        color: #e0e0e0;
-    }
-
-    .card-description {
-        color: #888;
-        font-size: 14px;
-        line-height: 1.6;
-        margin-bottom: 8px;
-    }
-
-    .see-more {
-        color: #666;
-        font-size: 14px;
-        cursor: pointer;
-    }
-
-    .see-more:hover {
-        color: #888;
-    }
-
-    .card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 24px;
-        border-top: 1px solid #333;
-    }
-
-    .card-footer-left {
-        display: flex;
-        gap: 16px;
-        color: #666;
-        font-size: 18px;
-    }
-
-    .card-footer-right {
-        color: #666;
-        font-size: 14px;
-    }
-
-    /* Editor Section */
+    /* Editor Card */
     .editor-card {
         background: #232323;
         border: 1px solid #333;
@@ -192,86 +75,33 @@
         overflow: hidden;
     }
 
-    .editor-row {
+    .editor-header {
         display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
         border-bottom: 1px solid #333;
     }
 
-    .editor-row:last-child {
-        border-bottom: none;
+    .editor-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
     }
 
-    .editor-label {
-        width: 200px;
-        padding: 16px 24px;
-        font-size: 14px;
-        color: #e0e0e0;
-        border-right: 1px solid #333;
+    .editor-actions {
         display: flex;
-        align-items: flex-start;
-        flex-shrink: 0;
-    }
-
-    .editor-content {
-        flex: 1;
-        padding: 0;
-    }
-
-    textarea {
-        width: 100%;
-        min-height: 150px;
-        padding: 16px;
-        background: transparent;
-        border: none;
-        color: #e0e0e0;
-        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-        font-size: 13px;
-        resize: vertical;
-        line-height: 1.5;
-    }
-
-    textarea:focus {
-        outline: none;
-    }
-
-    textarea::placeholder {
-        color: #555;
-    }
-
-    .output-container {
-        min-height: 150px;
-        padding: 16px;
-        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-        font-size: 13px;
-        line-height: 1.5;
-        overflow: auto;
-    }
-
-    pre {
-        margin: 0;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
-
-    /* Button Row */
-    .button-row {
-        display: flex;
-        border-bottom: 1px solid #333;
+        gap: 8px;
     }
 
     .btn {
-        flex: 1;
-        padding: 14px 24px;
-        font-size: 14px;
+        padding: 8px 16px;
+        font-size: 13px;
         font-weight: 500;
         border: none;
+        border-radius: 6px;
         cursor: pointer;
         transition: background 0.2s;
-        border-right: 1px solid #333;
-    }
-
-    .btn:last-child {
-        border-right: none;
     }
 
     .btn-primary {
@@ -286,31 +116,109 @@
     .btn-secondary {
         background: #2a2a2a;
         color: #e0e0e0;
+        border: 1px solid #404040;
     }
 
     .btn-secondary:hover {
         background: #333;
     }
 
-    /* Row actions */
-    .row-actions {
+    /* Code Editor */
+    .code-editor {
         display: flex;
-        align-items: center;
-        gap: 16px;
-        padding-right: 16px;
-        color: #666;
-        font-size: 14px;
+        min-height: 500px;
+        max-height: 70vh;
+        overflow: auto;
+        background: #1a1a1a;
     }
 
-    .row-action {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        cursor: pointer;
+    .line-numbers {
+        padding: 16px 0;
+        background: #1e1e1e;
+        border-right: 1px solid #333;
+        text-align: right;
+        user-select: none;
+        min-width: 50px;
     }
 
-    .row-action:hover {
+    .line-number {
+        padding: 0 12px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #555;
+    }
+
+    .line-number.active {
         color: #888;
+    }
+
+    .code-area {
+        flex: 1;
+        position: relative;
+        overflow: auto;
+    }
+
+    .code-textarea {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding: 16px;
+        background: transparent;
+        border: none;
+        color: transparent;
+        caret-color: #fff;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        resize: none;
+        white-space: pre;
+        overflow: auto;
+        z-index: 2;
+    }
+
+    .code-textarea:focus {
+        outline: none;
+    }
+
+    .code-highlight {
+        padding: 16px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre;
+        pointer-events: none;
+        min-height: 100%;
+    }
+
+    /* Scrollbar */
+    .code-editor::-webkit-scrollbar,
+    .code-textarea::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+    }
+
+    .code-editor::-webkit-scrollbar-track,
+    .code-textarea::-webkit-scrollbar-track {
+        background: #1a1a1a;
+    }
+
+    .code-editor::-webkit-scrollbar-thumb,
+    .code-textarea::-webkit-scrollbar-thumb {
+        background: #444;
+        border-radius: 6px;
+        border: 2px solid #1a1a1a;
+    }
+
+    .code-editor::-webkit-scrollbar-thumb:hover,
+    .code-textarea::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    .code-editor::-webkit-scrollbar-corner {
+        background: #1a1a1a;
     }
 
     /* Syntax Highlighting */
@@ -336,6 +244,7 @@
         transform: translateY(-10px);
         transition: all 0.3s;
         pointer-events: none;
+        z-index: 1001;
     }
 
     .notification.show {
@@ -345,24 +254,6 @@
 
     .notification.error {
         background: #ef4444;
-    }
-
-    @media (max-width: 768px) {
-        .editor-row {
-            flex-direction: column;
-        }
-        .editor-label {
-            width: 100%;
-            border-right: none;
-            border-bottom: 1px solid #333;
-            padding: 12px 16px;
-        }
-        .header-center {
-            display: none;
-        }
-        .sidebar {
-            width: 280px !important;
-        }
     }
 
     /* Sidebar */
@@ -524,28 +415,6 @@
         color: #e0e0e0;
     }
 
-    .toggle-sidebar-btn {
-        position: fixed;
-        top: 12px;
-        right: 24px;
-        background: #3b82f6;
-        border: none;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        z-index: 999;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .toggle-sidebar-btn:hover {
-        background: #2563eb;
-    }
-
     .sidebar-overlay {
         position: fixed;
         top: 0;
@@ -563,6 +432,71 @@
         opacity: 1;
         visibility: visible;
     }
+
+    /* Autocomplete Dropdown */
+    .autocomplete-dropdown {
+        position: absolute;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 6px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        min-width: 200px;
+    }
+
+    .autocomplete-dropdown.show {
+        display: block;
+    }
+
+    .autocomplete-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 13px;
+        color: #4ade80;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item.selected {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .autocomplete-dropdown::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .autocomplete-dropdown::-webkit-scrollbar-track {
+        background: #2a2a2a;
+    }
+
+    .autocomplete-dropdown::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            right: -100%;
+        }
+        .editor-header {
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .editor-actions {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .btn {
+            flex: 1;
+            min-width: 120px;
+        }
+    }
 </style>
 </head>
 <body>
@@ -571,15 +505,12 @@
 <div class="header">
     <div class="header-left">
         <div class="status-dot"></div>
-        <span class="header-title">Formula Helper</span>
+        <span class="header-title">Formula Language</span>
     </div>
-
+    <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+        <span>📚</span> Functions
+    </button>
 </div>
-
-<!-- Sidebar Toggle Button -->
-<button class="toggle-sidebar-btn" onclick="toggleSidebar()">
-    <span>📚</span> Functions
-</button>
 
 <!-- Sidebar Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -594,50 +525,26 @@
         <input type="text" id="functionSearch" placeholder="Search functions..." oninput="filterFunctions()">
     </div>
     <div class="sidebar-content" id="functionList">
-        <!-- Functions will be populated by JavaScript -->
     </div>
 </div>
 
 <!-- Main Content -->
 <div class="main-content">
-    <!-- Info Card -->
-    <div class="card">
-        <div class="card-header">
-            <div class="card-title-row">
-                <h1 class="card-title">Formula Formatter</h1>
-            </div>
-            <p class="card-description">
-                Format your ProcessPlan formulas with indentation and function highlighting. Letting you read and debug your functions easier.
-            </p>
-
-        </div>
-
-    </div>
-
-    <!-- Editor Card -->
     <div class="editor-card">
-        <!-- Buttons Row -->
-        <div class="button-row">
-            <button class="btn btn-primary" onclick="formatFormula()">Format Formula</button>
-            <button class="btn btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
-            <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
-        </div>
-
-        <!-- Input Row -->
-        <div class="editor-row">
-            <div class="editor-label">Input Formula</div>
-            <div class="editor-content">
-                <textarea id="input" placeholder="Enter your formula here..."></textarea>
+        <div class="editor-header">
+            <span class="editor-title">Formula Editor</span>
+            <div class="editor-actions">
+                <button class="btn btn-secondary" onclick="copyFormatted()">Copy Formatted</button>
+                <button class="btn btn-secondary" onclick="copyRaw()">Copy Raw</button>
+                <button class="btn btn-secondary" onclick="clearEditor()">Clear</button>
             </div>
         </div>
-
-        <!-- Output Row -->
-        <div class="editor-row">
-            <div class="editor-label">Formatted Output</div>
-            <div class="editor-content">
-                <div class="output-container">
-                    <pre id="formatted-code"></pre>
-                </div>
+        <div class="code-editor" id="codeEditor">
+            <div class="line-numbers" id="lineNumbers"></div>
+            <div class="code-area">
+                <div class="code-highlight" id="codeHighlight"></div>
+                <textarea class="code-textarea" id="codeTextarea" placeholder="Paste or type your formula here..." spellcheck="false"></textarea>
+                <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
             </div>
         </div>
     </div>
@@ -646,8 +553,6 @@
 <div id="notification" class="notification"></div>
 
 <script>
-let unformattedCode = '';
-
 const FUNCTIONS = new Set([
     'CONTAINS','EQUALS','ANYTRUE','APPEND','BDATE','BEDATE','BENUM','BNUM','CALC','CEILING','DATEADD','DATEDIFF',
     'DATELIST','DATEPART','DATEPATTERN','DATEROUND','DATESERIAL','DATETIMEMERGE','EMAILSPLIT','ENCLOSE','FIRSTVALUE',
@@ -663,26 +568,161 @@ const FUNCTIONS = new Set([
     'URLENCODE','WORDSPLIT','WORKDAY','YEAR','ICONTAINS','IEQUALS'
 ]);
 
-function formatFormula() {
-    const input = document.getElementById('input').value.trim();
-    if (!input) { showNotification('Please enter a formula first!', 'error'); return; }
+const textarea = document.getElementById('codeTextarea');
+const highlight = document.getElementById('codeHighlight');
+const lineNumbers = document.getElementById('lineNumbers');
+const codeEditor = document.getElementById('codeEditor');
+const autocompleteDropdown = document.getElementById('autocompleteDropdown');
 
-    unformattedCode = input;
-    const formatted = addIndentationAndSpacing(input);
-    const highlighted = applySyntaxHighlighting(formatted);
-    document.getElementById('formatted-code').innerHTML = highlighted;
+let isFormatting = false;
 
-    showNotification('Formula formatted successfully!');
+// Autocomplete state
+let autocompleteVisible = false;
+let autocompleteItems = [];
+let selectedIndex = 0;
+let autocompleteStart = -1;
+
+// Sorted function list for autocomplete
+const FUNCTION_LIST = Array.from(FUNCTIONS).sort();
+
+// Get current word being typed (after =)
+function getCurrentFunctionPrefix() {
+    const cursorPos = textarea.selectionStart;
+    const text = textarea.value.substring(0, cursorPos);
+    
+    // Find the last = sign and get text after it
+    const lastEquals = text.lastIndexOf('=');
+    if (lastEquals === -1) return null;
+    
+    const afterEquals = text.substring(lastEquals + 1);
+    
+    // Check if we're still typing the function name (only letters)
+    if (/^[a-zA-Z]*$/.test(afterEquals)) {
+        return { prefix: afterEquals.toUpperCase(), start: lastEquals };
+    }
+    
+    return null;
 }
 
-function addIndentationAndSpacing(formula) {
+// Filter and show autocomplete
+function updateAutocomplete() {
+    const result = getCurrentFunctionPrefix();
+    
+    if (result === null) {
+        hideAutocomplete();
+        return;
+    }
+    
+    const { prefix, start } = result;
+    autocompleteStart = start;
+    
+    // Filter functions that start with the prefix
+    autocompleteItems = FUNCTION_LIST.filter(fn => fn.startsWith(prefix));
+    
+    if (autocompleteItems.length === 0) {
+        hideAutocomplete();
+        return;
+    }
+    
+    selectedIndex = 0;
+    renderAutocomplete();
+    positionAutocomplete();
+    showAutocomplete();
+}
+
+function renderAutocomplete() {
+    autocompleteDropdown.innerHTML = autocompleteItems.map((item, index) => 
+        `<div class="autocomplete-item${index === selectedIndex ? ' selected' : ''}" data-index="${index}" data-value="${item}">=${item}()</div>`
+    ).join('');
+    
+    // Add click handlers
+    autocompleteDropdown.querySelectorAll('.autocomplete-item').forEach(el => {
+        el.addEventListener('click', () => {
+            selectAutocompleteItem(parseInt(el.dataset.index));
+        });
+    });
+}
+
+function positionAutocomplete() {
+    // Get cursor position in textarea
+    const cursorPos = textarea.selectionStart;
+    
+    // Create a temporary span to measure text position
+    const textBeforeCursor = textarea.value.substring(0, cursorPos);
+    const lines = textBeforeCursor.split('\n');
+    const currentLineIndex = lines.length - 1;
+    const currentLineText = lines[currentLineIndex];
+    
+    // Calculate position
+    const lineHeight = 20.8; // Approximate line height (13px * 1.6)
+    const charWidth = 7.8; // Approximate character width for monospace
+    
+    const top = (currentLineIndex + 1) * lineHeight + 16; // +16 for padding
+    const left = currentLineText.length * charWidth + 16 + 50; // +50 for line numbers width
+    
+    autocompleteDropdown.style.top = `${Math.min(top, 400)}px`;
+    autocompleteDropdown.style.left = `${Math.min(left, 300)}px`;
+}
+
+function showAutocomplete() {
+    autocompleteDropdown.classList.add('show');
+    autocompleteVisible = true;
+}
+
+function hideAutocomplete() {
+    autocompleteDropdown.classList.remove('show');
+    autocompleteVisible = false;
+    autocompleteItems = [];
+    selectedIndex = 0;
+}
+
+function selectAutocompleteItem(index) {
+    if (index < 0 || index >= autocompleteItems.length) return;
+    
+    const selectedFunction = autocompleteItems[index];
+    const cursorPos = textarea.selectionStart;
+    
+    // Replace from = to cursor with the selected function
+    const before = textarea.value.substring(0, autocompleteStart);
+    const after = textarea.value.substring(cursorPos);
+    
+    const insertion = `=${selectedFunction}(`;
+    textarea.value = before + insertion + after;
+    
+    // Position cursor inside the parentheses
+    const newPos = autocompleteStart + insertion.length;
+    textarea.setSelectionRange(newPos, newPos);
+    
+    hideAutocomplete();
+    updateEditor();
+    textarea.focus();
+}
+
+function navigateAutocomplete(direction) {
+    if (!autocompleteVisible || autocompleteItems.length === 0) return;
+    
+    selectedIndex += direction;
+    
+    if (selectedIndex < 0) selectedIndex = autocompleteItems.length - 1;
+    if (selectedIndex >= autocompleteItems.length) selectedIndex = 0;
+    
+    renderAutocomplete();
+    
+    // Scroll selected item into view
+    const selectedEl = autocompleteDropdown.querySelector('.autocomplete-item.selected');
+    if (selectedEl) {
+        selectedEl.scrollIntoView({ block: 'nearest' });
+    }
+}
+
+// Format formula with indentation
+function formatFormula(formula) {
     let result = '';
     let indentLevel = 0;
     const indentSize = 2;
-    let i = 0;
     let bracketDepth = 0;
 
-    while (i < formula.length) {
+    for (let i = 0; i < formula.length; i++) {
         const char = formula[i];
 
         if (char === '[') bracketDepth++;
@@ -690,13 +730,21 @@ function addIndentationAndSpacing(formula) {
 
         if (char === '(') {
             result += char;
-            indentLevel++;
-            if (i + 1 < formula.length && formula[i + 1] !== ')') result += '\n' + ' '.repeat(indentLevel * indentSize);
+            if (bracketDepth === 0) {
+                indentLevel++;
+                if (i + 1 < formula.length && formula[i + 1] !== ')') {
+                    result += '\n' + ' '.repeat(indentLevel * indentSize);
+                }
+            }
         } else if (char === ')') {
-            indentLevel = Math.max(0, indentLevel - 1);
-            if (result.trim().slice(-1) !== '(') result += '\n' + ' '.repeat(indentLevel * indentSize);
+            if (bracketDepth === 0) {
+                indentLevel = Math.max(0, indentLevel - 1);
+                if (result.trim().slice(-1) !== '(') {
+                    result += '\n' + ' '.repeat(indentLevel * indentSize);
+                }
+            }
             result += char;
-        } else if (char === ',' || char === ';') {
+        } else if ((char === ',' || char === ';') && bracketDepth === 0) {
             result += char + '\n' + ' '.repeat(indentLevel * indentSize);
         } else if (char.match(/\s/)) {
             if (bracketDepth > 0) {
@@ -705,44 +753,12 @@ function addIndentationAndSpacing(formula) {
         } else {
             result += char;
         }
-
-        i++;
     }
 
     return result;
 }
 
-function applySyntaxHighlighting(code) {
-    const tokens = tokenize(code);
-    return tokens.map(token => {
-        const escaped = escapeHtml(token.value);
-        switch (token.type) {
-            case 'function':
-                return `<span class="function">${escaped}</span>`;
-            case 'function-close':
-                return `<span class="function">${escaped}</span>`;
-            case 'string':
-                return `<span class="string">${escaped}</span>`;
-            case 'number':
-                return `<span class="number">${escaped}</span>`;
-            case 'operator':
-                return `<span class="operator">${escaped}</span>`;
-            case 'parenthesis':
-                return `<span class="parenthesis">${escaped}</span>`;
-            case 'bracket':
-                return `<span class="bracket">${escaped}</span>`;
-            default:
-                return escaped;
-        }
-    }).join('');
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
+// Tokenize for syntax highlighting
 function tokenize(code) {
     const tokens = [];
     let i = 0;
@@ -834,12 +850,7 @@ function tokenize(code) {
                     break;
                 }
             }
-            
-            if (isClosingFunction) {
-                tokens.push({ type: 'function-close', value: ')' });
-            } else {
-                tokens.push({ type: 'parenthesis', value: ')' });
-            }
+            tokens.push({ type: isClosingFunction ? 'function' : 'parenthesis', value: ')' });
             i++;
             continue;
         }
@@ -863,18 +874,198 @@ function tokenize(code) {
     return tokens;
 }
 
-function copyToClipboard() {
-    if (!unformattedCode) { showNotification('Please format a formula first!', 'error'); return; }
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
-    navigator.clipboard.writeText(unformattedCode)
-        .then(() => showNotification('Copied to clipboard!'))
+function applySyntaxHighlighting(code) {
+    const tokens = tokenize(code);
+    return tokens.map(token => {
+        const escaped = escapeHtml(token.value);
+        switch (token.type) {
+            case 'function': return `<span class="function">${escaped}</span>`;
+            case 'string': return `<span class="string">${escaped}</span>`;
+            case 'number': return `<span class="number">${escaped}</span>`;
+            case 'operator': return `<span class="operator">${escaped}</span>`;
+            case 'parenthesis': return `<span class="parenthesis">${escaped}</span>`;
+            case 'bracket': return `<span class="bracket">${escaped}</span>`;
+            default: return escaped;
+        }
+    }).join('');
+}
+
+function updateLineNumbers(code) {
+    const lines = code.split('\n');
+    lineNumbers.innerHTML = lines.map((_, i) => 
+        `<div class="line-number">${i + 1}</div>`
+    ).join('');
+}
+
+function updateEditor() {
+    const code = textarea.value;
+    highlight.innerHTML = applySyntaxHighlighting(code) + '\n';
+    updateLineNumbers(code);
+}
+
+// Handle paste - format the pasted content
+textarea.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const formatted = formatFormula(pastedText);
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    
+    textarea.value = before + formatted + after;
+    
+    const newPos = start + formatted.length;
+    textarea.setSelectionRange(newPos, newPos);
+    
+    updateEditor();
+    hideAutocomplete();
+    showNotification('Formula formatted!');
+});
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', (e) => {
+    if (!autocompleteDropdown.contains(e.target) && e.target !== textarea) {
+        hideAutocomplete();
+    }
+});
+
+// Handle input for live updates
+textarea.addEventListener('input', () => {
+    updateEditor();
+    updateAutocomplete();
+});
+
+// Sync scroll between textarea and highlight
+textarea.addEventListener('scroll', () => {
+    highlight.scrollTop = textarea.scrollTop;
+    highlight.scrollLeft = textarea.scrollLeft;
+});
+
+// Handle tab key
+textarea.addEventListener('keydown', (e) => {
+    // Handle autocomplete navigation
+    if (autocompleteVisible) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateAutocomplete(1);
+            return;
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateAutocomplete(-1);
+            return;
+        }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            selectAutocompleteItem(selectedIndex);
+            return;
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            hideAutocomplete();
+            return;
+        }
+    }
+    
+    // Handle Enter inside a function (after opening parenthesis)
+    if (e.key === 'Enter' && !autocompleteVisible) {
+        const cursorPos = textarea.selectionStart;
+        const textBefore = textarea.value.substring(0, cursorPos);
+        const textAfter = textarea.value.substring(cursorPos);
+        
+        // Check if we're right after an opening parenthesis of a function
+        const charBefore = textBefore.slice(-1);
+        
+        if (charBefore === '(') {
+            e.preventDefault();
+            
+            // Calculate current indent level
+            const indentLevel = getIndentLevel(textBefore);
+            const indentSize = 2;
+            const newIndent = ' '.repeat((indentLevel + 1) * indentSize);
+            const closingIndent = ' '.repeat(indentLevel * indentSize);
+            
+            // Insert newline, indent, and closing paren on new line
+            const insertion = '\n' + newIndent + '\n' + closingIndent + ')';
+            
+            textarea.value = textBefore + insertion + textAfter;
+            
+            // Position cursor on the indented line (after the first newline and indent)
+            const newPos = cursorPos + 1 + newIndent.length;
+            textarea.setSelectionRange(newPos, newPos);
+            
+            updateEditor();
+            return;
+        }
+    }
+    
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        textarea.value = textarea.value.substring(0, start) + '  ' + textarea.value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + 2;
+        updateEditor();
+    }
+});
+
+// Calculate indent level based on unmatched opening parens (outside brackets)
+function getIndentLevel(text) {
+    let level = 0;
+    let bracketDepth = 0;
+    
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === '[') bracketDepth++;
+        if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
+        
+        if (bracketDepth === 0) {
+            if (char === '(') level++;
+            if (char === ')') level = Math.max(0, level - 1);
+        }
+    }
+    
+    return level;
+}
+
+// Copy formatted (with indentation)
+function copyFormatted() {
+    const code = textarea.value;
+    if (!code.trim()) {
+        showNotification('Nothing to copy!', 'error');
+        return;
+    }
+    navigator.clipboard.writeText(code)
+        .then(() => showNotification('Copied formatted!'))
         .catch(() => showNotification('Failed to copy', 'error'));
 }
 
-function clearAll() {
-    document.getElementById('input').value = '';
-    document.getElementById('formatted-code').innerHTML = '';
-    unformattedCode = '';
+// Copy raw (without formatting)
+function copyRaw() {
+    const code = textarea.value;
+    if (!code.trim()) {
+        showNotification('Nothing to copy!', 'error');
+        return;
+    }
+    let raw = code.replace(/[\n\r\t]+/g, '');
+    raw = raw.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+    
+    navigator.clipboard.writeText(raw)
+        .then(() => showNotification('Copied raw!'))
+        .catch(() => showNotification('Failed to copy', 'error'));
+}
+
+function clearEditor() {
+    textarea.value = '';
+    updateEditor();
     showNotification('Cleared!');
 }
 
@@ -886,16 +1077,15 @@ function showNotification(message, type = 'success') {
     setTimeout(() => notification.classList.remove('show'), 2500);
 }
 
-document.getElementById('input').addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        formatFormula();
-    }
-});
+// Sidebar functions
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
 
-// Function documentation data
+// Function documentation
 const FUNCTION_DOCS = [
-    { name: 'ANYTRUE', syntax: '=ANYTRUE(IsThisFunctionTrue; IsThisFunctionTrue; etc...)', description: 'Returns true if any of the specified conditions evaluate to true.', example: '=ANYTRUE(=EQUALS([[Status]];"Complete"); EQUALS([[Status]];"Done"))' },
+    { name: 'ANYTRUE', syntax: '=ANYTRUE(condition1; condition2; ...)', description: 'Returns true if any of the specified conditions evaluate to true.', example: '=ANYTRUE(EQUALS([[Status]];"Complete"); EQUALS([[Status]];"Done"))' },
     { name: 'APPEND', syntax: '=APPEND(text1; text2; ...)', description: 'Combines multiple text values into one string.', example: '=APPEND([[First Name]];" ";[[Last Name]])' },
     { name: 'BDATE', syntax: '=BDATE(date; startDate; endDate)', description: 'Returns true if the date is between the start and end dates (exclusive).', example: '=BDATE([[Due Date]]; "2024-01-01"; "2024-12-31")' },
     { name: 'BEDATE', syntax: '=BEDATE(date; startDate; endDate)', description: 'Returns true if the date is between or equal to the start and end dates (inclusive).', example: '=BEDATE([[Created Date]]; [[Start]]; [[End]])' },
@@ -1010,14 +1200,6 @@ const FUNCTION_DOCS = [
     { name: 'YEAR', syntax: '=YEAR(date)', description: 'Returns the year from a date.', example: '=YEAR([[Created Date]])' }
 ];
 
-// Sidebar functions
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('show');
-}
-
 function renderFunctions(functions) {
     const container = document.getElementById('functionList');
     container.innerHTML = functions.map(func => `
@@ -1039,8 +1221,7 @@ function renderFunctions(functions) {
 }
 
 function toggleFunction(header) {
-    const item = header.parentElement;
-    item.classList.toggle('open');
+    header.parentElement.classList.toggle('open');
 }
 
 function filterFunctions() {
@@ -1052,9 +1233,10 @@ function filterFunctions() {
     renderFunctions(filtered);
 }
 
-// Initialize sidebar
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     renderFunctions(FUNCTION_DOCS);
+    updateEditor();
 });
 </script>
 </body>
