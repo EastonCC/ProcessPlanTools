@@ -321,48 +321,58 @@ Example: IF(A1>10,SUM(B1:B10),AVERAGE(C1:C10))"></textarea>
         }
 
         function applySyntaxHighlighting(code) {
-            // List of common Excel/formula functions
-            const functions = [
-                'SUM', 'AVERAGE', 'COUNT', 'MAX', 'MIN', 'IF', 'IFERROR', 'VLOOKUP', 
-                'HLOOKUP', 'INDEX', 'MATCH', 'CONCATENATE', 'LEFT', 'RIGHT', 'MID',
-                'LEN', 'TRIM', 'UPPER', 'LOWER', 'PROPER', 'SUBSTITUTE', 'FIND',
-                'SEARCH', 'TEXT', 'VALUE', 'DATE', 'TODAY', 'NOW', 'YEAR', 'MONTH',
-                'DAY', 'HOUR', 'MINUTE', 'SECOND', 'WEEKDAY', 'NETWORKDAYS', 'AND',
-                'OR', 'NOT', 'TRUE', 'FALSE', 'ROUND', 'ROUNDUP', 'ROUNDDOWN', 'ABS',
-                'SQRT', 'POWER', 'MOD', 'RAND', 'RANDBETWEEN', 'COUNTIF', 'COUNTIFS',
-                'SUMIF', 'SUMIFS', 'AVERAGEIF', 'AVERAGEIFS', 'OFFSET', 'INDIRECT',
-                'CHOOSE', 'ISBLANK', 'ISERROR', 'ISNUMBER', 'ISTEXT', 'ROW', 'COLUMN',
-                'ROWS', 'COLUMNS', 'TRANSPOSE', 'SORT', 'FILTER', 'UNIQUE', 'SEQUENCE'
-            ];
+    // List of all functions
+    const functions = [
+        'CONTAINS','EQUALS','ANYTRUE','APPEND','BDATE','BEDATE','BENUM','BNUM',
+        'CALC','CEILING','DATEADD','DATEDIFF','DATELIST','DATEPART','DATEPATTERN',
+        'DATEROUND','DATESERIAL','DATETIMEMERGE','EMAILSPLIT','ENCLOSE','FIRSTVALUE',
+        'FISCALMONTH','FISCALYEAR','FLOOR','FORMAT','GTDATE','GTEDATE','GTENUM',
+        'GTNUM','HASVALUE','IF','INSTANCECOUNT','INSTANCETASKCOUNT','INSTANCEUPDATE',
+        'ISCONTEXT','ISEMPTY','ISPUBLICUSER','ISTRUE','JSONENCODE','JSONEXTRACT',
+        'JSONFIFO','JSONINDEX','JSONQUERY','JSONREMOVE','JSONUPDATE','LEFT','LEFTOF',
+        'LEFTOFLAST','LENGTH','LINESPLIT','LISTASLINES','LISTCOUNT','LISTDIFF',
+        'LISTINDEX','LISTINTERSECT','LISTITEMAPPEND','LISTITEMCONTAINS','LISTITEMENDSWITH',
+        'LISTITEMLEFT','LISTITEMLEFTOF','LISTITEMPREPEND','LISTITEMREGEX','LISTITEMRIGHT',
+        'LISTITEMRIGHTOF','LISTITEMSTARTSWITH','LISTJOIN','LISTMERGE','LISTUNIQUE',
+        'LOWERCASE','LTDATE','LTEDATE','LTENUM','LTNUM','MAX','MIN','MONTH','MONTHDAY',
+        'MONTHLASTDAY','NORMALIZETEXT','NOT','NUM','NUMSPLIT','PARSE','PARTITION',
+        'RANDOMNUM','REGEXFIND','REGEXWORDSONLY','REMOVECHARS','REMOVEDIACRITICS',
+        'REMOVESPACES','REMOVESYMBOLS','REPLACE','RIGHT','RIGHTOF','RIGHTOFLAST',
+        'ROUND','SPLIT','SUM','TABLEAVG','TABLEJSON','TABLELOOKUP','TABLESUM',
+        'TASKLOOKUP','TASKREPORT','TITLECASE','TRIM','UPPERCASE','URLENCODE','WORDSPLIT',
+        'WORKDAY','YEAR'
+    ];
 
-            let result = code;
+    let result = code;
 
-            // Escape HTML
-            result = result.replace(/&/g, '&amp;')
-                          .replace(/</g, '&lt;')
-                          .replace(/>/g, '&gt;');
+    // Escape HTML
+    result = result.replace(/&/g, '&amp;')
+                   .replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;');
 
-            // Highlight functions
-            functions.forEach(func => {
-                const regex = new RegExp(`\\b(${func})\\b`, 'gi');
-                result = result.replace(regex, '<span class="function">$1</span>');
-            });
+    // Highlight all functions with their parentheses in green
+    functions.forEach(func => {
+        // Match function name followed by optional opening parenthesis
+        const regex = new RegExp(`\\b(${func})(\\()`, 'gi');
+        result = result.replace(regex, '<span class="function" style="color: green;">$1$2</span>');
+    });
 
-            // Highlight strings (quoted text)
-            result = result.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
-            result = result.replace(/'([^']*)'/g, '<span class="string">\'$1\'</span>');
+    // Highlight strings (quoted text)
+    result = result.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
+    result = result.replace(/'([^']*)'/g, '<span class="string">\'$1\'</span>');
 
-            // Highlight numbers
-            result = result.replace(/\b(\d+\.?\d*)\b/g, '<span class="number">$1</span>');
+    // Highlight numbers
+    result = result.replace(/\b(\d+\.?\d*)\b/g, '<span class="number">$1</span>');
 
-            // Highlight operators
-            result = result.replace(/([+\-*\/=<>&|])/g, '<span class="operator">$1</span>');
+    // Highlight operators
+    result = result.replace(/([+\-*\/=<>&|])/g, '<span class="operator">$1</span>');
 
-            // Highlight parentheses
-            result = result.replace(/([()])/g, '<span class="parenthesis">$1</span>');
+    // Highlight remaining parentheses (not attached to functions)
+    result = result.replace(/([()])/g, '<span class="parenthesis">$1</span>');
 
-            return result;
-        }
+    return result;
+}
+
 
         function copyToClipboard() {
             if (!unformattedCode) {
