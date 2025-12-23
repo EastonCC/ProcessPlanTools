@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formula Formatter - ProcessPlanTools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .editor-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group h2 {
+            font-size: 1.2em;
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .output-container {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f8f8f8;
+            overflow: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .format-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .format-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #4caf50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+            pointer-events: none;
+            font-weight: 600;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Syntax Highlighting */
+        .keyword {
+            color: #0000ff;
+            font-weight: bold;
+        }
+
+        .function {
+            color: #795e26;
+            font-weight: bold;
+        }
+
+        .string {
+            color: #a31515;
+        }
+
+        .number {
+            color: #098658;
+        }
+
+        .operator {
+            color: #000000;
+        }
+
+        .comment {
+            color: #008000;
+            font-style: italic;
+        }
+
+        .parenthesis {
+            color: #000000;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .editor-section {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Formula Formatter</h1>
+        <p class="subtitle">Format your formulas with proper indentation and syntax highlighting</p>
+        
+        <div class="editor-section">
+            <div class="input-group">
+                <h2>Input Formula</h2>
+                <textarea id="input" placeholder="Enter your formula here...
+Example: IF(A1>10,SUM(B1:B10),AVERAGE(C1:C10))"></textarea>
+            </div>
+            
+            <div class="input-group">
+                <h2>Formatted Output</h2>
+                <div id="output" class="output-container">
+                    <pre id="formatted-code"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="format-btn" onclick="formatFormula()">Format Formula</button>
+            <button class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button class="clear-btn" onclick="clearAll()">Clear All</button>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let unformattedCode = '';
+
+        function formatFormula() {
+            const input = document.getElementById('input').value.trim();
+            
+            if (!input) {
+                showNotification('Please enter a formula first!', 'error');
+                return;
+            }
+
+            // Store the unformatted version
+            unformattedCode = input;
+
+            // Format the formula
+            const formatted = addIndentationAndSpacing(input);
+            
+            // Apply syntax highlighting
+            const highlighted = applySyntaxHighlighting(formatted);
+            
+            // Display the result
+            document.getElementById('formatted-code').innerHTML = highlighted;
+            
+            showNotification('Formula formatted successfully!', 'success');
+        }
+
+        function addIndentationAndSpacing(formula) {
+            let result = '';
+            let indentLevel = 0;
+            const indentSize = 2;
+            let i = 0;
+
+            while (i < formula.length) {
+                const char = formula[i];
+
+                // Handle opening parentheses and function calls
+                if (char === '(') {
+                    result += char;
+                    indentLevel++;
+                    
+                    // Check if there's content after the parenthesis
+                    if (i + 1 < formula.length && formula[i + 1] !== ')') {
+                        result += '\n' + ' '.repeat(indentLevel * indentSize);
+                    }
+                }
+                // Handle closing parentheses
+                else if (char === ')') {
+                    indentLevel = Math.max(0, indentLevel - 1);
+                    
+                    // Add newline before closing parenthesis if previous char wasn't an opening one
+                    if (result.trim().slice(-1) !== '(') {
+                        result += '\n' + ' '.repeat(indentLevel * indentSize);
+                    }
+                    result += char;
+                }
+                // Handle commas - add newline after comma
+                else if (char === ',') {
+                    result += char;
+                    
+                    // Add newline and indent after comma
+                    if (i + 1 < formula.length) {
+                        result += '\n' + ' '.repeat(indentLevel * indentSize);
+                    }
+                }
+                // Skip whitespace (we'll add our own)
+                else if (char === ' ' || char === '\t' || char === '\n' || char === '\r') {
+                    // Skip existing whitespace
+                }
+                // Regular characters
+                else {
+                    result += char;
+                }
+
+                i++;
+            }
+
+            return result;
+        }
+
+        function applySyntaxHighlighting(code) {
+            // List of common Excel/formula functions
+            const functions = [
+                'SUM', 'AVERAGE', 'COUNT', 'MAX', 'MIN', 'IF', 'IFERROR', 'VLOOKUP', 
+                'HLOOKUP', 'INDEX', 'MATCH', 'CONCATENATE', 'LEFT', 'RIGHT', 'MID',
+                'LEN', 'TRIM', 'UPPER', 'LOWER', 'PROPER', 'SUBSTITUTE', 'FIND',
+                'SEARCH', 'TEXT', 'VALUE', 'DATE', 'TODAY', 'NOW', 'YEAR', 'MONTH',
+                'DAY', 'HOUR', 'MINUTE', 'SECOND', 'WEEKDAY', 'NETWORKDAYS', 'AND',
+                'OR', 'NOT', 'TRUE', 'FALSE', 'ROUND', 'ROUNDUP', 'ROUNDDOWN', 'ABS',
+                'SQRT', 'POWER', 'MOD', 'RAND', 'RANDBETWEEN', 'COUNTIF', 'COUNTIFS',
+                'SUMIF', 'SUMIFS', 'AVERAGEIF', 'AVERAGEIFS', 'OFFSET', 'INDIRECT',
+                'CHOOSE', 'ISBLANK', 'ISERROR', 'ISNUMBER', 'ISTEXT', 'ROW', 'COLUMN',
+                'ROWS', 'COLUMNS', 'TRANSPOSE', 'SORT', 'FILTER', 'UNIQUE', 'SEQUENCE'
+            ];
+
+            let result = code;
+
+            // Escape HTML
+            result = result.replace(/&/g, '&amp;')
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;');
+
+            // Highlight functions
+            functions.forEach(func => {
+                const regex = new RegExp(`\\b(${func})\\b`, 'gi');
+                result = result.replace(regex, '<span class="function">$1</span>');
+            });
+
+            // Highlight strings (quoted text)
+            result = result.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
+            result = result.replace(/'([^']*)'/g, '<span class="string">\'$1\'</span>');
+
+            // Highlight numbers
+            result = result.replace(/\b(\d+\.?\d*)\b/g, '<span class="number">$1</span>');
+
+            // Highlight operators
+            result = result.replace(/([+\-*\/=<>&|])/g, '<span class="operator">$1</span>');
+
+            // Highlight parentheses
+            result = result.replace(/([()])/g, '<span class="parenthesis">$1</span>');
+
+            return result;
+        }
+
+        function copyToClipboard() {
+            if (!unformattedCode) {
+                showNotification('Please format a formula first!', 'error');
+                return;
+            }
+
+            // Create a temporary textarea to copy from
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = unformattedCode;
+            tempTextarea.style.position = 'fixed';
+            tempTextarea.style.left = '-9999px';
+            document.body.appendChild(tempTextarea);
+            
+            // Select and copy
+            tempTextarea.select();
+            tempTextarea.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand('copy');
+                showNotification('Copied to clipboard!', 'success');
+            } catch (err) {
+                // Fallback to modern clipboard API
+                navigator.clipboard.writeText(unformattedCode).then(() => {
+                    showNotification('Copied to clipboard!', 'success');
+                }).catch(() => {
+                    showNotification('Failed to copy to clipboard', 'error');
+                });
+            }
+            
+            document.body.removeChild(tempTextarea);
+        }
+
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('formatted-code').innerHTML = '';
+            unformattedCode = '';
+            showNotification('Cleared all fields', 'success');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            
+            // Change color based on type
+            if (type === 'error') {
+                notification.style.background = '#f44336';
+            } else {
+                notification.style.background = '#4caf50';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add keyboard shortcut for formatting (Ctrl/Cmd + Enter)
+        document.getElementById('input').addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                formatFormula();
+            }
+        });
+    </script>
+</body>
+</html>
