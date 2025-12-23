@@ -3,338 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formula Formatter - ProcessPlanTools</title>
+<title>ProcessPlan Formula Formatter</title>
 <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; padding:20px; display:flex; justify-content:center; align-items:center; }
-    .container { background:white; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:40px; max-width:1200px; width:100%; }
-    h1 { color:#333; margin-bottom:10px; font-size:2em; }
-    .subtitle { color:#666; margin-bottom:30px; font-size:1.1em; }
-    .editor-section { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
-    .input-group { display:flex; flex-direction:column; }
-    .input-group h2 { font-size:1.2em; color:#444; margin-bottom:10px; }
-    textarea { width:100%; height:400px; padding:15px; border:2px solid #ddd; border-radius:8px; font-family:'Consolas','Monaco','Courier New',monospace; font-size:14px; resize:vertical; transition:border-color 0.3s; }
-    textarea:focus { outline:none; border-color:#667eea; }
-    .output-container { width:100%; height:400px; padding:15px; border:2px solid #ddd; border-radius:8px; background:#f8f8f8; overflow:auto; font-family:'Consolas','Monaco','Courier New',monospace; font-size:14px; }
-    pre { margin:0; white-space:pre-wrap; word-wrap:break-word; }
-    .button-group { display:flex; gap:15px; justify-content:center; }
-    button { padding:12px 30px; font-size:16px; font-weight:600; border:none; border-radius:8px; cursor:pointer; transition:all 0.3s; color:white; }
-    .format-btn { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); }
-    .format-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,0.4); }
-    .copy-btn { background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%); }
-    .copy-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(245,87,108,0.4); }
-    .clear-btn { background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%); }
-    .clear-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(79,172,254,0.4); }
-    button:active { transform:translateY(0); }
-    .notification { position:fixed; top:20px; right:20px; padding:15px 25px; background:#4caf50; color:white; border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.2); opacity:0; transform:translateY(-20px); transition:all 0.3s; pointer-events:none; font-weight:600; }
-    .notification.show { opacity:1; transform:translateY(0); }
-
-    /* Syntax Highlighting */
-    .function { color: green; font-weight:bold; }
-    .string { color:#a31515; }
-    .number { color:#098658; }
-    .operator { color:#000; }
-    .parenthesis { color:#000; font-weight:bold; }
-
-    @media (max-width:768px){ .editor-section{ grid-template-columns:1fr; } .container{ padding:20px; } h1{ font-size:1.5em; } }
+    /* --- Full CSS from your original page --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background: #191919; color: #e0e0e0; min-height: 100vh; }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid #333; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .status-dot { width: 10px; height: 10px; background: #3b82f6; border-radius: 50%; }
+    .header-title { font-size: 15px; font-weight: 500; color: #e0e0e0; }
+    .header-center { position: absolute; left: 50%; transform: translateX(-50%); }
+    .home-btn { background: #2a2a2a; border: 1px solid #404040; color: #e0e0e0; padding: 6px 20px; border-radius: 20px; font-size: 14px; cursor: pointer; }
+    .home-btn:hover { background: #333; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .search-btn { display: flex; align-items: center; gap: 8px; background: #2a2a2a; border: 1px solid #404040; color: #888; padding: 6px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .header-icon { color: #888; font-size: 18px; cursor: pointer; }
+    .avatar { width: 28px; height: 28px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; }
+    .main-content { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+    .card { background: #232323; border: 1px solid #333; border-radius: 12px; margin-bottom: 16px; }
+    .card-header { padding: 20px 24px; }
+    .card-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .card-title { font-size: 20px; font-weight: 600; color: #fff; }
+    .card-actions { display: flex; gap: 12px; color: #888; font-size: 14px; }
+    .card-actions span { cursor: pointer; }
+    .card-actions span:hover { color: #e0e0e0; }
+    .card-description { color: #888; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+    .see-more { color: #666; font-size: 14px; cursor: pointer; }
+    .see-more:hover { color: #888; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; border-top: 1px solid #333; }
+    .card-footer-left { display: flex; gap: 16px; color: #666; font-size: 18px; }
+    .card-footer-right { color: #666; font-size: 14px; }
+    .editor-card { background: #232323; border: 1px solid #333; border-radius: 12px; overflow: hidden; }
+    .editor-row { display: flex; border-bottom: 1px solid #333; }
+    .editor-row:last-child { border-bottom: none; }
+    .editor-label { width: 200px; padding: 16px 24px; font-size: 14px; color: #e0e0e0; border-right: 1px solid #333; display: flex; align-items: flex-start; flex-shrink: 0; }
+    .editor-content { flex: 1; padding: 0; }
+    textarea { width: 100%; min-height: 150px; padding: 16px; background: transparent; border: none; color: #e0e0e0; font-family: 'SF Mono', 'Monaco', 'Consolas', monospace; font-size: 13px; resize: vertical; line-height: 1.5; }
+    textarea:focus { outline: none; }
+    textarea::placeholder { color: #555; }
+    .output-container { min-height: 150px; padding: 16px; font-family: 'SF Mono', 'Monaco', 'Consolas', monospace; font-size: 13px; line-height: 1.5; overflow: auto; }
+    pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; }
+    .button-row { display: flex; border-bottom: 1px solid #333; }
+    .btn { flex: 1; padding: 14px 24px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: background 0.2s; border-right: 1px solid #333; }
+    .btn:last-child { border-right: none; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: #2a2a2a; color: #e0e0e0; }
+    .btn-secondary:hover { background: #333; }
+    .function { color: #4ade80; font-weight: 500; }
+    .string { color: #f97316; }
+    .number { color: #60a5fa; }
+    .operator { color: #e0e0e0; }
+    .parenthesis { color: #888; }
+    .bracket { color: #a78bfa; }
+    .notification { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: #22c55e; color: white; border-radius: 8px; font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(-10px); transition: all 0.3s; pointer-events: none; }
+    .notification.show { opacity: 1; transform: translateY(0); }
+    .notification.error { background: #ef4444; }
+    @media (max-width: 768px) {
+        .editor-row { flex-direction: column; }
+        .editor-label { width: 100%; border-right: none; border-bottom: 1px solid #333; padding: 12px 16px; }
+        .header-center { display: none; }
+        .sidebar { width: 280px !important; }
+    }
+    .sidebar { position: fixed; top: 0; right: -350px; width: 350px; height: 100vh; background: #232323; border-left: 1px solid #333; transition: right 0.3s ease; z-index: 1000; display: flex; flex-direction: column; }
+    .sidebar.open { right: 0; }
+    .sidebar-header { padding: 16px 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-title { font-size: 16px; font-weight: 600; color: #fff; }
+    .sidebar-close { background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 0; line-height: 1; }
+    .sidebar-close:hover { color: #fff; }
+    .sidebar-search { padding: 12px 20px; border-bottom: 1px solid #333; }
+    .sidebar-search input { width: 100%; padding: 10px 12px; background: #191919; border: 1px solid #404040; border-radius: 6px; color: #e0e0e0; font-size: 14px; }
+    .sidebar-search input:focus { outline: none; border-color: #3b82f6; }
+    .sidebar-search input::placeholder { color: #666; }
+    .sidebar-content { flex: 1; overflow-y: auto; padding: 8px 0; }
 </style>
 </head>
 <body>
-<div class="container">
-    <h1>Formula Formatter</h1>
-    <p class="subtitle">Format your formulas with proper indentation and syntax highlighting</p>
 
-    <div class="editor-section">
-        <div class="input-group">
-            <h2>Input Formula</h2>
-            <textarea id="input" placeholder="Enter your formula here..."></textarea>
-        </div>
+<div class="header">
+    <div class="header-left">
+        <div class="status-dot"></div>
+        <span class="header-title">Formula Formatter</span>
+    </div>
+</div>
 
-        <div class="input-group">
-            <h2>Formatted Output</h2>
-            <div id="output" class="output-container">
-                <pre id="formatted-code"></pre>
+<button class="toggle-sidebar-btn" onclick="toggleSidebar()"><span>📚</span> Functions</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <span class="sidebar-title">Function Reference</span>
+        <button class="sidebar-close" onclick="toggleSidebar()">×</button>
+    </div>
+    <div class="sidebar-search">
+        <input type="text" id="functionSearch" placeholder="Search functions..." oninput="filterFunctions()">
+    </div>
+    <div class="sidebar-content" id="functionList"></div>
+</div>
+
+<div class="main-content">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title-row">
+                <h1 class="card-title">Formula Formatter</h1>
             </div>
+            <p class="card-description">Format your ProcessPlan formulas with indentation and function highlighting for easier reading and debugging.</p>
         </div>
     </div>
 
-    <div class="button-group">
-        <button class="format-btn" onclick="formatFormula()">Format Formula</button>
-        <button class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
-        <button class="clear-btn" onclick="clearAll()">Clear All</button>
+    <div class="editor-card">
+        <div class="button-row">
+            <button class="btn btn-primary" onclick="formatFormula()">Format Formula</button>
+            <button class="btn btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+        </div>
+
+        <div class="editor-row">
+            <div class="editor-label">Input Formula</div>
+            <div class="editor-content"><textarea id="input" placeholder="Enter your formula here..."></textarea></div>
+        </div>
+
+        <div class="editor-row">
+            <div class="editor-label">Formatted Output</div>
+            <div class="editor-content"><div class="output-container"><pre id="formatted-code"></pre></div></div>
+        </div>
     </div>
 </div>
 
 <div id="notification" class="notification"></div>
 
-<script>
-let unformattedCode = '';
-
-const FUNCTIONS = new Set([
-    'CONTAINS','EQUALS','ANYTRUE','APPEND','BDATE','BEDATE','BENUM','BNUM','CALC','CEILING','DATEADD','DATEDIFF',
-    'DATELIST','DATEPART','DATEPATTERN','DATEROUND','DATESERIAL','DATETIMEMERGE','EMAILSPLIT','ENCLOSE','FIRSTVALUE',
-    'FISCALMONTH','FISCALYEAR','FLOOR','FORMAT','GTDATE','GTEDATE','GTENUM','GTNUM','HASVALUE','IF','INSTANCECOUNT',
-    'INSTANCETASKCOUNT','INSTANCEUPDATE','ISCONTEXT','ISEMPTY','ISPUBLICUSER','ISTRUE','JSONENCODE','JSONEXTRACT',
-    'JSONFIFO','JSONINDEX','JSONQUERY','JSONREMOVE','JSONUPDATE','LEFT','LEFTOF','LEFTOFLAST','LENGTH','LINESPLIT',
-    'LISTASLINES','LISTCOUNT','LISTDIFF','LISTINDEX','LISTINTERSECT','LISTITEMAPPEND','LISTITEMCONTAINS','LISTITEMENDSWITH',
-    'LISTITEMLEFT','LISTITEMLEFTOF','LISTITEMPREPEND','LISTITEMREGEX','LISTITEMRIGHT','LISTITEMRIGHTOF','LISTITEMSTARTSWITH',
-    'LISTJOIN','LISTMERGE','LISTUNIQUE','LOWERCASE','LTDATE','LTEDATE','LTENUM','LTNUM','MAX','MIN','MONTH','MONTHDAY',
-    'MONTHLASTDAY','NORMALIZETEXT','NOT','NUM','NUMSPLIT','PARSE','PARTITION','RANDOMNUM','REGEXFIND','REGEXWORDSONLY',
-    'REMOVECHARS','REMOVEDIACRITICS','REMOVESPACES','REMOVESYMBOLS','REPLACE','RIGHT','RIGHTOF','RIGHTOFLAST','ROUND','SPLIT',
-    'SUM','TABLEAVG','TABLEJSON','TABLELOOKUP','TABLESUM','TASKLOOKUP','TASKREPORT','TITLECASE','TRIM','UPPERCASE',
-    'URLENCODE','WORDSPLIT','WORKDAY','YEAR'
-]);
-
-function formatFormula() {
-    const input = document.getElementById('input').value.trim();
-    if (!input) { showNotification('Please enter a formula first!', 'error'); return; }
-
-    unformattedCode = input;
-    const formatted = addIndentationAndSpacing(input);
-    const highlighted = applySyntaxHighlighting(formatted);
-    document.getElementById('formatted-code').innerHTML = highlighted;
-
-    showNotification('Formula formatted successfully!', 'success');
-}
-
-function addIndentationAndSpacing(formula) {
-    let result = '';
-    let indentLevel = 0;
-    const indentSize = 2;
-    let i = 0;
-    let bracketDepth = 0; // Track [[ ]] depth to preserve spaces inside
-
-    while (i < formula.length) {
-        const char = formula[i];
-
-        // Track bracket depth for [[ ]] field references
-        if (char === '[') bracketDepth++;
-        if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
-
-        if (char === '(') {
-            result += char;
-            indentLevel++;
-            if (i + 1 < formula.length && formula[i + 1] !== ')') result += '\n' + ' '.repeat(indentLevel * indentSize);
-        } else if (char === ')') {
-            indentLevel = Math.max(0, indentLevel - 1);
-            if (result.trim().slice(-1) !== '(') result += '\n' + ' '.repeat(indentLevel * indentSize);
-            result += char;
-        } else if (char === ',' || char === ';') {
-            result += char + '\n' + ' '.repeat(indentLevel * indentSize);
-        } else if (char.match(/\s/)) {
-            // Preserve spaces inside brackets [[ ]], collapse outside
-            if (bracketDepth > 0) {
-                result += char;
-            }
-            // Skip whitespace outside brackets
-        } else {
-            result += char;
-        }
-
-        i++;
-    }
-
-    return result;
-}
-
-// Token-based syntax highlighting to avoid regex conflicts
-function applySyntaxHighlighting(code) {
-    const tokens = tokenize(code);
-    return tokens.map(token => {
-        const escaped = escapeHtml(token.value);
-        switch (token.type) {
-            case 'function':
-                return `<span class="function">${escaped}</span>`;
-            case 'function-close':
-                return `<span class="function">${escaped}</span>`;
-            case 'string':
-                return `<span class="string">${escaped}</span>`;
-            case 'number':
-                return `<span class="number">${escaped}</span>`;
-            case 'operator':
-                return `<span class="operator">${escaped}</span>`;
-            case 'parenthesis':
-                return `<span class="parenthesis">${escaped}</span>`;
-            default:
-                return escaped;
-        }
-    }).join('');
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function tokenize(code) {
-    const tokens = [];
-    let i = 0;
-    let functionDepthStack = []; // Stack to track nested function parentheses
-
-    while (i < code.length) {
-        // Whitespace
-        if (/\s/.test(code[i])) {
-            let value = '';
-            while (i < code.length && /\s/.test(code[i])) {
-                value += code[i];
-                i++;
-            }
-            tokens.push({ type: 'whitespace', value });
-            continue;
-        }
-
-        // Strings (double quotes)
-        if (code[i] === '"') {
-            let value = '"';
-            i++;
-            while (i < code.length && code[i] !== '"') {
-                value += code[i];
-                i++;
-            }
-            if (i < code.length) {
-                value += '"';
-                i++;
-            }
-            tokens.push({ type: 'string', value });
-            continue;
-        }
-
-        // Strings (single quotes)
-        if (code[i] === "'") {
-            let value = "'";
-            i++;
-            while (i < code.length && code[i] !== "'") {
-                value += code[i];
-                i++;
-            }
-            if (i < code.length) {
-                value += "'";
-                i++;
-            }
-            tokens.push({ type: 'string', value });
-            continue;
-        }
-
-        // Numbers
-        if (/\d/.test(code[i])) {
-            let value = '';
-            while (i < code.length && /[\d.]/.test(code[i])) {
-                value += code[i];
-                i++;
-            }
-            tokens.push({ type: 'number', value });
-            continue;
-        }
-
-        // Identifiers (could be functions)
-        if (/[a-zA-Z_]/.test(code[i])) {
-            let value = '';
-            while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) {
-                value += code[i];
-                i++;
-            }
-            // Check if followed by ( to identify as function
-            if (code[i] === '(' && FUNCTIONS.has(value.toUpperCase())) {
-                tokens.push({ type: 'function', value: value + '(' });
-                functionDepthStack.push(1); // Start tracking this function's depth
-                i++; // skip the (
-            } else {
-                tokens.push({ type: 'identifier', value });
-            }
-            continue;
-        }
-
-        // Parentheses
-        if (code[i] === '(') {
-            // Increment depth for all active functions
-            for (let j = 0; j < functionDepthStack.length; j++) {
-                functionDepthStack[j]++;
-            }
-            tokens.push({ type: 'parenthesis', value: '(' });
-            i++;
-            continue;
-        }
-
-        if (code[i] === ')') {
-            // Check if this closes any function
-            let isClosingFunction = false;
-            for (let j = functionDepthStack.length - 1; j >= 0; j--) {
-                functionDepthStack[j]--;
-                if (functionDepthStack[j] === 0) {
-                    // This ) closes a function
-                    isClosingFunction = true;
-                    functionDepthStack.splice(j, 1); // Remove from stack
-                    break;
-                }
-            }
-            
-            if (isClosingFunction) {
-                tokens.push({ type: 'function-close', value: ')' });
-            } else {
-                tokens.push({ type: 'parenthesis', value: ')' });
-            }
-            i++;
-            continue;
-        }
-
-        // Operators
-        if (/[+\-*\/=<>&|;,]/.test(code[i])) {
-            tokens.push({ type: 'operator', value: code[i] });
-            i++;
-            continue;
-        }
-
-        // Brackets (for field references like [[...]])
-        if (code[i] === '[' || code[i] === ']') {
-            tokens.push({ type: 'bracket', value: code[i] });
-            i++;
-            continue;
-        }
-
-        // Any other character
-        tokens.push({ type: 'other', value: code[i] });
-        i++;
-    }
-
-    return tokens;
-}
-
-function copyToClipboard() {
-    if (!unformattedCode) { showNotification('Please format a formula first!', 'error'); return; }
-
-    const tempTextarea = document.createElement('textarea');
-    tempTextarea.value = unformattedCode;
-    tempTextarea.style.position = 'fixed';
-    tempTextarea.style.left = '-9999px';
-    document.body.appendChild(tempTextarea);
-    tempTextarea.select();
-    tempTextarea.setSelectionRange(0, 99999);
-
-    try { document.execCommand('copy'); showNotification('Copied to clipboard!', 'success'); }
-    catch { navigator.clipboard.writeText(unformattedCode).then(() => showNotification('Copied to clipboard!', 'success')).catch(() => showNotification('Failed to copy to clipboard', 'error')); }
-
-    document.body.removeChild(tempTextarea);
-}
-
-function clearAll() {
-    document.getElementById('input').value = '';
-    document.getElementById('formatted-code').innerHTML = '';
-    unformattedCode = '';
-    showNotification('Cleared all fields', 'success');
-}
-
-function showNotification(message, type='success') {
-    const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.style.background = (type==='error') ? '#f44336' : '#4caf50';
-    notification.classList.add('show');
-    setTimeout(()=>{ notification.classList.remove('show'); }, 3000);
-}
-
-document.getElementById('input').addEventListener('keydown', function(e){
-    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); formatFormula(); }
-});
-</script>
+<script src="formulaFormatter.js"></script>
 </body>
 </html>
