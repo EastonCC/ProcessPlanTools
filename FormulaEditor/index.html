@@ -565,7 +565,7 @@ const FUNCTIONS = new Set([
     'MONTHLASTDAY','NORMALIZETEXT','NOT','NUM','NUMSPLIT','PARSE','PARTITION','RANDOMNUM','REGEXFIND','REGEXWORDSONLY',
     'REMOVECHARS','REMOVEDIACRITICS','REMOVESPACES','REMOVESYMBOLS','REPLACE','RIGHT','RIGHTOF','RIGHTOFLAST','ROUND','SPLIT',
     'SUM','TABLEAVG','TABLEJSON','TABLELOOKUP','TABLESUM','TASKLOOKUP','TASKREPORT','TITLECASE','TRIM','UPPERCASE',
-    'URLENCODE','WORDSPLIT','WORKDAY','YEAR','ICONTAINS','IEQUALS'
+    'URLENCODE','WORDSPLIT','WORKDAY','YEAR','!CONTAINS','!EQUALS'
 ]);
 
 const textarea = document.getElementById('codeTextarea');
@@ -1131,8 +1131,8 @@ const FUNCTION_DOCS = [
     { name: 'GTENUM', syntax: '=GTENUM(number1; number2)', description: 'Returns true if number1 is greater than or equal to number2.', example: '=GTENUM([[Score]]; 70)' },
     { name: 'GTNUM', syntax: '=GTNUM(number1; number2)', description: 'Returns true if number1 is greater than number2.', example: '=GTNUM([[Total]]; 1000)' },
     { name: 'HASVALUE', syntax: '=HASVALUE(field)', description: 'Returns true if the field contains any value (not empty).', example: '=HASVALUE([[Comments]])' },
-    { name: 'ICONTAINS', syntax: '=ICONTAINS(text; searchText)', description: 'Returns true if text contains searchText (case-insensitive).', example: '=ICONTAINS([[Name]]; "smith")' },
-    { name: 'IEQUALS', syntax: '=IEQUALS(value1; value2)', description: 'Returns true if values are equal (case-insensitive for text).', example: '=IEQUALS([[Status]]; "approved")' },
+    { name: '!CONTAINS', syntax: '=!CONTAINS(text; searchText)', description: 'Returns true if text does not contain searchText (case-insensitive).', example: '=!CONTAINS([[Name]]; "smith")' },
+    { name: '!EQUALS', syntax: '=!EQUALS(value1; value2)', description: 'Returns true if values are not equal (case-insensitive for text).', example: '=!EQUALS([[Status]]; "approved")' },
     { name: 'IF', syntax: '=IF(condition; valueIfTrue; valueIfFalse)', description: 'Returns one value if condition is true, another if false.', example: '=IF(GTNUM([[Score]]; 70); "Pass"; "Fail")' },
     { name: 'INSTANCECOUNT', syntax: '=INSTANCECOUNT(processName; filter)', description: 'Counts process instances matching the specified criteria.', example: '=INSTANCECOUNT("Orders"; "Status=Open")' },
     { name: 'INSTANCETASKCOUNT', syntax: '=INSTANCETASKCOUNT(filter)', description: 'Counts tasks in process instances matching criteria.', example: '=INSTANCETASKCOUNT("Assigned=CurrentUser")' },
