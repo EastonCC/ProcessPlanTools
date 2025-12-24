@@ -478,6 +478,39 @@
         border-radius: 4px;
     }
 
+    /* Parameter Hint */
+    .parameter-hint {
+        position: absolute;
+        background: #3a3a3a;
+        border: 1px solid #555;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+        color: #e0e0e0;
+        z-index: 100;
+        display: none;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .parameter-hint.show {
+        display: block;
+    }
+
+    .parameter-hint .param {
+        color: #888;
+    }
+
+    .parameter-hint .param.active {
+        color: #4ade80;
+        font-weight: 600;
+    }
+
+    .parameter-hint .function-name {
+        color: #4ade80;
+    }
+
     @media (max-width: 768px) {
         .sidebar {
             width: 100%;
@@ -545,6 +578,7 @@
                 <div class="code-highlight" id="codeHighlight"></div>
                 <textarea class="code-textarea" id="codeTextarea" placeholder="Paste or type your formula here..." spellcheck="false"></textarea>
                 <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+                <div class="parameter-hint" id="parameterHint"></div>
             </div>
         </div>
     </div>
@@ -573,6 +607,7 @@ const highlight = document.getElementById('codeHighlight');
 const lineNumbers = document.getElementById('lineNumbers');
 const codeEditor = document.getElementById('codeEditor');
 const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+const parameterHint = document.getElementById('parameterHint');
 
 let isFormatting = false;
 
@@ -584,6 +619,125 @@ let autocompleteStart = -1;
 
 // Sorted function list for autocomplete
 const FUNCTION_LIST = Array.from(FUNCTIONS).sort();
+
+// Function parameters map (extracted from syntax)
+const FUNCTION_PARAMS = {
+    'ANYTRUE': ['condition1', 'condition2', '...'],
+    'APPEND': ['text1', 'text2', '...'],
+    'BDATE': ['date', 'startDate', 'endDate'],
+    'BEDATE': ['date', 'startDate', 'endDate'],
+    'BENUM': ['number', 'min', 'max'],
+    'BNUM': ['number', 'min', 'max'],
+    'CALC': ['expression'],
+    'CEILING': ['number'],
+    'CONTAINS': ['text', 'searchText'],
+    '!CONTAINS': ['text', 'searchText'],
+    'DATEADD': ['date', 'number', 'unit'],
+    'DATEDIFF': ['startDate', 'endDate', 'unit'],
+    'DATELIST': ['startDate', 'endDate', 'interval'],
+    'DATEPART': ['date', 'part'],
+    'DATEPATTERN': ['date', 'pattern'],
+    'DATEROUND': ['date', 'unit'],
+    'DATESERIAL': ['year', 'month', 'day'],
+    'DATETIMEMERGE': ['date', 'time'],
+    'EMAILSPLIT': ['email', 'part'],
+    'ENCLOSE': ['text', 'prefix', 'suffix'],
+    'EQUALS': ['value1', 'value2', '...'],
+    '!EQUALS': ['value1', 'value2', '...'],
+    'FIRSTVALUE': ['value1', 'value2', '...'],
+    'FISCALMONTH': ['date', 'startMonth'],
+    'FISCALYEAR': ['date', 'startMonth'],
+    'FLOOR': ['number'],
+    'FORMAT': ['value', 'formatString'],
+    'GTDATE': ['date1', 'date2'],
+    'GTEDATE': ['date1', 'date2'],
+    'GTENUM': ['number1', 'number2'],
+    'GTNUM': ['number1', 'number2'],
+    'HASVALUE': ['field'],
+    'ICONTAINS': ['text', 'searchText'],
+    'IEQUALS': ['value1', 'value2'],
+    'IF': ['condition', 'valueIfTrue', 'valueIfFalse'],
+    'INSTANCECOUNT': ['processName', 'filter'],
+    'INSTANCETASKCOUNT': ['filter'],
+    'INSTANCEUPDATE': ['field', 'value'],
+    'ISCONTEXT': ['contextName'],
+    'ISEMPTY': ['field'],
+    'ISPUBLICUSER': [],
+    'ISTRUE': ['value'],
+    'JSONENCODE': ['value'],
+    'JSONEXTRACT': ['json', 'path'],
+    'JSONFIFO': ['json', 'action', 'value'],
+    'JSONINDEX': ['json', 'index'],
+    'JSONQUERY': ['json', 'query'],
+    'JSONREMOVE': ['json', 'path'],
+    'JSONUPDATE': ['json', 'path', 'value'],
+    'LEFT': ['text', 'numChars'],
+    'LEFTOF': ['text', 'delimiter'],
+    'LEFTOFLAST': ['text', 'delimiter'],
+    'LENGTH': ['text'],
+    'LINESPLIT': ['text', 'index'],
+    'LISTASLINES': ['list'],
+    'LISTCOUNT': ['list'],
+    'LISTDIFF': ['list1', 'list2'],
+    'LISTINDEX': ['list', 'index'],
+    'LISTINTERSECT': ['list1', 'list2'],
+    'LISTITEMAPPEND': ['list', 'text'],
+    'LISTITEMCONTAINS': ['list', 'searchText'],
+    'LISTITEMENDSWITH': ['list', 'suffix'],
+    'LISTITEMLEFT': ['list', 'numChars'],
+    'LISTITEMLEFTOF': ['list', 'delimiter'],
+    'LISTITEMPREPEND': ['list', 'text'],
+    'LISTITEMREGEX': ['list', 'pattern'],
+    'LISTITEMRIGHT': ['list', 'numChars'],
+    'LISTITEMRIGHTOF': ['list', 'delimiter'],
+    'LISTITEMSTARTSWITH': ['list', 'prefix'],
+    'LISTJOIN': ['list', 'separator'],
+    'LISTMERGE': ['list1', 'list2', '...'],
+    'LISTUNIQUE': ['list'],
+    'LOWERCASE': ['text'],
+    'LTDATE': ['date1', 'date2'],
+    'LTEDATE': ['date1', 'date2'],
+    'LTENUM': ['number1', 'number2'],
+    'LTNUM': ['number1', 'number2'],
+    'MAX': ['value1', 'value2', '...'],
+    'MIN': ['value1', 'value2', '...'],
+    'MONTH': ['date'],
+    'MONTHDAY': ['date'],
+    'MONTHLASTDAY': ['date'],
+    'NORMALIZETEXT': ['text'],
+    'NOT': ['condition'],
+    'NUM': ['value'],
+    'NUMSPLIT': ['text'],
+    'PARSE': ['text', 'pattern'],
+    'PARTITION': ['list', 'size'],
+    'RANDOMNUM': ['min', 'max'],
+    'REGEXFIND': ['text', 'pattern'],
+    'REGEXWORDSONLY': ['text'],
+    'REMOVECHARS': ['text', 'chars'],
+    'REMOVEDIACRITICS': ['text'],
+    'REMOVESPACES': ['text'],
+    'REMOVESYMBOLS': ['text'],
+    'REPLACE': ['text', 'find', 'replaceWith'],
+    'RIGHT': ['text', 'numChars'],
+    'RIGHTOF': ['text', 'delimiter'],
+    'RIGHTOFLAST': ['text', 'delimiter'],
+    'ROUND': ['number', 'decimals'],
+    'SPLIT': ['text', 'delimiter'],
+    'SUM': ['value1', 'value2', '...'],
+    'TABLEAVG': ['table', 'column'],
+    'TABLEJSON': ['table'],
+    'TABLELOOKUP': ['table', 'keyColumn', 'keyValue', 'returnColumn'],
+    'TABLESUM': ['table', 'column'],
+    'TASKLOOKUP': ['taskName', 'field'],
+    'TASKREPORT': ['filter', 'fields'],
+    'TITLECASE': ['text'],
+    'TRIM': ['text'],
+    'UPPERCASE': ['text'],
+    'URLENCODE': ['text'],
+    'WORDSPLIT': ['text', 'index'],
+    'WORKDAY': ['startDate', 'days', 'holidays'],
+    'YEAR': ['date']
+};
 
 // Get current word being typed (after =)
 function getCurrentFunctionPrefix() {
@@ -713,6 +867,124 @@ function navigateAutocomplete(direction) {
     if (selectedEl) {
         selectedEl.scrollIntoView({ block: 'nearest' });
     }
+}
+
+// Parameter hint functions
+function getCurrentFunctionContext() {
+    const cursorPos = textarea.selectionStart;
+    const text = textarea.value.substring(0, cursorPos);
+    
+    // Track function calls and their positions
+    let functionStack = [];
+    let bracketDepth = 0;
+    let i = 0;
+    
+    while (i < text.length) {
+        const char = text[i];
+        
+        // Track brackets to ignore content inside [[ ]]
+        if (char === '[') bracketDepth++;
+        if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
+        
+        // Look for function pattern: =FUNCTIONNAME( or just FUNCTIONNAME( for nested
+        if (bracketDepth === 0) {
+            // Check for function start
+            let functionMatch = null;
+            
+            // Check if this could be start of a function name
+            if (char === '=' || (functionStack.length > 0 && /[A-Z!]/.test(char))) {
+                let nameStart = char === '=' ? i + 1 : i;
+                let name = '';
+                let j = nameStart;
+                
+                while (j < text.length && /[A-Z!]/.test(text[j])) {
+                    name += text[j];
+                    j++;
+                }
+                
+                if (text[j] === '(' && FUNCTIONS.has(name)) {
+                    functionStack.push({
+                        name: name,
+                        paramIndex: 0,
+                        start: i
+                    });
+                    i = j; // Skip to the (
+                }
+            }
+            
+            // Count semicolons for current function's parameter index
+            if (char === ';' && functionStack.length > 0) {
+                functionStack[functionStack.length - 1].paramIndex++;
+            }
+            
+            // Handle closing parenthesis
+            if (char === ')' && functionStack.length > 0) {
+                functionStack.pop();
+            }
+        }
+        
+        i++;
+    }
+    
+    // Return the innermost function context
+    if (functionStack.length > 0) {
+        return functionStack[functionStack.length - 1];
+    }
+    
+    return null;
+}
+
+function updateParameterHint() {
+    const context = getCurrentFunctionContext();
+    
+    if (!context || !FUNCTION_PARAMS[context.name]) {
+        hideParameterHint();
+        return;
+    }
+    
+    const params = FUNCTION_PARAMS[context.name];
+    if (params.length === 0) {
+        hideParameterHint();
+        return;
+    }
+    
+    // Build the hint HTML
+    const paramHtml = params.map((param, index) => {
+        const isActive = index === context.paramIndex || 
+                        (index === params.length - 1 && context.paramIndex >= params.length);
+        return `<span class="param${isActive ? ' active' : ''}">${param}</span>`;
+    }).join('<span class="param">; </span>');
+    
+    parameterHint.innerHTML = `<span class="function-name">${context.name}</span>(${paramHtml})`;
+    
+    positionParameterHint();
+    showParameterHint();
+}
+
+function positionParameterHint() {
+    const cursorPos = textarea.selectionStart;
+    const textBeforeCursor = textarea.value.substring(0, cursorPos);
+    const lines = textBeforeCursor.split('\n');
+    const currentLineIndex = lines.length - 1;
+    const currentLineText = lines[currentLineIndex];
+    
+    const lineHeight = 20.8;
+    const charWidth = 7.8;
+    
+    // Position above the current line
+    const top = currentLineIndex * lineHeight + 16 - 28; // -28 to go above
+    const left = currentLineText.length * charWidth + 16 + 50;
+    
+    parameterHint.style.top = `${Math.max(top, 0)}px`;
+    parameterHint.style.left = `${Math.min(left, 400)}px`;
+}
+
+function showParameterHint() {
+    parameterHint.classList.add('show');
+}
+
+function hideParameterHint() {
+    parameterHint.classList.remove('show');
 }
 
 // Format formula with indentation
@@ -937,6 +1209,7 @@ textarea.addEventListener('paste', (e) => {
     
     updateEditor();
     hideAutocomplete();
+    updateParameterHint();
     showNotification('Formula formatted!');
 });
 
@@ -947,10 +1220,23 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Update parameter hint on cursor movement
+textarea.addEventListener('click', () => {
+    updateParameterHint();
+});
+
+textarea.addEventListener('keyup', (e) => {
+    // Update on arrow keys for cursor movement
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+        updateParameterHint();
+    }
+});
+
 // Handle input for live updates
 textarea.addEventListener('input', () => {
     updateEditor();
     updateAutocomplete();
+    updateParameterHint();
     formatLive();
 });
 
