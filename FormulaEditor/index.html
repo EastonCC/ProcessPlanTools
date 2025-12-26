@@ -128,17 +128,21 @@
         display: flex;
         min-height: 500px;
         max-height: 70vh;
-        overflow: auto;
+        overflow: hidden;
         background: #1a1a1a;
+    }
+
+    .line-numbers-wrapper {
+        background: #1e1e1e;
+        border-right: 1px solid #333;
+        min-width: 50px;
+        overflow: hidden;
     }
 
     .line-numbers {
         padding: 16px 0;
-        background: #1e1e1e;
-        border-right: 1px solid #333;
         text-align: right;
         user-select: none;
-        min-width: 50px;
     }
 
     .line-number {
@@ -156,7 +160,7 @@
     .code-area {
         flex: 1;
         position: relative;
-        overflow: auto;
+        overflow: hidden;
     }
 
     .code-textarea {
@@ -183,7 +187,21 @@
         outline: none;
     }
 
+    /* Fix text selection visibility */
+    .code-textarea::selection {
+        background: rgba(59, 130, 246, 0.3);
+        color: transparent;
+    }
+
+    .code-textarea::-moz-selection {
+        background: rgba(59, 130, 246, 0.3);
+        color: transparent;
+    }
+
     .code-highlight {
+        position: absolute;
+        top: 0;
+        left: 0;
         padding: 16px;
         font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
         font-size: 13px;
@@ -191,6 +209,8 @@
         white-space: pre;
         pointer-events: none;
         min-height: 100%;
+        min-width: 100%;
+        z-index: 1;
     }
 
     /* Scrollbar */
@@ -723,7 +743,9 @@
             </div>
         </div>
         <div class="code-editor" id="codeEditor">
-            <div class="line-numbers" id="lineNumbers"></div>
+            <div class="line-numbers-wrapper">
+                <div class="line-numbers" id="lineNumbers"></div>
+            </div>
             <div class="code-area">
                 <div class="code-highlight" id="codeHighlight"></div>
                 <textarea class="code-textarea" id="codeTextarea" placeholder="Paste or type your formula here..." spellcheck="false"></textarea>
@@ -1417,10 +1439,12 @@ textarea.addEventListener('input', () => {
     formatLive();
 });
 
-// Sync scroll between textarea and highlight
+// Sync scroll between textarea, highlight, and line numbers
 textarea.addEventListener('scroll', () => {
-    highlight.scrollTop = textarea.scrollTop;
-    highlight.scrollLeft = textarea.scrollLeft;
+    // Use transform for smoother sync of highlight layer
+    highlight.style.transform = `translate(${-textarea.scrollLeft}px, ${-textarea.scrollTop}px)`;
+    // Sync line numbers vertically
+    lineNumbers.style.transform = `translateY(${-textarea.scrollTop}px)`;
 });
 
 // Handle tab key
