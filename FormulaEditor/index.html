@@ -1473,7 +1473,7 @@ textarea.addEventListener('keydown', (e) => {
         }
     }
     
-    // Handle Enter inside a function (after opening parenthesis)
+    // Handle Enter - maintain current indentation or handle special cases
     if (e.key === 'Enter' && !autocompleteVisible) {
         const cursorPos = textarea.selectionStart;
         const textBefore = textarea.value.substring(0, cursorPos);
@@ -1507,7 +1507,65 @@ textarea.addEventListener('keydown', (e) => {
             updateEditor();
             return;
         }
-
+        
+        // Default Enter behavior: maintain current line's indentation
+        e.preventDefault();
+        
+        // Get the current line's indentation
+        const lastNewline = textBefore.lastIndexOf('\n');
+        const currentLine = textBefore.substring(lastNewline + 1);
+        const indentMatch = currentLine.match(/^(\s*)/);
+        const currentIndent = indentMatch ? indentMatch[1] : '';
+        
+        const insertion = '\n' + currentIndent;
+        textarea.value = textBefore + insertion + textAfter;
+        
+        const newPos = cursorPos + insertion.length;
+        textarea.setSelectionRange(newPos, newPos);
+        
+        updateEditor();
+        return;
+    }
+    
+    // Handle Backspace - delete entire indent level if cursor is in leading whitespace
+    if (e.key === 'Backspace') {
+        const cursorPos = textarea.selectionStart;
+        const selectionEnd = textarea.selectionEnd;
+        
+        // Only handle if no text is selected
+        if (cursorPos === selectionEnd && cursorPos > 0) {
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
+            
+            // Get current line info
+            const lastNewline = textBefore.lastIndexOf('\n');
+            const currentLineStart = lastNewline + 1;
+            const textOnCurrentLine = textBefore.substring(currentLineStart);
+            
+            // Check if we're in leading whitespace (only spaces before cursor on this line)
+            if (/^\s+$/.test(textOnCurrentLine)) {
+                const indentSize = 2;
+                const currentIndentLength = textOnCurrentLine.length;
+                
+                // Calculate how many spaces to remove to get to previous indent level
+                const spacesToRemove = currentIndentLength % indentSize === 0 
+                    ? indentSize 
+                    : currentIndentLength % indentSize;
+                
+                if (spacesToRemove > 0 && currentIndentLength >= spacesToRemove) {
+                    e.preventDefault();
+                    
+                    const newTextBefore = textBefore.substring(0, cursorPos - spacesToRemove);
+                    textarea.value = newTextBefore + textAfter;
+                    
+                    const newPos = cursorPos - spacesToRemove;
+                    textarea.setSelectionRange(newPos, newPos);
+                    
+                    updateEditor();
+                    return;
+                }
+            }
+        }
     }
     
     if (e.key === 'Tab') {
