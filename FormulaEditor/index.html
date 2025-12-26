@@ -1071,6 +1071,38 @@ const parameterHint = document.getElementById('parameterHint');
 
 let isFormatting = false;
 
+// Helper function to modify textarea while preserving undo/redo history
+function insertTextAtCursor(text, selectStart = null, selectEnd = null) {
+    textarea.focus();
+    // Use execCommand for undo support (works in most browsers)
+    document.execCommand('insertText', false, text);
+    
+    // Set cursor/selection position if specified
+    if (selectStart !== null) {
+        const pos = selectEnd !== null ? selectEnd : selectStart;
+        textarea.setSelectionRange(selectStart, pos);
+    }
+}
+
+// Helper to replace a range of text while preserving undo history
+function replaceTextRange(start, end, newText, cursorPos = null) {
+    textarea.focus();
+    textarea.setSelectionRange(start, end);
+    document.execCommand('insertText', false, newText);
+    
+    if (cursorPos !== null) {
+        textarea.setSelectionRange(cursorPos, cursorPos);
+    }
+}
+
+// Helper to set entire textarea content while preserving undo history
+function setTextareaContent(content, cursorPos = 0) {
+    textarea.focus();
+    textarea.setSelectionRange(0, textarea.value.length);
+    document.execCommand('insertText', false, content);
+    textarea.setSelectionRange(cursorPos, cursorPos);
+}
+
 // Autocomplete state
 let autocompleteVisible = false;
 let autocompleteItems = [];
@@ -1206,8 +1238,8 @@ function getCurrentFunctionPrefix() {
     
     const afterEquals = text.substring(lastEquals + 1);
     
-    // Check if we're still typing the function name (only letters)
-    if (/^[a-zA-Z]*$/.test(afterEquals)) {
+    // Check if we're still typing the function name (letters, and optionally starting with !)
+    if (/^!?[a-zA-Z]*$/.test(afterEquals)) {
         return { prefix: afterEquals.toUpperCase(), start: lastEquals };
     }
     
@@ -1293,15 +1325,10 @@ function selectAutocompleteItem(index) {
     const cursorPos = textarea.selectionStart;
     
     // Replace from = to cursor with the selected function
-    const before = textarea.value.substring(0, autocompleteStart);
-    const after = textarea.value.substring(cursorPos);
-    
     const insertion = `=${selectedFunction}(`;
-    textarea.value = before + insertion + after;
-    
-    // Position cursor inside the parentheses
     const newPos = autocompleteStart + insertion.length;
-    textarea.setSelectionRange(newPos, newPos);
+    
+    replaceTextRange(autocompleteStart, cursorPos, insertion, newPos);
     
     hideAutocomplete();
     updateEditor();
@@ -1428,7 +1455,15 @@ function positionParameterHint() {
     const charWidth = 7.8;
     
     // Position above the current line, accounting for scroll position
-    const top = (currentLineIndex * lineHeight) + 16 - 28 - textarea.scrollTop;
+    // For first line, position below instead of above
+    let top;
+    if (currentLineIndex === 0) {
+        // Position below the first line
+        top = lineHeight + 20 - textarea.scrollTop;
+    } else {
+        // Position above the current line
+        top = (currentLineIndex * lineHeight) + 16 - 28 - textarea.scrollTop;
+    }
     const left = (currentLineText.length * charWidth) + 16 - textarea.scrollLeft;
     
     // Hide if scrolled out of view
@@ -1453,41 +1488,63 @@ function hideParameterHint() {
 function formatFormula(formula) {
     let result = '';
     let indentLevel = 0;
-    const indentSize = 2;
+    const indentSize = 3;
     let bracketDepth = 0;
+    let inString = false;
+    let stringChar = '';
 
     for (let i = 0; i < formula.length; i++) {
         const char = formula[i];
+        
+        // Track string literals (single or double quotes)
+        if ((char === '"' || char === "'") && (i === 0 || formula[i-1] !== '\\')) {
+            if (!inString) {
+                inString = true;
+                stringChar = char;
+            } else if (char === stringChar) {
+                inString = false;
+            }
+        }
 
         if (char === '[') bracketDepth++;
         if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
 
+        // If inside brackets or string, preserve everything as-is
+        if (bracketDepth > 0 || inString) {
+            result += char;
+            continue;
+        }
+
         if (char === '(') {
             result += char;
-            if (bracketDepth === 0) {
-                indentLevel++;
-                if (i + 1 < formula.length && formula[i + 1] !== ')') {
-                    result += '\n' + ' '.repeat(indentLevel * indentSize);
-                }
+            indentLevel++;
+            if (i + 1 < formula.length && formula[i + 1] !== ')') {
+                result += '\n' + ' '.repeat(indentLevel * indentSize);
             }
         } else if (char === ')') {
-            if (bracketDepth === 0) {
-                indentLevel = Math.max(0, indentLevel - 1);
-                if (result.trim().slice(-1) !== '(') {
-                    result += '\n' + ' '.repeat(indentLevel * indentSize);
-                }
+            indentLevel = Math.max(0, indentLevel - 1);
+            if (result.trim().slice(-1) !== '(') {
+                result += '\n' + ' '.repeat(indentLevel * indentSize);
             }
             result += char;
-        } else if ((char === ',' || char === ';') && bracketDepth === 0) {
+        } else if (char === ',' || char === ';') {
             result += char + '\n' + ' '.repeat(indentLevel * indentSize);
         } else if (char.match(/\s/)) {
-            if (bracketDepth > 0) {
+            // Skip whitespace outside of brackets/strings (formatting handles indentation)
+            // But preserve spaces that are part of the content on the current line
+            const lastNewline = result.lastIndexOf('\n');
+            const currentLine = result.substring(lastNewline + 1);
+            // Only skip if we're at the start of a line (after indentation is handled)
+            if (currentLine.trim().length > 0) {
                 result += char;
             }
         } else {
             result += char;
         }
     }
+
+    // Remove blank lines (lines that contain only whitespace)
+    result = result.split('\n').filter(line => line.trim().length > 0).join('\n');
 
     return result;
 }
@@ -1661,13 +1718,9 @@ textarea.addEventListener('paste', (e) => {
     
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const before = textarea.value.substring(0, start);
-    const after = textarea.value.substring(end);
-    
-    textarea.value = before + formatted + after;
-    
     const newPos = start + formatted.length;
-    textarea.setSelectionRange(newPos, newPos);
+    
+    replaceTextRange(start, end, formatted, newPos);
     
     updateEditor();
     hideAutocomplete();
@@ -1680,23 +1733,45 @@ textarea.addEventListener('paste', (e) => {
 document.addEventListener('click', (e) => {
     if (!autocompleteDropdown.contains(e.target) && e.target !== textarea) {
         hideAutocomplete();
+        hideParameterHint();
     }
 });
 
-// Update parameter hint on cursor movement
+// Update parameter hint and autocomplete on cursor movement (click)
 textarea.addEventListener('click', () => {
+    updateAutocomplete();
     updateParameterHint();
 });
 
 textarea.addEventListener('keyup', (e) => {
-    // Update on arrow keys for cursor movement
+    // Update on arrow keys for cursor movement (but not when navigating autocomplete)
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+        if (!autocompleteVisible) {
+            updateAutocomplete();
+        }
         updateParameterHint();
     }
 });
 
-// Handle input for live updates
-textarea.addEventListener('input', () => {
+// Hide hints when textarea loses focus
+textarea.addEventListener('blur', () => {
+    // Small delay to allow clicking on autocomplete items
+    setTimeout(() => {
+        if (document.activeElement !== textarea && !autocompleteDropdown.contains(document.activeElement)) {
+            hideAutocomplete();
+            hideParameterHint();
+        }
+    }, 150);
+});
+
+// Restore hints when textarea gains focus
+textarea.addEventListener('focus', () => {
+    updateAutocomplete();
+    updateParameterHint();
+});
+
+// Handle input for live updates (includes undo/redo)
+textarea.addEventListener('input', (e) => {
     updateEditor();
     updateAutocomplete();
     updateParameterHint();
@@ -1767,12 +1842,10 @@ textarea.addEventListener('keydown', (e) => {
                 newIndent +
                 (hasClosingParenAhead ? '\n' + closingIndent : '\n' + closingIndent + ')');
 
-            textarea.value = textBefore + insertion + textAfter;
-
             // Cursor goes on the indented line
             const newPos = cursorPos + 1 + newIndent.length;
-            textarea.setSelectionRange(newPos, newPos);
-
+            
+            insertTextAtCursor(insertion, newPos, newPos);
             updateEditor();
             return;
         }
@@ -1787,11 +1860,9 @@ textarea.addEventListener('keydown', (e) => {
         const currentIndent = indentMatch ? indentMatch[1] : '';
         
         const insertion = '\n' + currentIndent;
-        textarea.value = textBefore + insertion + textAfter;
-        
         const newPos = cursorPos + insertion.length;
-        textarea.setSelectionRange(newPos, newPos);
         
+        insertTextAtCursor(insertion, newPos, newPos);
         updateEditor();
         return;
     }
@@ -1824,11 +1895,8 @@ textarea.addEventListener('keydown', (e) => {
                 if (spacesToRemove > 0 && currentIndentLength >= spacesToRemove) {
                     e.preventDefault();
                     
-                    const newTextBefore = textBefore.substring(0, cursorPos - spacesToRemove);
-                    textarea.value = newTextBefore + textAfter;
-                    
                     const newPos = cursorPos - spacesToRemove;
-                    textarea.setSelectionRange(newPos, newPos);
+                    replaceTextRange(newPos, cursorPos, '', newPos);
                     
                     updateEditor();
                     return;
@@ -1840,9 +1908,9 @@ textarea.addEventListener('keydown', (e) => {
     if (e.key === 'Tab') {
         e.preventDefault();
         const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        textarea.value = textarea.value.substring(0, start) + '  ' + textarea.value.substring(end);
-        textarea.selectionStart = textarea.selectionEnd = start + 2;
+        const newPos = start + 2;
+        
+        insertTextAtCursor('  ', newPos, newPos);
         updateEditor();
     }
 });
@@ -1894,8 +1962,9 @@ function copyRaw() {
 }
 
 function clearEditor() {
-    textarea.value = '';
+    setTextareaContent('', 0);
     updateEditor();
+    extractAndDisplayFields();
     showNotification('Cleared!');
 }
 
@@ -1978,7 +2047,7 @@ function loadFormula(id) {
     const formula = formulas.find(f => f.id === id);
     
     if (formula) {
-        textarea.value = formula.content;
+        setTextareaContent(formula.content, formula.content.length);
         document.getElementById('formulaNameInput').value = formula.name;
         updateEditor();
         extractAndDisplayFields();
