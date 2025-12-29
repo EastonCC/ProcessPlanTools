@@ -302,6 +302,7 @@
     .operator { color: var(--text-primary); }
     .parenthesis { color: var(--text-secondary); }
     .bracket { color: var(--syntax-bracket); }
+    .comment { color: var(--text-muted); font-style: italic; }
 
     /* Notification */
     .notification {
@@ -1328,7 +1329,7 @@
     <div class="help-modal-content">
         <section class="help-section">
             <h3>What is this?</h3>
-            <p>The Formula Editor is a tool for writing and editing formulas with syntax highlighting, auto-completion, and formatting.</p>
+            <p>The Formula Editor is a tool for writing and editing ProcessPlan formulas with syntax highlighting, auto-completion, and formatting.</p>
         </section>
         
         <section class="help-section">
@@ -1349,6 +1350,10 @@
                 <li>
                     <strong>Auto-Formatting</strong>
                     <p>Paste any formula and it will be automatically formatted with proper indentation.</p>
+                </li>
+                <li>
+                    <strong>Comments</strong>
+                    <p>Add notes with <code># your comment</code>. Comments are automatically removed when copying the formula.</p>
                 </li>
                 <li>
                     <strong>Save Formulas</strong>
@@ -1377,7 +1382,8 @@
             <h3>Tips</h3>
             <ul class="help-tips">
                 <li>Use <code>[[Field Name]]</code> syntax for field tokens</li>
-                <li>Copy Formatted keeps indentation, Copy Raw removes it</li>
+                <li>Add comments with <code>#</code> to document your formulas</li>
+                <li>Copy Formatted keeps indentation, Copy Raw removes it (both strip comments)</li>
                 <li>The compiler section lets you test formulas with sample values</li>
             </ul>
         </section>
@@ -2008,6 +2014,17 @@ function tokenize(code) {
     let functionDepthStack = [];
 
     while (i < code.length) {
+        // Handle comments - # until end of line
+        if (code[i] === '#') {
+            let value = '';
+            while (i < code.length && code[i] !== '\n') {
+                value += code[i];
+                i++;
+            }
+            tokens.push({ type: 'comment', value });
+            continue;
+        }
+
         if (/\s/.test(code[i])) {
             let value = '';
             while (i < code.length && /\s/.test(code[i])) {
@@ -2134,6 +2151,7 @@ function applySyntaxHighlighting(code) {
             case 'operator': return `<span class="operator">${escaped}</span>`;
             case 'parenthesis': return `<span class="parenthesis">${escaped}</span>`;
             case 'bracket': return `<span class="bracket">${escaped}</span>`;
+            case 'comment': return `<span class="comment">${escaped}</span>`;
             default: return escaped;
         }
     }).join('');
@@ -2429,13 +2447,24 @@ function getIndentLevel(text) {
 }
 
 // Copy formatted (with indentation)
+// Remove comments from code
+function stripComments(code) {
+    // Remove comments (# to end of line) but preserve the newline
+    return code.replace(/#[^\n]*/g, '');
+}
+
 function copyFormatted() {
     const code = textarea.value;
     if (!code.trim()) {
         showNotification('Nothing to copy!', 'error');
         return;
     }
-    navigator.clipboard.writeText(code)
+    // Strip comments but keep formatting
+    let cleaned = stripComments(code);
+    // Remove empty lines that were just comments
+    cleaned = cleaned.split('\n').filter(line => line.trim() !== '').join('\n');
+    
+    navigator.clipboard.writeText(cleaned)
         .then(() => showNotification('Copied formatted!'))
         .catch(() => showNotification('Failed to copy', 'error'));
 }
@@ -2447,8 +2476,12 @@ function copyRaw() {
         showNotification('Nothing to copy!', 'error');
         return;
     }
-    let raw = code.replace(/[\n\r\t]+/g, '');
+    // Strip comments first
+    let raw = stripComments(code);
+    raw = raw.replace(/[\n\r\t]+/g, '');
     raw = raw.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+    // Clean up any extra spaces left from removed comments
+    raw = raw.replace(/\s+/g, ' ').replace(/; /g, ';').replace(/ ;/g, ';');
     
     navigator.clipboard.writeText(raw)
         .then(() => showNotification('Copied raw!'))
