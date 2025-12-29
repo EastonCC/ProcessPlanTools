@@ -2848,7 +2848,7 @@ const FUNCTION_DOCS = [
     { name: 'GTENUM', syntax: '=GTENUM(IsThisNumber; GreaterOrEqualToThisNumber)', description: 'Returns 1 if first number >= second, 0 if false.', example: '=GTENUM([[Score]]; 70)' },
     { name: 'GTNUM', syntax: '=GTNUM(IsThisNumber; GreaterThanThisNumber)', description: 'Returns 1 if first number > second, 0 if false.', example: '=GTNUM([[Total]]; 1000)' },
     { name: 'HASVALUE', syntax: '=HASVALUE(DoesAnyValueExistHere)', description: 'Returns true if any value exists (not empty).', example: '=HASVALUE([[Comments]])' },
-    { name: 'IF', syntax: '=IF(ConditionCheck; IfTrueReturnThis; AnotherCondition; IfTrueReturnThis; OptionalIfFalse)', description: 'Checks conditions, returns corresponding values. First true wins.', example: '=IF(=GTNUM([[Score]]; 70); Pass; Fail)' },
+    { name: 'IF', syntax: '=IF(ConditionCheck; IfTrueReturnThis; AnotherCondition OR IfFalseReturnThis; IfTrueReturnThis; OptionalIfFalse)', description: 'Checks conditions, returns corresponding values. First true wins.', example: '=IF(=GTNUM([[Score]]; 70); Pass; Fail)' },
     { name: 'INSTANCECOUNT', syntax: '=INSTANCECOUNT(TableID; TableQuery)', description: 'Returns count of instances matching query.', example: '=INSTANCECOUNT(TableID; tf_id_xxx[eq]Value)' },
     { name: 'INSTANCETASKCOUNT', syntax: '=INSTANCETASKCOUNT(ProcessInstanceID; TemplateTaskID)', description: 'Returns times a task was assigned in a process instance.', example: '=INSTANCETASKCOUNT([[ProcessInstanceID]]; TaskID)' },
     { name: 'INSTANCEUPDATE', syntax: '=INSTANCEUPDATE(FieldIDToUpdate; TableIDToSearch; SearchQuery; NewFieldValue)', description: 'Updates field in processes matching query.', example: '=INSTANCEUPDATE(FieldID; TableID; Query; NewValue)' },
