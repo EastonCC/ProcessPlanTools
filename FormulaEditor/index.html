@@ -853,6 +853,16 @@
         display: block;
     }
 
+    .parameter-hint .hint-line {
+        white-space: pre;
+        line-height: 1.6;
+    }
+
+    .parameter-hint .hint-line:not(:last-child) .param:not(.active),
+    .parameter-hint .hint-line:not(:last-child) .function-name {
+        opacity: 0.5;
+    }
+
     .parameter-hint .param {
         color: var(--text-secondary);
     }
@@ -1354,6 +1364,7 @@ const FUNCTION_PARAMS = {
 function getCurrentFunctionPrefix() {
     const cursorPos = textarea.selectionStart;
     const text = textarea.value.substring(0, cursorPos);
+    const textAfter = textarea.value.substring(cursorPos);
     
     // Find the last = sign and get text after it
     const lastEquals = text.lastIndexOf('=');
@@ -1363,6 +1374,12 @@ function getCurrentFunctionPrefix() {
     
     // Check if we're still typing the function name (letters, and optionally starting with !)
     if (/^!?[a-zA-Z]*$/.test(afterEquals)) {
+        // Check if this is part of an already complete function
+        // Look for any remaining letters followed by an opening parenthesis
+        if (/^[a-zA-Z]*\s*\(/.test(textAfter)) {
+            return null;
+        }
+        
         return { prefix: afterEquals.toUpperCase(), start: lastEquals };
     }
     
@@ -1553,37 +1570,42 @@ function getCurrentFunctionContext() {
         i++;
     }
     
-    // Return the innermost function context
-    if (functionStack.length > 0) {
-        return functionStack[functionStack.length - 1];
-    }
-    
-    return null;
+    // Return the full function stack (not just innermost)
+    return functionStack.length > 0 ? functionStack : null;
 }
 
 function updateParameterHint() {
-    const context = getCurrentFunctionContext();
+    const contextStack = getCurrentFunctionContext();
     
-    if (!context || !FUNCTION_PARAMS[context.name]) {
+    if (!contextStack || contextStack.length === 0) {
         hideParameterHint();
         return;
     }
     
-    const params = FUNCTION_PARAMS[context.name];
-    if (params.length === 0) {
+    // Build hint HTML for each function in the stack
+    const hintLines = contextStack.map((context, stackIndex) => {
+        const params = FUNCTION_PARAMS[context.name];
+        if (!params || params.length === 0) {
+            return null;
+        }
+        
+        const indent = '  '.repeat(stackIndex);
+        const paramHtml = params.map((param, index) => {
+            const isActive = index === context.paramIndex || 
+                            (index === params.length - 1 && context.paramIndex >= params.length);
+            // Highlight active param for ALL functions in the stack
+            return `<span class="param${isActive ? ' active' : ''}">${param}</span>`;
+        }).join('<span class="param">; </span>');
+        
+        return `<div class="hint-line">${indent}<span class="function-name">${context.name}</span>(${paramHtml})</div>`;
+    }).filter(line => line !== null);
+    
+    if (hintLines.length === 0) {
         hideParameterHint();
         return;
     }
     
-    // Build the hint HTML
-    const paramHtml = params.map((param, index) => {
-        const isActive = index === context.paramIndex || 
-                        (index === params.length - 1 && context.paramIndex >= params.length);
-        return `<span class="param${isActive ? ' active' : ''}">${param}</span>`;
-    }).join('<span class="param">; </span>');
-    
-    parameterHint.innerHTML = `<span class="function-name">${context.name}</span>(${paramHtml})`;
-    
+    parameterHint.innerHTML = hintLines.join('');
     showParameterHint();
 }
 
