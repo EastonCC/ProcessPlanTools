@@ -2991,8 +2991,7 @@ function toggleFunction(header) {
 function filterFunctions() {
     const search = document.getElementById('functionSearch').value.toLowerCase();
     const filtered = FUNCTION_DOCS.filter(func => 
-        func.name.toLowerCase().includes(search) || 
-        func.description.toLowerCase().includes(search)
+        func.name.toLowerCase().includes(search)
     );
     renderFunctions(filtered);
 }
