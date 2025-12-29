@@ -1792,7 +1792,7 @@ function selectAutocompleteItem(index) {
     const lastNewline = currentText.lastIndexOf('\n');
     const currentLineStart = currentText.substring(lastNewline + 1);
     const baseIndent = currentLineStart.match(/^(\s*)/)[1] || '';
-    const indentSize = 2;
+    const indentSize = 3;
     const innerIndent = baseIndent + ' '.repeat(indentSize);
     
     let insertion;
@@ -1943,7 +1943,7 @@ function hideParameterHint() {
 function formatFormula(formula) {
     let result = '';
     let indentLevel = 0;
-    const indentSize = 2;
+    const indentSize = 3;
     let bracketDepth = 0;
     let inString = false;
     let stringChar = '';
@@ -2295,7 +2295,7 @@ textarea.addEventListener('keydown', (e) => {
         
         // Check if we're after an opening parenthesis - add extra indent
         const charBefore = textBefore.trimEnd().slice(-1);
-        const indentSize = 2;
+        const indentSize = 3;
         let insertion;
         
         if (charBefore === '(') {
@@ -2330,7 +2330,7 @@ textarea.addEventListener('keydown', (e) => {
             
             // Check if we're in leading whitespace (only spaces before cursor on this line)
             if (/^\s+$/.test(textOnCurrentLine)) {
-                const indentSize = 2;
+                const indentSize = 3;
                 const currentIndentLength = textOnCurrentLine.length;
                 
                 // Calculate how many spaces to remove to get to previous indent level
@@ -2356,7 +2356,7 @@ textarea.addEventListener('keydown', (e) => {
         e.preventDefault();
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
-        const indentSize = 2;
+        const indentSize = 3;
         const indent = ' '.repeat(indentSize);
         
         // Check if there's a selection spanning multiple characters
