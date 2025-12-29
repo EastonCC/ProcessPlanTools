@@ -613,6 +613,253 @@
         font-size: 16px;
     }
 
+    /* Help Button */
+    .help-btn {
+        background: none;
+        border: 1px solid var(--border-light);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        margin-right: 8px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .help-btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--scrollbar-thumb-hover);
+        color: var(--text-primary);
+    }
+
+    /* Help Modal */
+    .help-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        z-index: 2000;
+    }
+
+    .help-modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .help-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        z-index: 2001;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .help-modal.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .help-modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .help-modal-header h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .help-modal-close {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 28px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+
+    .help-modal-close:hover {
+        color: var(--text-primary);
+    }
+
+    .help-modal-content {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .help-section {
+        margin-bottom: 24px;
+    }
+
+    .help-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .help-section h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--syntax-function);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .help-section p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .help-features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .help-features-list li {
+        position: relative;
+        padding-left: 20px;
+        margin-bottom: 16px;
+    }
+
+    .help-features-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .help-features-list li::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: var(--syntax-function);
+        font-size: 18px;
+        line-height: 1.2;
+    }
+
+    .help-features-list strong {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .help-features-list p {
+        font-size: 13px;
+        margin: 0;
+        color: var(--text-secondary);
+    }
+
+    .help-shortcuts {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .shortcut {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+    }
+
+    .shortcut kbd {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+        color: var(--text-primary);
+        min-width: 80px;
+        text-align: center;
+    }
+
+    .shortcut span {
+        color: var(--text-secondary);
+    }
+
+    .help-tips {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        color: var(--text-secondary);
+        line-height: 1.8;
+        font-size: 13px;
+    }
+
+    .help-tips li {
+        position: relative;
+        padding-left: 20px;
+    }
+
+    .help-tips li::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: var(--syntax-function);
+        font-size: 18px;
+    }
+
+    .help-tips code {
+        background: var(--bg-tertiary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+        color: var(--syntax-bracket);
+    }
+
+    .help-modal-content code {
+        background: var(--bg-tertiary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+        color: var(--syntax-function);
+    }
+
+    .help-modal-content kbd {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 11px;
+        color: var(--text-primary);
+    }
+
     /* Sidebar */
     .sidebar {
         position: fixed;
@@ -1056,6 +1303,9 @@
         <span class="header-title"><a href="../" style="color: inherit; text-decoration: none;">ProcessPlan Tools</a> | Formula Editor</span>
     </div>
     <div class="header-buttons">
+        <button class="help-btn" onclick="toggleHelpModal()" title="Help">
+            <span>?</span>
+        </button>
         <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark mode">
             <span class="theme-icon">🌙</span>
         </button>
@@ -1065,6 +1315,72 @@
         <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
             <span>📚</span> Functions
         </button>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="help-modal-overlay" id="helpModalOverlay" onclick="toggleHelpModal()"></div>
+<div class="help-modal" id="helpModal">
+    <div class="help-modal-header">
+        <h2>Formula Editor Help</h2>
+        <button class="help-modal-close" onclick="toggleHelpModal()">×</button>
+    </div>
+    <div class="help-modal-content">
+        <section class="help-section">
+            <h3>What is this?</h3>
+            <p>The Formula Editor is a tool for writing and editing formulas with syntax highlighting, auto-completion, and formatting.</p>
+        </section>
+        
+        <section class="help-section">
+            <h3>Features</h3>
+            <ul class="help-features-list">
+                <li>
+                    <strong>Syntax Highlighting</strong>
+                    <p>Functions, strings, numbers, and field tokens are color-coded for easy reading.</p>
+                </li>
+                <li>
+                    <strong>Auto-Complete</strong>
+                    <p>Type <code>=</code> followed by letters to see matching functions. Press <kbd>Tab</kbd> or <kbd>Enter</kbd> to insert the complete function structure.</p>
+                </li>
+                <li>
+                    <strong>Parameter Hints</strong>
+                    <p>When inside a function, see parameter names below the editor. The current parameter is highlighted. Works with nested functions too!</p>
+                </li>
+                <li>
+                    <strong>Auto-Formatting</strong>
+                    <p>Paste any formula and it will be automatically formatted with proper indentation.</p>
+                </li>
+                <li>
+                    <strong>Save Formulas</strong>
+                    <p>Save formulas locally for quick access later. Import/export to share or backup.</p>
+                </li>
+                <li>
+                    <strong>Function Reference</strong>
+                    <p>Click "Functions" to browse all available ProcessPlan functions with descriptions and examples.</p>
+                </li>
+            </ul>
+        </section>
+        
+        <section class="help-section">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="help-shortcuts">
+                <div class="shortcut"><kbd>Tab</kbd> <span>Insert 2 spaces / Indent selection / Accept autocomplete</span></div>
+                <div class="shortcut"><kbd>Shift+Tab</kbd> <span>Unindent selection</span></div>
+                <div class="shortcut"><kbd>Enter</kbd> <span>New line with auto-indent</span></div>
+                <div class="shortcut"><kbd>Ctrl/Cmd+Z</kbd> <span>Undo</span></div>
+                <div class="shortcut"><kbd>Ctrl/Cmd+Shift+Z</kbd> <span>Redo</span></div>
+                <div class="shortcut"><kbd>Esc</kbd> <span>Close autocomplete</span></div>
+            </div>
+        </section>
+        
+        <section class="help-section">
+            <h3>Tips</h3>
+            <ul class="help-tips">
+                <li>Use <code>[[Field Name]]</code> syntax for field tokens</li>
+                <li>Copy Formatted keeps indentation, Copy Raw removes it</li>
+                <li>The compiler section lets you test formulas with sample values</li>
+            </ul>
+        </section>
     </div>
 </div>
 
@@ -2152,6 +2468,12 @@ function showNotification(message, type = 'success') {
     notification.className = 'notification' + (type === 'error' ? ' error' : '');
     notification.classList.add('show');
     setTimeout(() => notification.classList.remove('show'), 2500);
+}
+
+// Help modal
+function toggleHelpModal() {
+    document.getElementById('helpModal').classList.toggle('show');
+    document.getElementById('helpModalOverlay').classList.toggle('show');
 }
 
 // Theme toggle
