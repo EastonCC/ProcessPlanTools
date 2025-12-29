@@ -835,20 +835,18 @@
         border-radius: 4px;
     }
 
-    /* Parameter Hint */
+    /* Parameter Hint - below editor */
     .parameter-hint {
-        position: absolute;
         background: var(--bg-hover);
         border: 1px solid var(--scrollbar-thumb-hover);
-        border-radius: 4px;
-        padding: 4px 8px;
+        border-radius: 0 0 8px 8px;
+        border-top: none;
+        padding: 8px 16px;
         font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
         font-size: 12px;
         color: var(--text-primary);
-        z-index: 100;
         display: none;
-        white-space: nowrap;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        margin-top: -1px;
     }
 
     .parameter-hint.show {
@@ -1134,9 +1132,9 @@
                 <div class="code-highlight" id="codeHighlight"></div>
                 <textarea class="code-textarea" id="codeTextarea" placeholder="Paste or type your formula here..." spellcheck="false"></textarea>
                 <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
-                <div class="parameter-hint" id="parameterHint"></div>
             </div>
         </div>
+        <div class="parameter-hint" id="parameterHint"></div>
     </div>
 
     <!-- Compiler Section -->
@@ -1448,15 +1446,36 @@ function selectAutocompleteItem(index) {
     
     const selectedFunction = autocompleteItems[index];
     const cursorPos = textarea.selectionStart;
+    const params = FUNCTION_PARAMS[selectedFunction] || [];
     
-    // Replace from = to cursor with the selected function
-    const insertion = `=${selectedFunction}(`;
-    const newPos = autocompleteStart + insertion.length;
+    // Build the full function structure with proper indentation
+    const currentText = textarea.value.substring(0, autocompleteStart);
+    const lastNewline = currentText.lastIndexOf('\n');
+    const currentLineStart = currentText.substring(lastNewline + 1);
+    const baseIndent = currentLineStart.match(/^(\s*)/)[1] || '';
+    const indentSize = 2;
+    const innerIndent = baseIndent + ' '.repeat(indentSize);
+    
+    let insertion;
+    let cursorOffset;
+    
+    if (params.length === 0) {
+        // No parameters - just insert function with empty parens
+        insertion = `=${selectedFunction}()`;
+        cursorOffset = insertion.length - 1; // Position cursor inside ()
+    } else {
+        // Has parameters - create multi-line structure
+        insertion = `=${selectedFunction}(\n${innerIndent}\n${baseIndent})`;
+        cursorOffset = `=${selectedFunction}(\n${innerIndent}`.length; // Position cursor on the indented line
+    }
+    
+    const newPos = autocompleteStart + cursorOffset;
     
     replaceTextRange(autocompleteStart, cursorPos, insertion, newPos);
     
     hideAutocomplete();
     updateEditor();
+    updateParameterHint();
     textarea.focus();
 }
 
@@ -1565,40 +1584,7 @@ function updateParameterHint() {
     
     parameterHint.innerHTML = `<span class="function-name">${context.name}</span>(${paramHtml})`;
     
-    positionParameterHint();
     showParameterHint();
-}
-
-function positionParameterHint() {
-    const cursorPos = textarea.selectionStart;
-    const textBeforeCursor = textarea.value.substring(0, cursorPos);
-    const lines = textBeforeCursor.split('\n');
-    const currentLineIndex = lines.length - 1;
-    const currentLineText = lines[currentLineIndex];
-    
-    const lineHeight = 20.8;
-    const charWidth = 7.8;
-    
-    // Position above the current line, accounting for scroll position
-    // For first line, position below instead of above
-    let top;
-    if (currentLineIndex === 0) {
-        // Position below the first line
-        top = lineHeight + 20 - textarea.scrollTop;
-    } else {
-        // Position above the current line
-        top = (currentLineIndex * lineHeight) + 16 - 28 - textarea.scrollTop;
-    }
-    const left = (currentLineText.length * charWidth) + 16 - textarea.scrollLeft;
-    
-    // Hide if scrolled out of view
-    if (top < -10 || top > textarea.clientHeight) {
-        parameterHint.style.display = 'none';
-    } else {
-        parameterHint.style.display = '';
-        parameterHint.style.top = `${Math.max(top, 0)}px`;
-        parameterHint.style.left = `${Math.max(Math.min(left, 400), 10)}px`;
-    }
 }
 
 function showParameterHint() {
@@ -1910,10 +1896,6 @@ textarea.addEventListener('scroll', () => {
     highlight.style.transform = `translate(${-textarea.scrollLeft}px, ${-textarea.scrollTop}px)`;
     // Sync line numbers vertically
     lineNumbers.style.transform = `translateY(${-textarea.scrollTop}px)`;
-    // Reposition parameter hint if visible
-    if (parameterHint.classList.contains('show')) {
-        positionParameterHint();
-    }
 });
 
 // Handle tab key
@@ -1930,7 +1912,7 @@ textarea.addEventListener('keydown', (e) => {
             navigateAutocomplete(-1);
             return;
         }
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
             selectAutocompleteItem(selectedIndex);
             return;
@@ -1942,41 +1924,12 @@ textarea.addEventListener('keydown', (e) => {
         }
     }
     
-    // Handle Enter - maintain current indentation or handle special cases
+    // Handle Enter - maintain current indentation
     if (e.key === 'Enter' && !autocompleteVisible) {
+        e.preventDefault();
+        
         const cursorPos = textarea.selectionStart;
         const textBefore = textarea.value.substring(0, cursorPos);
-        const textAfter = textarea.value.substring(cursorPos);
-        
-        // Check if we're right after an opening parenthesis of a function
-        const charBefore = textBefore.slice(-1);
-        
-        if (charBefore === '(') {
-            e.preventDefault();
-
-            const indentLevel = getIndentLevel(textBefore);
-            const indentSize = 2;
-            const newIndent = ' '.repeat(indentLevel * indentSize);
-            const closingIndent = ' '.repeat((indentLevel - 1) * indentSize);
-
-            // Check if a closing parenthesis already exists ahead
-            const hasClosingParenAhead = /^\s*\)/.test(textAfter);
-
-            const insertion =
-                '\n' +
-                newIndent +
-                (hasClosingParenAhead ? '\n' + closingIndent : '\n' + closingIndent + ')');
-
-            // Cursor goes on the indented line
-            const newPos = cursorPos + 1 + newIndent.length;
-            
-            insertTextAtCursor(insertion, newPos, newPos);
-            updateEditor();
-            return;
-        }
-        
-        // Default Enter behavior: maintain current line's indentation
-        e.preventDefault();
         
         // Get the current line's indentation
         const lastNewline = textBefore.lastIndexOf('\n');
@@ -1984,7 +1937,19 @@ textarea.addEventListener('keydown', (e) => {
         const indentMatch = currentLine.match(/^(\s*)/);
         const currentIndent = indentMatch ? indentMatch[1] : '';
         
-        const insertion = '\n' + currentIndent;
+        // Check if we're after an opening parenthesis - add extra indent
+        const charBefore = textBefore.trimEnd().slice(-1);
+        const indentSize = 2;
+        let insertion;
+        
+        if (charBefore === '(') {
+            // Add extra indentation after opening paren
+            const extraIndent = currentIndent + ' '.repeat(indentSize);
+            insertion = '\n' + extraIndent;
+        } else {
+            insertion = '\n' + currentIndent;
+        }
+        
         const newPos = cursorPos + insertion.length;
         
         insertTextAtCursor(insertion, newPos, newPos);
@@ -2030,13 +1995,79 @@ textarea.addEventListener('keydown', (e) => {
         }
     }
     
+    // Handle Tab - indent selection or insert spaces
     if (e.key === 'Tab') {
         e.preventDefault();
         const start = textarea.selectionStart;
-        const newPos = start + 2;
+        const end = textarea.selectionEnd;
+        const indentSize = 2;
+        const indent = ' '.repeat(indentSize);
         
-        insertTextAtCursor('  ', newPos, newPos);
-        updateEditor();
+        // Check if there's a selection spanning multiple characters
+        if (start !== end) {
+            const text = textarea.value;
+            
+            // Find the start of the first selected line
+            let lineStart = start;
+            while (lineStart > 0 && text[lineStart - 1] !== '\n') {
+                lineStart--;
+            }
+            
+            // Find the end of the last selected line
+            let lineEnd = end;
+            while (lineEnd < text.length && text[lineEnd] !== '\n') {
+                lineEnd++;
+            }
+            
+            // Get the selected lines
+            const selectedText = text.substring(lineStart, lineEnd);
+            const lines = selectedText.split('\n');
+            
+            let newText;
+            let newStart, newEnd;
+            
+            if (e.shiftKey) {
+                // Shift+Tab: Unindent
+                newText = lines.map(line => {
+                    if (line.startsWith(indent)) {
+                        return line.substring(indentSize);
+                    } else if (line.startsWith(' ')) {
+                        // Remove as many leading spaces as possible up to indentSize
+                        let spacesToRemove = 0;
+                        while (spacesToRemove < indentSize && line[spacesToRemove] === ' ') {
+                            spacesToRemove++;
+                        }
+                        return line.substring(spacesToRemove);
+                    }
+                    return line;
+                }).join('\n');
+                
+                const diff = selectedText.length - newText.length;
+                newStart = Math.max(lineStart, start - (lines[0].length - (newText.split('\n')[0] || '').length));
+                newEnd = end - diff;
+            } else {
+                // Tab: Indent
+                newText = lines.map(line => indent + line).join('\n');
+                newStart = start + indentSize;
+                newEnd = end + (lines.length * indentSize);
+            }
+            
+            // Replace the text
+            textarea.setSelectionRange(lineStart, lineEnd);
+            document.execCommand('insertText', false, newText);
+            
+            // Restore selection
+            textarea.setSelectionRange(
+                Math.max(0, newStart),
+                Math.min(textarea.value.length, newEnd)
+            );
+            
+            updateEditor();
+        } else {
+            // No selection - just insert spaces
+            insertTextAtCursor(indent, start + indentSize, start + indentSize);
+            updateEditor();
+        }
     }
 });
 
