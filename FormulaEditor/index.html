@@ -1697,8 +1697,8 @@ function getCurrentFunctionPrefix() {
     // Check if we're still typing the function name (letters, and optionally starting with !)
     if (/^!?[a-zA-Z]*$/.test(afterEquals)) {
         // Check if this is part of an already complete function
-        // Look for any remaining letters followed by an opening parenthesis
-        if (/^[a-zA-Z]*\s*\(/.test(textAfter)) {
+        // Look for any remaining letters (with optional !) followed by an opening parenthesis
+        if (/^!?[a-zA-Z]*\s*\(/.test(textAfter)) {
             return null;
         }
         
@@ -2072,6 +2072,24 @@ function tokenize(code) {
                 i++;
             }
             tokens.push({ type: 'number', value });
+            continue;
+        }
+
+        // Handle function names (including those starting with !)
+        if (code[i] === '!' && i + 1 < code.length && /[a-zA-Z]/.test(code[i + 1])) {
+            let value = '!';
+            i++;
+            while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) {
+                value += code[i];
+                i++;
+            }
+            if (code[i] === '(' && FUNCTIONS.has(value.toUpperCase())) {
+                tokens.push({ type: 'function', value: value + '(' });
+                functionDepthStack.push(1);
+                i++;
+            } else {
+                tokens.push({ type: 'identifier', value });
+            }
             continue;
         }
 
