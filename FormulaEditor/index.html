@@ -235,6 +235,8 @@
         white-space: pre;
         overflow: auto;
         z-index: 2;
+        tab-size: 3;
+        -moz-tab-size: 3;
     }
 
     .code-textarea:focus {
@@ -265,6 +267,8 @@
         min-height: 100%;
         min-width: 100%;
         z-index: 1;
+        tab-size: 3;
+        -moz-tab-size: 3;
     }
 
     /* Scrollbar */
@@ -1152,6 +1156,23 @@
         padding: 20px;
     }
 
+    .compiler-warning {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: rgba(249, 115, 22, 0.1);
+        border: 1px solid rgba(249, 115, 22, 0.3);
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: var(--syntax-string);
+    }
+
+    .compiler-warning .warning-icon {
+        font-size: 14px;
+    }
+
     .fields-section {
         margin-bottom: 20px;
     }
@@ -1239,6 +1260,127 @@
         min-height: 60px;
         white-space: pre-wrap;
         word-break: break-all;
+    }
+
+    .output-box.error {
+        border-color: var(--accent-red);
+        color: var(--accent-red);
+    }
+
+    .output-box.success {
+        border-color: var(--accent-green);
+    }
+
+    /* Function Status Section */
+    .function-status-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .function-status-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .function-status-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .function-status-toggle {
+        background: none;
+        border: 1px solid var(--border-light);
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .function-status-toggle:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .function-status-container {
+        display: none;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .function-status-container.show {
+        display: block;
+    }
+
+    .function-status-summary {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .status-count {
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-count.implemented {
+        color: var(--accent-green);
+    }
+
+    .status-count.partial {
+        color: var(--syntax-string);
+    }
+
+    .status-count.not-implemented {
+        color: var(--text-muted);
+    }
+
+    .function-status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+    }
+
+    .function-status-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: var(--bg-secondary);
+    }
+
+    .function-status-item.implemented {
+        color: var(--accent-green);
+    }
+
+    .function-status-item.partial {
+        color: var(--syntax-string);
+    }
+
+    .function-status-item.not-implemented {
+        color: var(--text-muted);
+    }
+
+    .status-icon {
+        font-size: 10px;
     }
 
     .wip-overlay {
@@ -1471,15 +1613,15 @@
 
     <!-- Compiler Section -->
     <div class="compiler-card">
-        <!-- <div class="wip-overlay">
-            <div class="wip-badge">🚧 Work in Progress</div>
-            <div class="wip-text">Formula compilation coming soon</div>
-        </div> -->
         <div class="compiler-header">
-            <span class="compiler-title">Formula Compiler (WIP)</span>
+            <span class="compiler-title">Formula Compiler</span>
             <button class="btn btn-primary" onclick="compileFormula()">Compile</button>
         </div>
         <div class="compiler-content">
+            <div class="compiler-warning">
+                <span class="warning-icon">⚠️</span>
+                <span>For testing purposes only. Outputs may not exactly match ProcessPlan results.</span>
+            </div>
             <div class="fields-section">
                 <div class="fields-title">Field Values</div>
                 <div id="fieldsContainer" class="fields-grid">
@@ -1489,6 +1631,16 @@
             <div class="output-section">
                 <div class="output-title">Compiled Output</div>
                 <div id="compilerOutput" class="output-box">Output will appear here after compilation...</div>
+            </div>
+            <div class="function-status-section">
+                <div class="function-status-header">
+                    <span class="function-status-title">Function Support</span>
+                    <button class="function-status-toggle" onclick="toggleFunctionStatus()">Show Details</button>
+                </div>
+                <div class="function-status-container" id="functionStatusContainer">
+                    <div class="function-status-summary" id="functionStatusSummary"></div>
+                    <div class="function-status-grid" id="functionStatusGrid"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1696,19 +1848,41 @@ function getCurrentFunctionPrefix() {
     
     // Check if we're still typing the function name (letters, and optionally starting with !)
     if (/^!?[a-zA-Z]*$/.test(afterEquals)) {
-        // Check if this is part of an already complete function
-        // Look for any remaining letters (with optional !) followed by an opening parenthesis
-        if (/^!?[a-zA-Z]*\s*\(/.test(textAfter)) {
-            return null;
+        // Check what comes after the cursor
+        const afterMatch = textAfter.match(/^(!?[a-zA-Z]*)\s*(\(?)/);
+        
+        if (afterMatch) {
+            const remainingName = afterMatch[1];
+            const hasParen = afterMatch[2] === '(';
+            const fullName = (afterEquals + remainingName).toUpperCase();
+            
+            // If there's a parenthesis after, check if the full function name is valid
+            if (hasParen) {
+                // If the full name is a valid function, block autocomplete (already complete)
+                if (FUNCTIONS.has(fullName)) {
+                    return null;
+                }
+                // If invalid function name before existing paren, show autocomplete to fix it
+                // Include info about existing parenthesis so we don't duplicate it
+                return { 
+                    prefix: afterEquals.toUpperCase(), 
+                    start: lastEquals,
+                    existingParen: true,
+                    replaceEnd: cursorPos + remainingName.length
+                };
+            }
         }
         
-        return { prefix: afterEquals.toUpperCase(), start: lastEquals };
+        return { prefix: afterEquals.toUpperCase(), start: lastEquals, existingParen: false, replaceEnd: cursorPos };
     }
     
     return null;
 }
 
 // Filter and show autocomplete
+let autocompleteExistingParen = false;
+let autocompleteReplaceEnd = -1;
+
 function updateAutocomplete() {
     const result = getCurrentFunctionPrefix();
     
@@ -1717,8 +1891,10 @@ function updateAutocomplete() {
         return;
     }
     
-    const { prefix, start } = result;
+    const { prefix, start, existingParen, replaceEnd } = result;
     autocompleteStart = start;
+    autocompleteExistingParen = existingParen;
+    autocompleteReplaceEnd = replaceEnd;
     
     // Filter functions that start with the prefix
     autocompleteItems = FUNCTION_LIST.filter(fn => fn.startsWith(prefix));
@@ -1784,16 +1960,28 @@ function selectAutocompleteItem(index) {
     if (index < 0 || index >= autocompleteItems.length) return;
     
     const selectedFunction = autocompleteItems[index];
-    const cursorPos = textarea.selectionStart;
     const params = FUNCTION_PARAMS[selectedFunction] || [];
+    
+    // If there's already a parenthesis, just replace the function name
+    if (autocompleteExistingParen) {
+        const insertion = `=${selectedFunction}`;
+        const newPos = autocompleteStart + insertion.length;
+        
+        replaceTextRange(autocompleteStart, autocompleteReplaceEnd, insertion, newPos);
+        
+        hideAutocomplete();
+        updateEditor();
+        updateParameterHint();
+        textarea.focus();
+        return;
+    }
     
     // Build the full function structure with proper indentation
     const currentText = textarea.value.substring(0, autocompleteStart);
     const lastNewline = currentText.lastIndexOf('\n');
     const currentLineStart = currentText.substring(lastNewline + 1);
-    const baseIndent = currentLineStart.match(/^(\s*)/)[1] || '';
-    const indentSize = 3;
-    const innerIndent = baseIndent + ' '.repeat(indentSize);
+    const baseIndent = currentLineStart.match(/^(\t*)/)[1] || '';
+    const innerIndent = baseIndent + '\t';
     
     let insertion;
     let cursorOffset;
@@ -1810,7 +1998,7 @@ function selectAutocompleteItem(index) {
     
     const newPos = autocompleteStart + cursorOffset;
     
-    replaceTextRange(autocompleteStart, cursorPos, insertion, newPos);
+    replaceTextRange(autocompleteStart, autocompleteReplaceEnd, insertion, newPos);
     
     hideAutocomplete();
     updateEditor();
@@ -2075,7 +2263,7 @@ function tokenize(code) {
             continue;
         }
 
-        // Handle function names (including those starting with !)
+        // Handle function names starting with !
         if (code[i] === '!' && i + 1 < code.length && /[a-zA-Z]/.test(code[i + 1])) {
             let value = '!';
             i++;
@@ -2847,19 +3035,1298 @@ function updateFieldValue(field, value) {
     fieldValues[field] = value;
 }
 
-function compileFormula() {
-    // This is a placeholder - actual compilation would happen here
-    const code = textarea.value;
-    let compiled = code;
+// ============================================
+// FORMULA COMPILER - Tokenizer, Parser, Evaluator
+// ============================================
+
+// Function implementation status
+const FUNCTION_STATUS = {
+    // Fully implemented
+    'APPEND': 'implemented',
+    'CALC': 'implemented',
+    'CEILING': 'implemented',
+    'CONTAINS': 'implemented',
+    '!CONTAINS': 'implemented',
+    'EQUALS': 'implemented',
+    '!EQUALS': 'implemented',
+    'FLOOR': 'implemented',
+    'HASVALUE': 'implemented',
+    'IF': 'implemented',
+    'ISEMPTY': 'implemented',
+    'ISTRUE': 'implemented',
+    'ANYTRUE': 'implemented',
+    'NOT': 'implemented',
+    'LEFT': 'implemented',
+    'RIGHT': 'implemented',
+    'LEFTOF': 'implemented',
+    'RIGHTOF': 'implemented',
+    'LEFTOFLAST': 'implemented',
+    'RIGHTOFLAST': 'implemented',
+    'LENGTH': 'implemented',
+    'LOWERCASE': 'implemented',
+    'UPPERCASE': 'implemented',
+    'TITLECASE': 'implemented',
+    'TRIM': 'implemented',
+    'REPLACE': 'implemented',
+    'REMOVECHARS': 'implemented',
+    'REMOVESPACES': 'implemented',
+    'NUM': 'implemented',
+    'ROUND': 'implemented',
+    'MAX': 'implemented',
+    'MIN': 'implemented',
+    'SUM': 'implemented',
+    'GTNUM': 'implemented',
+    'GTENUM': 'implemented',
+    'LTNUM': 'implemented',
+    'LTENUM': 'implemented',
+    'BENUM': 'implemented',
+    'FIRSTVALUE': 'implemented',
+    'SPLIT': 'implemented',
+    'LISTCOUNT': 'implemented',
+    'LISTINDEX': 'implemented',
+    'LISTJOIN': 'implemented',
+    'LISTMERGE': 'implemented',
+    'LISTDIFF': 'implemented',
+    'LISTINTERSECT': 'implemented',
+    'LISTUNIQUE': 'implemented',
+    'LISTASLINES': 'implemented',
+    'LINESPLIT': 'implemented',
+    'PARSE': 'implemented',
+    'ENCLOSE': 'implemented',
+    'RANDOMNUM': 'implemented',
+    'PARTITION': 'implemented',
+    'REGEXFIND': 'implemented',
+    'FORMAT': 'implemented',
     
-    // Replace field tokens with their values
-    for (const [field, value] of Object.entries(fieldValues)) {
-        const pattern = new RegExp(`\\[\\[\\s*${escapeRegex(field)}\\s*\\]\\]`, 'g');
-        compiled = compiled.replace(pattern, value || `[[${field}]]`);
+    // Date functions - implemented
+    'YEAR': 'implemented',
+    'MONTH': 'implemented',
+    'MONTHDAY': 'implemented',
+    'DATEPART': 'implemented',
+    'DATESERIAL': 'implemented',
+    'DATEDIFF': 'implemented',
+    'DATEADD': 'implemented',
+    'GTDATE': 'implemented',
+    'GTEDATE': 'implemented',
+    'LTDATE': 'implemented',
+    'LTEDATE': 'implemented',
+    'BDATE': 'implemented',
+    'MONTHLASTDAY': 'implemented',
+    
+    // JSON functions - implemented
+    'JSONENCODE': 'implemented',
+    'JSONQUERY': 'implemented',
+    'JSONEXTRACT': 'implemented',
+    'JSONUPDATE': 'implemented',
+    'JSONINDEX': 'implemented',
+    'JSONREMOVE': 'implemented',
+    'JSONFIFO': 'implemented',
+    
+    // Partial implementations (work but may have limitations)
+    'DATELIST': 'partial',
+    'DATETIMEMERGE': 'partial',
+    'FISCALMONTH': 'partial',
+    'FISCALYEAR': 'partial',
+    'DATEROUND': 'partial',
+    'EMAILSPLIT': 'partial',
+    'WORDSPLIT': 'partial',
+    'NUMSPLIT': 'partial',
+    'LISTITEMAPPEND': 'partial',
+    'LISTITEMPREPEND': 'partial',
+    'LISTITEMCONTAINS': 'partial',
+    'LISTITEMSTARTSWITH': 'partial',
+    'LISTITEMENDSWITH': 'partial',
+    'LISTITEMLEFT': 'partial',
+    'LISTITEMRIGHT': 'partial',
+    'LISTITEMLEFTOF': 'partial',
+    'LISTITEMRIGHTOF': 'partial',
+    'LISTITEMREGEX': 'partial',
+    'REMOVEDIACRITICS': 'partial',
+    'REMOVESYMBOLS': 'partial',
+    'NORMALIZETEXT': 'partial',
+    'REGEXWORDSONLY': 'partial',
+    'URLENCODE': 'partial',
+    
+    // Cannot implement - require ProcessPlan backend
+    'TABLELOOKUP': 'not-implemented',
+    'TABLESUM': 'not-implemented',
+    'TABLEAVG': 'not-implemented',
+    'TABLEJSON': 'not-implemented',
+    'TASKLOOKUP': 'not-implemented',
+    'TASKREPORT': 'not-implemented',
+    'INSTANCECOUNT': 'not-implemented',
+    'INSTANCETASKCOUNT': 'not-implemented',
+    'INSTANCEUPDATE': 'not-implemented',
+    'ISCONTEXT': 'not-implemented',
+    'ISPUBLICUSER': 'not-implemented',
+    'WORKDAY': 'not-implemented',
+    'DATEPATTERN': 'not-implemented',
+};
+
+// Compiler Tokenizer
+function compilerTokenize(formula) {
+    const tokens = [];
+    let i = 0;
+    
+    while (i < formula.length) {
+        // Skip whitespace
+        if (/\s/.test(formula[i])) {
+            i++;
+            continue;
+        }
+        
+        // Skip comments
+        if (formula[i] === '#') {
+            while (i < formula.length && formula[i] !== '\n') i++;
+            continue;
+        }
+        
+        // Field reference [[...]]
+        if (formula[i] === '[' && formula[i + 1] === '[') {
+            let value = '';
+            i += 2;
+            while (i < formula.length && !(formula[i] === ']' && formula[i + 1] === ']')) {
+                value += formula[i];
+                i++;
+            }
+            i += 2; // Skip ]]
+            tokens.push({ type: 'FIELD', value: value.trim() });
+            continue;
+        }
+        
+        // String literal (double quotes)
+        if (formula[i] === '"') {
+            let value = '';
+            i++;
+            while (i < formula.length && formula[i] !== '"') {
+                if (formula[i] === '\\' && i + 1 < formula.length) {
+                    value += formula[i + 1];
+                    i += 2;
+                } else {
+                    value += formula[i];
+                    i++;
+                }
+            }
+            i++; // Skip closing quote
+            tokens.push({ type: 'STRING', value });
+            continue;
+        }
+        
+        // String literal (single quotes)
+        if (formula[i] === "'") {
+            let value = '';
+            i++;
+            while (i < formula.length && formula[i] !== "'") {
+                value += formula[i];
+                i++;
+            }
+            i++; // Skip closing quote
+            tokens.push({ type: 'STRING', value });
+            continue;
+        }
+        
+        // Number
+        if (/\d/.test(formula[i]) || (formula[i] === '-' && /\d/.test(formula[i + 1]))) {
+            let value = '';
+            if (formula[i] === '-') {
+                value += '-';
+                i++;
+            }
+            while (i < formula.length && /[\d.]/.test(formula[i])) {
+                value += formula[i];
+                i++;
+            }
+            tokens.push({ type: 'NUMBER', value: parseFloat(value) });
+            continue;
+        }
+        
+        // Function call starting with = and possibly !
+        if (formula[i] === '=') {
+            i++;
+            let name = '';
+            if (formula[i] === '!') {
+                name += '!';
+                i++;
+            }
+            while (i < formula.length && /[a-zA-Z0-9_]/.test(formula[i])) {
+                name += formula[i];
+                i++;
+            }
+            tokens.push({ type: 'FUNCTION', value: name.toUpperCase() });
+            continue;
+        }
+        
+        // Operators and delimiters
+        if (formula[i] === '(') {
+            tokens.push({ type: 'LPAREN', value: '(' });
+            i++;
+            continue;
+        }
+        if (formula[i] === ')') {
+            tokens.push({ type: 'RPAREN', value: ')' });
+            i++;
+            continue;
+        }
+        if (formula[i] === ';') {
+            tokens.push({ type: 'SEMICOLON', value: ';' });
+            i++;
+            continue;
+        }
+        if (formula[i] === ',') {
+            tokens.push({ type: 'COMMA', value: ',' });
+            i++;
+            continue;
+        }
+        
+        // Arithmetic operators for CALC
+        if (/[+\-*/%]/.test(formula[i])) {
+            tokens.push({ type: 'OPERATOR', value: formula[i] });
+            i++;
+            continue;
+        }
+        
+        // Plain text/identifier (until we hit a delimiter)
+        let text = '';
+        while (i < formula.length && !/[\s\[\]();,=]/.test(formula[i])) {
+            text += formula[i];
+            i++;
+        }
+        if (text) {
+            // Check if it looks like a date
+            if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+                tokens.push({ type: 'DATE', value: text });
+            } else if (/^\d+$/.test(text)) {
+                tokens.push({ type: 'NUMBER', value: parseInt(text) });
+            } else if (/^\d*\.\d+$/.test(text)) {
+                tokens.push({ type: 'NUMBER', value: parseFloat(text) });
+            } else {
+                tokens.push({ type: 'TEXT', value: text });
+            }
+        }
     }
     
-    document.getElementById('compilerOutput').textContent = compiled;
-    showNotification('Formula compiled! (WIP)');
+    return tokens;
+}
+
+// AST Node types
+class ASTNode {
+    constructor(type, value = null, children = []) {
+        this.type = type;
+        this.value = value;
+        this.children = children;
+    }
+}
+
+// Parser
+class FormulaParser {
+    constructor(tokens) {
+        this.tokens = tokens;
+        this.pos = 0;
+    }
+    
+    current() {
+        return this.tokens[this.pos];
+    }
+    
+    consume(expectedType = null) {
+        const token = this.current();
+        if (expectedType && (!token || token.type !== expectedType)) {
+            throw new Error(`Expected ${expectedType} but got ${token ? token.type : 'EOF'}`);
+        }
+        this.pos++;
+        return token;
+    }
+    
+    peek(offset = 0) {
+        return this.tokens[this.pos + offset];
+    }
+    
+    parse() {
+        const nodes = [];
+        while (this.pos < this.tokens.length) {
+            nodes.push(this.parseExpression());
+        }
+        // If multiple top-level nodes, concatenate them
+        if (nodes.length === 1) return nodes[0];
+        return new ASTNode('CONCAT', null, nodes);
+    }
+    
+    parseExpression() {
+        const token = this.current();
+        if (!token) return new ASTNode('LITERAL', '');
+        
+        if (token.type === 'FUNCTION') {
+            return this.parseFunctionCall();
+        }
+        if (token.type === 'FIELD') {
+            this.consume();
+            return new ASTNode('FIELD', token.value);
+        }
+        if (token.type === 'STRING') {
+            this.consume();
+            return new ASTNode('LITERAL', token.value);
+        }
+        if (token.type === 'NUMBER') {
+            this.consume();
+            return new ASTNode('LITERAL', token.value);
+        }
+        if (token.type === 'DATE') {
+            this.consume();
+            return new ASTNode('LITERAL', token.value);
+        }
+        if (token.type === 'TEXT') {
+            this.consume();
+            return new ASTNode('LITERAL', token.value);
+        }
+        if (token.type === 'OPERATOR') {
+            this.consume();
+            return new ASTNode('LITERAL', token.value);
+        }
+        
+        // Skip unexpected tokens
+        this.consume();
+        return new ASTNode('LITERAL', '');
+    }
+    
+    parseFunctionCall() {
+        const funcToken = this.consume('FUNCTION');
+        const funcName = funcToken.value;
+        
+        this.consume('LPAREN');
+        
+        const args = [];
+        while (this.current() && this.current().type !== 'RPAREN') {
+            // Collect all tokens until semicolon or rparen as one argument
+            const argParts = [];
+            let parenDepth = 0;
+            
+            while (this.current()) {
+                const cur = this.current();
+                
+                if (cur.type === 'LPAREN') parenDepth++;
+                if (cur.type === 'RPAREN') {
+                    if (parenDepth === 0) break;
+                    parenDepth--;
+                }
+                if ((cur.type === 'SEMICOLON' || cur.type === 'COMMA') && parenDepth === 0) break;
+                
+                if (cur.type === 'FUNCTION') {
+                    argParts.push(this.parseFunctionCall());
+                } else {
+                    argParts.push(this.parseExpression());
+                }
+            }
+            
+            // Combine argument parts
+            if (argParts.length === 1) {
+                args.push(argParts[0]);
+            } else if (argParts.length > 1) {
+                args.push(new ASTNode('CONCAT', null, argParts));
+            }
+            
+            // Skip semicolon/comma separator
+            if (this.current() && (this.current().type === 'SEMICOLON' || this.current().type === 'COMMA')) {
+                this.consume();
+            }
+        }
+        
+        this.consume('RPAREN');
+        
+        return new ASTNode('FUNCTION', funcName, args);
+    }
+}
+
+// Evaluator
+class FormulaEvaluator {
+    constructor(fieldValues) {
+        this.fieldValues = fieldValues;
+    }
+    
+    evaluate(node) {
+        if (!node) return '';
+        
+        switch (node.type) {
+            case 'LITERAL':
+                return node.value;
+                
+            case 'FIELD':
+                return this.fieldValues[node.value] ?? `[[${node.value}]]`;
+                
+            case 'CONCAT':
+                return node.children.map(c => this.stringify(this.evaluate(c))).join('');
+                
+            case 'FUNCTION':
+                return this.evaluateFunction(node.value, node.children);
+                
+            default:
+                return '';
+        }
+    }
+    
+    stringify(value) {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'boolean') return value ? '1' : '0';
+        return String(value);
+    }
+    
+    toNumber(value) {
+        if (typeof value === 'number') return value;
+        const str = this.stringify(value).replace(/[^0-9.\-]/g, '');
+        return parseFloat(str) || 0;
+    }
+    
+    toBoolean(value) {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'number') return value > 0;
+        const str = this.stringify(value).toLowerCase();
+        return str === 'true' || str === '1' || (parseFloat(str) > 0);
+    }
+    
+    parseDate(value) {
+        const str = this.stringify(value);
+        const d = new Date(str);
+        return isNaN(d.getTime()) ? null : d;
+    }
+    
+    evaluateFunction(name, argNodes) {
+        const status = FUNCTION_STATUS[name];
+        if (status === 'not-implemented') {
+            return `[${name}: Not available - requires ProcessPlan backend]`;
+        }
+        
+        // Helper to evaluate args lazily
+        const evalArg = (index) => this.evaluate(argNodes[index]);
+        const evalAllArgs = () => argNodes.map(n => this.evaluate(n));
+        
+        switch (name) {
+            // String functions
+            case 'APPEND': {
+                const args = evalAllArgs();
+                const separator = this.stringify(args[0]);
+                return args.slice(1).map(a => this.stringify(a)).filter(s => s !== '').join(separator);
+            }
+            
+            case 'CONTAINS': {
+                const search = this.stringify(evalArg(0)).toLowerCase();
+                const text = this.stringify(evalArg(1)).toLowerCase();
+                return text.includes(search) ? 1 : 0;
+            }
+            
+            case '!CONTAINS': {
+                const search = this.stringify(evalArg(0)).toLowerCase();
+                const text = this.stringify(evalArg(1)).toLowerCase();
+                return !text.includes(search) ? 1 : 0;
+            }
+            
+            case 'EQUALS': {
+                const args = evalAllArgs();
+                const first = this.stringify(args[0]);
+                return args.slice(1).every(a => this.stringify(a) === first) ? 1 : 0;
+            }
+            
+            case '!EQUALS': {
+                const args = evalAllArgs();
+                const first = this.stringify(args[0]);
+                return args.slice(1).every(a => this.stringify(a) !== first) ? 1 : 0;
+            }
+            
+            case 'LEFT': {
+                const count = this.toNumber(evalArg(0));
+                const str = this.stringify(evalArg(1));
+                return str.substring(0, count);
+            }
+            
+            case 'RIGHT': {
+                const count = this.toNumber(evalArg(0));
+                const str = this.stringify(evalArg(1));
+                return str.substring(str.length - count);
+            }
+            
+            case 'LEFTOF': {
+                const search = this.stringify(evalArg(0));
+                const str = this.stringify(evalArg(1));
+                const idx = str.indexOf(search);
+                return idx >= 0 ? str.substring(0, idx) : str;
+            }
+            
+            case 'RIGHTOF': {
+                const search = this.stringify(evalArg(0));
+                const str = this.stringify(evalArg(1));
+                const idx = str.indexOf(search);
+                return idx >= 0 ? str.substring(idx + search.length) : '';
+            }
+            
+            case 'LEFTOFLAST': {
+                const search = this.stringify(evalArg(0));
+                const str = this.stringify(evalArg(1));
+                const idx = str.lastIndexOf(search);
+                return idx >= 0 ? str.substring(0, idx) : str;
+            }
+            
+            case 'RIGHTOFLAST': {
+                const search = this.stringify(evalArg(0));
+                const str = this.stringify(evalArg(1));
+                const idx = str.lastIndexOf(search);
+                return idx >= 0 ? str.substring(idx + search.length) : '';
+            }
+            
+            case 'LENGTH': {
+                return this.stringify(evalArg(0)).length;
+            }
+            
+            case 'LOWERCASE': {
+                return this.stringify(evalArg(0)).toLowerCase();
+            }
+            
+            case 'UPPERCASE': {
+                return this.stringify(evalArg(0)).toUpperCase();
+            }
+            
+            case 'TITLECASE': {
+                return this.stringify(evalArg(0)).replace(/\w\S*/g, txt => 
+                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                );
+            }
+            
+            case 'TRIM': {
+                return this.stringify(evalArg(0)).trim().replace(/\s+/g, ' ');
+            }
+            
+            case 'REPLACE': {
+                const search = this.stringify(evalArg(0));
+                const replacement = this.stringify(evalArg(1));
+                const str = this.stringify(evalArg(2));
+                return str.split(search).join(replacement);
+            }
+            
+            case 'REMOVECHARS': {
+                const str = this.stringify(evalArg(0));
+                const chars = this.stringify(evalArg(1));
+                let result = str;
+                for (const c of chars) {
+                    result = result.split(c).join('');
+                }
+                return result;
+            }
+            
+            case 'REMOVESPACES': {
+                return this.stringify(evalArg(0)).replace(/\s/g, '');
+            }
+            
+            case 'REMOVEDIACRITICS': {
+                return this.stringify(evalArg(0)).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+            
+            case 'REMOVESYMBOLS': {
+                return this.stringify(evalArg(0)).replace(/[^a-zA-Z0-9\s]/g, '');
+            }
+            
+            case 'NORMALIZETEXT': {
+                return this.stringify(evalArg(0)).replace(/\s+/g, '').replace(/<[^>]*>/g, '');
+            }
+            
+            case 'PARSE': {
+                const leftMarker = this.stringify(evalArg(0));
+                const rightMarker = this.stringify(evalArg(1));
+                const str = this.stringify(evalArg(2));
+                const leftIdx = str.indexOf(leftMarker);
+                if (leftIdx < 0) return '';
+                const afterLeft = str.substring(leftIdx + leftMarker.length);
+                const rightIdx = afterLeft.indexOf(rightMarker);
+                return rightIdx >= 0 ? afterLeft.substring(0, rightIdx) : afterLeft;
+            }
+            
+            case 'REGEXFIND': {
+                try {
+                    const pattern = this.stringify(evalArg(0));
+                    const str = this.stringify(evalArg(1));
+                    const regex = new RegExp(pattern);
+                    const match = str.match(regex);
+                    return match ? match[0] : '';
+                } catch (e) {
+                    return `[Regex error: ${e.message}]`;
+                }
+            }
+            
+            case 'REGEXWORDSONLY': {
+                const text = this.stringify(evalArg(0));
+                return text.split(/\s+/).map(w => w.replace(/[^a-zA-Z0-9]/g, '')).filter(w => w).join('|');
+            }
+            
+            case 'URLENCODE': {
+                return encodeURIComponent(this.stringify(evalArg(0)));
+            }
+            
+            case 'ENCLOSE': {
+                return this.stringify(evalArg(0));
+            }
+            
+            // Number functions
+            case 'CALC': {
+                // Evaluate all parts and concatenate to form expression
+                const exprParts = argNodes.map(n => this.stringify(this.evaluate(n)));
+                const expr = exprParts.join('');
+                try {
+                    // Safe math evaluation (only basic operations)
+                    const sanitized = expr.replace(/[^0-9+\-*/%().\s]/g, '');
+                    return Function('"use strict"; return (' + sanitized + ')')();
+                } catch (e) {
+                    return `[Calc error: ${e.message}]`;
+                }
+            }
+            
+            case 'NUM': {
+                const str = this.stringify(evalArg(0));
+                const nums = str.match(/-?\d+\.?\d*/);
+                return nums ? parseFloat(nums[0]) : 0;
+            }
+            
+            case 'NUMSPLIT': {
+                const str = this.stringify(evalArg(0));
+                const nums = str.match(/-?\d+\.?\d*/g);
+                return nums ? nums.join(';') : '';
+            }
+            
+            case 'ROUND': {
+                const decimals = this.toNumber(evalArg(0));
+                const num = this.toNumber(evalArg(1));
+                return Number(num.toFixed(decimals));
+            }
+            
+            case 'FLOOR': {
+                return Math.floor(this.toNumber(evalArg(0)));
+            }
+            
+            case 'CEILING': {
+                return Math.ceil(this.toNumber(evalArg(0)));
+            }
+            
+            case 'MAX': {
+                const nums = evalAllArgs().map(a => this.toNumber(a));
+                return Math.max(...nums);
+            }
+            
+            case 'MIN': {
+                const nums = evalAllArgs().map(a => this.toNumber(a));
+                return Math.min(...nums);
+            }
+            
+            case 'SUM': {
+                const nums = evalAllArgs().map(a => this.toNumber(a));
+                return nums.reduce((sum, n) => sum + n, 0);
+            }
+            
+            case 'RANDOMNUM': {
+                const min = this.toNumber(evalArg(0));
+                const max = this.toNumber(evalArg(1));
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            
+            case 'PARTITION': {
+                const num = this.toNumber(evalArg(0));
+                const divisor = this.toNumber(evalArg(1));
+                const parts = [];
+                let remaining = num;
+                while (remaining > 0) {
+                    const part = Math.min(divisor, remaining);
+                    parts.push(part);
+                    remaining -= part;
+                }
+                return parts.join(';');
+            }
+            
+            // Comparison functions
+            case 'GTNUM': {
+                return this.toNumber(evalArg(0)) > this.toNumber(evalArg(1)) ? 1 : 0;
+            }
+            
+            case 'GTENUM': {
+                return this.toNumber(evalArg(0)) >= this.toNumber(evalArg(1)) ? 1 : 0;
+            }
+            
+            case 'LTNUM': {
+                return this.toNumber(evalArg(0)) < this.toNumber(evalArg(1)) ? 1 : 0;
+            }
+            
+            case 'LTENUM': {
+                return this.toNumber(evalArg(0)) <= this.toNumber(evalArg(1)) ? 1 : 0;
+            }
+            
+            case 'BENUM': {
+                const num = this.toNumber(evalArg(0));
+                const min = this.toNumber(evalArg(1));
+                const max = this.toNumber(evalArg(2));
+                return (num >= min && num <= max) ? 1 : 0;
+            }
+            
+            // Logic functions
+            case 'IF': {
+                // Process condition-result pairs
+                for (let i = 0; i < argNodes.length - 1; i += 2) {
+                    const condition = this.toBoolean(evalArg(i));
+                    if (condition) {
+                        return evalArg(i + 1);
+                    }
+                }
+                // Last argument is the else case (if odd number of args)
+                if (argNodes.length % 2 === 1) {
+                    return evalArg(argNodes.length - 1);
+                }
+                return '';
+            }
+            
+            case 'HASVALUE': {
+                const val = this.stringify(evalArg(0)).trim();
+                return val !== '' ? 1 : 0;
+            }
+            
+            case 'ISEMPTY': {
+                const val = this.stringify(evalArg(0)).trim();
+                return val === '' ? 1 : 0;
+            }
+            
+            case 'ISTRUE': {
+                return evalAllArgs().every(a => this.toBoolean(a)) ? 1 : 0;
+            }
+            
+            case 'ANYTRUE': {
+                return evalAllArgs().some(a => this.toBoolean(a)) ? 1 : 0;
+            }
+            
+            case 'NOT': {
+                return this.toBoolean(evalArg(0)) ? 0 : 1;
+            }
+            
+            case 'FIRSTVALUE': {
+                for (const node of argNodes) {
+                    const val = this.stringify(this.evaluate(node)).trim();
+                    if (val !== '') return val;
+                }
+                return '';
+            }
+            
+            // List functions
+            case 'SPLIT': {
+                const delimiter = this.stringify(evalArg(0));
+                const index = this.toNumber(evalArg(1));
+                const str = this.stringify(evalArg(2));
+                const parts = str.split(delimiter);
+                if (index === 0) return parts.join(';');
+                return parts[index - 1] || '';
+            }
+            
+            case 'LISTCOUNT': {
+                const args = evalAllArgs();
+                // If single argument with semicolons, split it
+                if (args.length === 1) {
+                    return this.stringify(args[0]).split(';').filter(s => s.trim()).length;
+                }
+                return args.filter(a => this.stringify(a).trim()).length;
+            }
+            
+            case 'LISTINDEX': {
+                const index = this.toNumber(evalArg(0));
+                const list = this.stringify(evalArg(1)).split(';');
+                if (index === 0) return list.join(';');
+                return list[index - 1] || '';
+            }
+            
+            case 'LISTJOIN': {
+                let separator = this.stringify(evalArg(0));
+                // Handle special keywords
+                separator = separator
+                    .replace(/ppnewline/gi, '\n')
+                    .replace(/ppcrlf/gi, '\r\n')
+                    .replace(/pptab/gi, '\t')
+                    .replace(/ppsp/gi, ' ');
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.join(separator);
+            }
+            
+            case 'LISTMERGE': {
+                const list1 = this.stringify(evalArg(0)).split(';').filter(s => s);
+                const list2 = this.stringify(evalArg(1)).split(';').filter(s => s);
+                return [...new Set([...list1, ...list2])].join(';');
+            }
+            
+            case 'LISTDIFF': {
+                const list1 = this.stringify(evalArg(0)).split(';').filter(s => s);
+                const list2 = new Set(this.stringify(evalArg(1)).split(';').filter(s => s));
+                return list1.filter(item => !list2.has(item)).join(';');
+            }
+            
+            case 'LISTINTERSECT': {
+                const list1 = this.stringify(evalArg(0)).split(';').filter(s => s);
+                const list2 = new Set(this.stringify(evalArg(1)).split(';').filter(s => s));
+                return list1.filter(item => list2.has(item)).join(';');
+            }
+            
+            case 'LISTUNIQUE': {
+                const list = this.stringify(evalArg(0)).split(';').filter(s => s);
+                return [...new Set(list)].join(';');
+            }
+            
+            case 'LISTASLINES': {
+                return this.stringify(evalArg(0)).split(';').join('\n');
+            }
+            
+            case 'LINESPLIT': {
+                const index = this.toNumber(evalArg(0));
+                const lines = this.stringify(evalArg(1)).split(/\r?\n/);
+                if (index === 0) return lines.join(';');
+                return lines[index - 1] || '';
+            }
+            
+            case 'WORDSPLIT': {
+                const index = this.toNumber(evalArg(0));
+                const words = this.stringify(evalArg(1)).split(/\s+/).filter(w => w);
+                if (index === 0) return words.join(';');
+                return words[index - 1] || '';
+            }
+            
+            case 'EMAILSPLIT': {
+                const index = this.toNumber(evalArg(0));
+                const text = this.stringify(evalArg(1));
+                const emails = text.match(/[^\s,;]+@[^\s,;]+/g) || [];
+                if (index === 0) return emails.join(';');
+                return emails[index - 1] || '';
+            }
+            
+            case 'LISTITEMAPPEND': {
+                const append = this.stringify(evalArg(0));
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.map(item => item + append).join(';');
+            }
+            
+            case 'LISTITEMPREPEND': {
+                const prepend = this.stringify(evalArg(0));
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.map(item => prepend + item).join(';');
+            }
+            
+            case 'LISTITEMCONTAINS': {
+                const search = this.stringify(evalArg(0)).toLowerCase();
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.filter(item => item.toLowerCase().includes(search)).join(';');
+            }
+            
+            case 'LISTITEMSTARTSWITH': {
+                const search = this.stringify(evalArg(0)).toLowerCase();
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.filter(item => item.toLowerCase().startsWith(search)).join(';');
+            }
+            
+            case 'LISTITEMENDSWITH': {
+                const search = this.stringify(evalArg(0)).toLowerCase();
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.filter(item => item.toLowerCase().endsWith(search)).join(';');
+            }
+            
+            case 'LISTITEMLEFT': {
+                const count = this.toNumber(evalArg(0));
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.map(item => item.substring(0, count)).join(';');
+            }
+            
+            case 'LISTITEMRIGHT': {
+                const count = this.toNumber(evalArg(0));
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.map(item => item.substring(item.length - count)).join(';');
+            }
+            
+            case 'LISTITEMLEFTOF': {
+                const search = this.stringify(evalArg(0));
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.map(item => {
+                    const idx = item.indexOf(search);
+                    return idx >= 0 ? item.substring(0, idx) : item;
+                }).join(';');
+            }
+            
+            case 'LISTITEMRIGHTOF': {
+                const search = this.stringify(evalArg(0));
+                const list = this.stringify(evalArg(1)).split(';');
+                return list.map(item => {
+                    const idx = item.indexOf(search);
+                    return idx >= 0 ? item.substring(idx + search.length) : '';
+                }).join(';');
+            }
+            
+            case 'LISTITEMREGEX': {
+                try {
+                    const pattern = this.stringify(evalArg(0));
+                    const list = this.stringify(evalArg(1)).split(';');
+                    const regex = new RegExp(pattern);
+                    return list.filter(item => regex.test(item)).join(';');
+                } catch (e) {
+                    return `[Regex error: ${e.message}]`;
+                }
+            }
+            
+            // Date functions
+            case 'YEAR': {
+                const d = this.parseDate(evalArg(0));
+                return d ? d.getFullYear() : 0;
+            }
+            
+            case 'MONTH': {
+                const d = this.parseDate(evalArg(0));
+                return d ? d.getMonth() + 1 : 0;
+            }
+            
+            case 'MONTHDAY': {
+                const d = this.parseDate(evalArg(0));
+                return d ? d.getDate() : 0;
+            }
+            
+            case 'DATEPART': {
+                const part = this.stringify(evalArg(0)).toLowerCase();
+                const d = this.parseDate(evalArg(1));
+                if (!d) return 0;
+                switch (part) {
+                    case 'year': return d.getFullYear();
+                    case 'month': return d.getMonth() + 1;
+                    case 'day': return d.getDate();
+                    case 'weekday': return d.getDay();
+                    case 'hour': return d.getHours();
+                    case 'minute': return d.getMinutes();
+                    case 'second': return d.getSeconds();
+                    case 'yearday': return Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 86400000) + 1;
+                    default: return 0;
+                }
+            }
+            
+            case 'DATESERIAL': {
+                const year = this.toNumber(evalArg(0));
+                const month = this.toNumber(evalArg(1)) - 1;
+                const day = this.toNumber(evalArg(2));
+                const d = new Date(year, month, day);
+                return d.toISOString().split('T')[0];
+            }
+            
+            case 'DATEDIFF': {
+                const unit = this.stringify(evalArg(0)).toLowerCase();
+                const d1 = this.parseDate(evalArg(1));
+                const d2 = this.parseDate(evalArg(2));
+                if (!d1 || !d2) return 0;
+                const diffMs = d2 - d1;
+                switch (unit) {
+                    case 'second': return Math.floor(diffMs / 1000);
+                    case 'minute': return Math.floor(diffMs / 60000);
+                    case 'hour': return Math.floor(diffMs / 3600000);
+                    case 'day': return Math.floor(diffMs / 86400000);
+                    case 'week': return Math.floor(diffMs / 604800000);
+                    case 'month': return (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+                    case 'year': return d2.getFullYear() - d1.getFullYear();
+                    default: return Math.floor(diffMs / 86400000);
+                }
+            }
+            
+            case 'DATEADD': {
+                const unit = this.stringify(evalArg(0)).toLowerCase();
+                const amount = this.toNumber(evalArg(1));
+                const d = this.parseDate(evalArg(2));
+                if (!d) return '';
+                const result = new Date(d);
+                switch (unit) {
+                    case 'second': result.setSeconds(result.getSeconds() + amount); break;
+                    case 'minute': result.setMinutes(result.getMinutes() + amount); break;
+                    case 'hour': result.setHours(result.getHours() + amount); break;
+                    case 'day': result.setDate(result.getDate() + amount); break;
+                    case 'weekday': {
+                        const sign = Math.sign(amount) || 1;
+                        const abs = Math.abs(amount);
+                        const fullWeeks = Math.floor(abs / 5);
+                        const remainder = abs % 5;
+                        // Step 1: add full workweeks
+                        result.setDate(result.getDate() + sign * fullWeeks * 7);
+                        // Step 2: handle remainder
+                        let dow = result.getDay();
+                        // Normalize weekday index (Mon=0 ... Fri=4)
+                        const weekdayIndex =
+                            dow === 0 ? -1 :
+                            dow === 6 ? -2 :
+                            dow - 1;
+                        let extraDays = remainder;
+                        // Crossing weekend?
+                        if (weekdayIndex + remainder >= 5) {
+                            extraDays += 2;
+                        }
+                        result.setDate(result.getDate() + sign * extraDays);
+                        break;
+                    }
+                    case 'week': result.setDate(result.getDate() + (amount * 7)); break;
+                    case 'month': result.setMonth(result.getMonth() + amount); break;
+                    case 'year': result.setFullYear(result.getFullYear() + amount); break;
+                }
+                return result.toISOString().split('T')[0];
+            }
+            
+            case 'DATELIST': {
+                const d1 = this.parseDate(evalArg(0));
+                const d2 = this.parseDate(evalArg(1));
+                if (!d1 || !d2) return '';
+                const dates = [];
+                const current = new Date(d1);
+                while (current <= d2) {
+                    dates.push(current.toISOString().split('T')[0]);
+                    current.setDate(current.getDate() + 1);
+                }
+                return dates.join(';');
+            }
+            
+            case 'DATETIMEMERGE': {
+                const dateStr = this.stringify(evalArg(0));
+                const timeStr = this.stringify(evalArg(1));
+                return `${dateStr} ${timeStr}`;
+            }
+            
+            case 'DATEROUND': {
+                const unit = this.stringify(evalArg(0)).toLowerCase();
+                const interval = this.toNumber(evalArg(1));
+                const d = this.parseDate(evalArg(2));
+                if (!d) return '';
+                // Simplified rounding
+                return d.toISOString().split('T')[0];
+            }
+            
+            case 'GTDATE': {
+                const d1 = this.parseDate(evalArg(0));
+                const d2 = this.parseDate(evalArg(1));
+                return (d1 && d2 && d1 > d2) ? 1 : 0;
+            }
+            
+            case 'GTEDATE': {
+                const d1 = this.parseDate(evalArg(0));
+                const d2 = this.parseDate(evalArg(1));
+                return (d1 && d2 && d1 >= d2) ? 1 : 0;
+            }
+            
+            case 'LTDATE': {
+                const d1 = this.parseDate(evalArg(0));
+                const d2 = this.parseDate(evalArg(1));
+                return (d1 && d2 && d1 < d2) ? 1 : 0;
+            }
+            
+            case 'LTEDATE': {
+                const d1 = this.parseDate(evalArg(0));
+                const d2 = this.parseDate(evalArg(1));
+                return (d1 && d2 && d1 <= d2) ? 1 : 0;
+            }
+            
+            case 'BDATE': {
+                const d = this.parseDate(evalArg(0));
+                const d1 = this.parseDate(evalArg(1));
+                const d2 = this.parseDate(evalArg(2));
+                return (d && d1 && d2 && d > d1 && d < d2) ? 1 : 0;
+            }
+            
+            case 'MONTHLASTDAY': {
+                const d = this.parseDate(evalArg(0));
+                if (!d) return '';
+                const offset = argNodes.length > 1 ? this.toNumber(evalArg(1)) : 0;
+                const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+                lastDay.setDate(lastDay.getDate() + offset);
+                return lastDay.toISOString().split('T')[0];
+            }
+            
+            case 'FISCALMONTH': {
+                const startMonth = this.toNumber(evalArg(0));
+                const d = this.parseDate(evalArg(1));
+                if (!d) return 0;
+                const month = d.getMonth() + 1;
+                let fiscalMonth = month - startMonth + 1;
+                if (fiscalMonth <= 0) fiscalMonth += 12;
+                return fiscalMonth;
+            }
+            
+            case 'FISCALYEAR': {
+                const startMonth = this.toNumber(evalArg(0));
+                const d = this.parseDate(evalArg(1));
+                if (!d) return 0;
+                const month = d.getMonth() + 1;
+                let year = d.getFullYear();
+                if (month < startMonth) year--;
+                return year;
+            }
+            
+            // JSON functions
+            case 'JSONENCODE': {
+                return JSON.stringify(this.stringify(evalArg(0)));
+            }
+            
+            case 'JSONEXTRACT': {
+                const str = this.stringify(evalArg(0));
+                const match = str.match(/[\[{].*[\]}]/s);
+                return match ? match[0] : '';
+            }
+            
+            case 'JSONQUERY': {
+                const path = this.stringify(evalArg(0));
+                const jsonStr = this.stringify(evalArg(1));
+                try {
+                    const obj = JSON.parse(jsonStr);
+                    const parts = path.split('.');
+                    let current = obj;
+                    for (const part of parts) {
+                        if (current === null || current === undefined) return '';
+                        current = current[part];
+                    }
+                    return typeof current === 'object' ? JSON.stringify(current) : this.stringify(current);
+                } catch (e) {
+                    return `[JSON error: ${e.message}]`;
+                }
+            }
+            
+            case 'JSONUPDATE': {
+                const jsonStr = this.stringify(evalArg(0));
+                const prop = this.stringify(evalArg(1));
+                const value = evalArg(2);
+                try {
+                    const obj = jsonStr ? JSON.parse(jsonStr) : {};
+                    obj[prop] = value;
+                    return JSON.stringify(obj);
+                } catch (e) {
+                    return `[JSON error: ${e.message}]`;
+                }
+            }
+            
+            case 'JSONINDEX': {
+                const index = this.toNumber(evalArg(0));
+                const jsonStr = this.stringify(evalArg(1));
+                try {
+                    const arr = JSON.parse(jsonStr);
+                    if (!Array.isArray(arr)) return '';
+                    const idx = index < 0 ? arr.length + index : index;
+                    const item = arr[idx];
+                    return typeof item === 'object' ? JSON.stringify(item) : this.stringify(item);
+                } catch (e) {
+                    return `[JSON error: ${e.message}]`;
+                }
+            }
+            
+            case 'JSONREMOVE': {
+                const index = this.toNumber(evalArg(0));
+                const jsonStr = this.stringify(evalArg(1));
+                try {
+                    const arr = JSON.parse(jsonStr);
+                    if (!Array.isArray(arr)) return jsonStr;
+                    arr.splice(index, 1);
+                    return JSON.stringify(arr);
+                } catch (e) {
+                    return `[JSON error: ${e.message}]`;
+                }
+            }
+            
+            case 'JSONFIFO': {
+                const jsonStr = this.stringify(evalArg(0));
+                const newItem = evalArg(1);
+                const maxLen = this.toNumber(evalArg(2));
+                try {
+                    let arr = jsonStr ? JSON.parse(jsonStr) : [];
+                    if (!Array.isArray(arr)) arr = [];
+                    arr.unshift(typeof newItem === 'string' ? JSON.parse(newItem) : newItem);
+                    if (maxLen > 0 && arr.length > maxLen) {
+                        arr = arr.slice(0, maxLen);
+                    }
+                    return JSON.stringify(arr);
+                } catch (e) {
+                    return `[JSON error: ${e.message}]`;
+                }
+            }
+            
+            case 'FORMAT': {
+                const format = this.stringify(evalArg(0));
+                const value = evalArg(1);
+                // Try to format as number
+                const num = this.toNumber(value);
+                if (!isNaN(num)) {
+                    // Count decimal places in format
+                    const decimalMatch = format.match(/\.(\d+)/);
+                    const decimals = decimalMatch ? decimalMatch[1].length : 0;
+                    return num.toFixed(decimals);
+                }
+                // Try to format as date
+                const d = this.parseDate(value);
+                if (d) {
+                    return d.toLocaleDateString();
+                }
+                return this.stringify(value);
+            }
+            
+            default:
+                return `[Unknown function: ${name}]`;
+        }
+    }
+}
+
+// Main compile function
+function compileFormula() {
+    const code = textarea.value;
+    const outputEl = document.getElementById('compilerOutput');
+    
+    if (!code.trim()) {
+        outputEl.textContent = 'Enter a formula to compile...';
+        outputEl.className = 'output-box';
+        return;
+    }
+    
+    // Strip comments first
+    const cleanCode = stripComments(code);
+    
+    try {
+        // Tokenize
+        const tokens = compilerTokenize(cleanCode);
+        
+        // Parse into AST
+        const parser = new FormulaParser(tokens);
+        const ast = parser.parse();
+        
+        // Evaluate
+        const evaluator = new FormulaEvaluator(fieldValues);
+        const result = evaluator.evaluate(ast);
+        
+        outputEl.textContent = evaluator.stringify(result);
+        outputEl.className = 'output-box success';
+        showNotification('Formula compiled successfully!');
+    } catch (error) {
+        outputEl.textContent = `Error: ${error.message}`;
+        outputEl.className = 'output-box error';
+        showNotification('Compilation error', 'error');
+    }
+}
+
+// Toggle function status display
+function toggleFunctionStatus() {
+    const container = document.getElementById('functionStatusContainer');
+    const toggle = document.querySelector('.function-status-toggle');
+    container.classList.toggle('show');
+    toggle.textContent = container.classList.contains('show') ? 'Hide Details' : 'Show Details';
+}
+
+// Render function status grid
+function renderFunctionStatus() {
+    const summaryEl = document.getElementById('functionStatusSummary');
+    const gridEl = document.getElementById('functionStatusGrid');
+    
+    let implemented = 0, partial = 0, notImplemented = 0;
+    
+    const items = Object.entries(FUNCTION_STATUS).map(([name, status]) => {
+        if (status === 'implemented') implemented++;
+        else if (status === 'partial') partial++;
+        else notImplemented++;
+        
+        const icon = status === 'implemented' ? '✓' : status === 'partial' ? '◐' : '✗';
+        return `<div class="function-status-item ${status}"><span class="status-icon">${icon}</span>${name}</div>`;
+    });
+    
+    summaryEl.innerHTML = `
+        <div class="status-count implemented">✓ ${implemented} Implemented</div>
+        <div class="status-count partial">◐ ${partial} Partial</div>
+        <div class="status-count not-implemented">✗ ${notImplemented} Not Available</div>
+    `;
+    
+    gridEl.innerHTML = items.join('');
 }
 
 function escapeRegex(string) {
@@ -3019,6 +4486,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSavedTheme();
     renderFunctions(FUNCTION_DOCS);
     renderFormulasList();
+    renderFunctionStatus();
     updateEditor();
 });
 </script>
