@@ -152,7 +152,7 @@ const FUNCTION_DATA = {
         params: ['FormatString', 'NumberOrDate'],
         description: 'Formats number/date according to format string.',
         example: '=FORMAT(0.00; [[Price]])',
-        status: 'implemented'
+        status: 'partial'
     },
     'GTDATE': {
         params: ['IsThisDate', 'GreaterThanThisDate'],
