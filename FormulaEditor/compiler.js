@@ -659,6 +659,13 @@ class FormulaEvaluator {
                 const max = this.toNumber(evalArg(2));
                 return (num >= min && num <= max) ? 1 : 0;
             }
+
+            case 'BNUM': {
+                const num = this.toNumber(evalArg(0));
+                const min = this.toNumber(evalArg(1));
+                const max = this.toNumber(evalArg(2));
+                return (num > min && num < max) ? 1 : 0;
+            }
             
             // Logic functions
             case 'IF': {
