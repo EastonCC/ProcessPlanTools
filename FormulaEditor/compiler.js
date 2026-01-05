@@ -1021,7 +1021,14 @@ class FormulaEvaluator {
                 const d2 = this.parseDate(evalArg(2));
                 return (d && d1 && d2 && d > d1 && d < d2) ? 1 : 0;
             }
-            
+
+            case 'BEDATE': {
+                const d = this.parseDate(evalArg(0));
+                const d1 = this.parseDate(evalArg(1));
+                const d2 = this.parseDate(evalArg(2));
+                return (d && d1 && d2 && d >= d1 && d <= d2) ? 1 : 0;
+            }
+                
             case 'MONTHLASTDAY': {
                 const d = this.parseDate(evalArg(0));
                 if (!d) return '';
