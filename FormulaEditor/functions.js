@@ -36,7 +36,7 @@ const FUNCTION_DATA = {
     },
     'BEDATE': {
         params: ['IsThisDate', 'GreaterThanOrEqualToThisDate', 'AndLessThanOrEqualToThisDate'],
-        description: 'Returns 1 if the date is between two other dates (inclusive), 0 if false.',
+        description: 'Returns 1 if the date is between or equal to two other dates (inclusive), 0 if false.',
         example: '=BEDATE([[DueDate]]; 2024-01-01; 2024-12-31)',
         status: 'implemented'
     },
@@ -44,6 +44,12 @@ const FUNCTION_DATA = {
         params: ['IsThisNum', 'GreaterThanOrEqualToThisNum', 'AndLessThanOrEqualToThisNum'],
         description: 'Returns 1 if number is between or equal to two numbers (inclusive).',
         example: '=BENUM([[Score]]; 0; 100)',
+        status: 'implemented'
+    },
+    'BNUM': {
+        params: ['IsThisNum', 'GreaterThanThisNum', 'AndLessThanThisNum'],
+        description: 'Returns 1 if number is between two numbers (exclusive).',
+        example: '=BNUM([[Score]]; 0; 100)',
         status: 'implemented'
     },
     'CALC': {
