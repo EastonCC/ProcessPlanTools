@@ -1,0 +1,1397 @@
+/**
+ * ProcessPlan Formula Editor - Main Editor Logic
+ * Requires: functions.js to be loaded first
+ */
+
+// DOM Elements
+const textarea = document.getElementById('codeTextarea');
+const highlight = document.getElementById('codeHighlight');
+const lineNumbers = document.getElementById('lineNumbers');
+const codeEditor = document.getElementById('codeEditor');
+const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+const parameterHint = document.getElementById('parameterHint');
+
+// State
+let isFormatting = false;
+let autocompleteVisible = false;
+let autocompleteItems = [];
+let selectedIndex = 0;
+let autocompleteStart = -1;
+let autocompleteExistingParen = false;
+let autocompleteReplaceEnd = -1;
+let savedFormulas = JSON.parse(localStorage.getItem('savedFormulas') || '[]');
+let fieldValues = {};
+
+// Settings
+let settings = {
+    autoFormatOnPaste: true,
+    autoComplete: true,
+    parameterHints: true
+};
+
+// Helper function to modify textarea while preserving undo/redo history
+function insertTextAtCursor(text, selectStart = null, selectEnd = null) {
+    textarea.focus();
+    document.execCommand('insertText', false, text);
+    if (selectStart !== null) {
+        const pos = selectEnd !== null ? selectEnd : selectStart;
+        textarea.setSelectionRange(selectStart, pos);
+    }
+}
+
+// Helper to replace a range of text while preserving undo history
+function replaceTextRange(start, end, newText, cursorPos = null) {
+    textarea.focus();
+    textarea.setSelectionRange(start, end);
+    document.execCommand('insertText', false, newText);
+    if (cursorPos !== null) {
+        textarea.setSelectionRange(cursorPos, cursorPos);
+    }
+}
+
+// Helper to set entire textarea content while preserving undo history
+function setTextareaContent(content, cursorPos = 0) {
+    textarea.focus();
+    textarea.setSelectionRange(0, textarea.value.length);
+    document.execCommand('insertText', false, content);
+    textarea.setSelectionRange(cursorPos, cursorPos);
+}
+
+// Settings management
+function loadSettings() {
+    const saved = localStorage.getItem('editorSettings');
+    if (saved) {
+        settings = { ...settings, ...JSON.parse(saved) };
+    }
+    const autoFormatToggle = document.getElementById('autoFormatToggle');
+    const autoCompleteToggle = document.getElementById('autoCompleteToggle');
+    const paramHintsToggle = document.getElementById('paramHintsToggle');
+    
+    if (autoFormatToggle) autoFormatToggle.checked = settings.autoFormatOnPaste;
+    if (autoCompleteToggle) autoCompleteToggle.checked = settings.autoComplete;
+    if (paramHintsToggle) paramHintsToggle.checked = settings.parameterHints;
+}
+
+function saveSettings() {
+    localStorage.setItem('editorSettings', JSON.stringify(settings));
+}
+
+function updateSetting(key, value) {
+    settings[key] = value;
+    saveSettings();
+    
+    if (!settings.parameterHints) {
+        hideParameterHint();
+    } else {
+        updateParameterHint();
+    }
+    
+    if (!settings.autoComplete) {
+        hideAutocomplete();
+    }
+}
+
+function toggleSettingsModal() {
+    const overlay = document.getElementById('settingsModalOverlay');
+    overlay.classList.toggle('show');
+}
+
+// Get current word being typed (after =)
+function getCurrentFunctionPrefix() {
+    const cursorPos = textarea.selectionStart;
+    const text = textarea.value.substring(0, cursorPos);
+    const textAfter = textarea.value.substring(cursorPos);
+    
+    // Find the last = sign and get text after it
+    const lastEquals = text.lastIndexOf('=');
+    if (lastEquals === -1) return null;
+    
+    const afterEquals = text.substring(lastEquals + 1);
+    
+    // Check if we're still typing the function name (letters, and optionally starting with !)
+    if (/^!?[a-zA-Z]*$/.test(afterEquals)) {
+        // Check what comes after the cursor
+        const afterMatch = textAfter.match(/^(!?[a-zA-Z]*)\s*(\(?)/);
+        
+        if (afterMatch) {
+            const remainingName = afterMatch[1];
+            const hasParen = afterMatch[2] === '(';
+            const fullName = (afterEquals + remainingName).toUpperCase();
+            
+            // If there's a parenthesis after, check if the full function name is valid
+            if (hasParen) {
+                // If the full name is a valid function, block autocomplete (already complete)
+                if (FUNCTIONS.has(fullName)) {
+                    return null;
+                }
+                // If invalid function name before existing paren, show autocomplete to fix it
+                // Include info about existing parenthesis so we don't duplicate it
+                return { 
+                    prefix: afterEquals.toUpperCase(), 
+                    start: lastEquals,
+                    existingParen: true,
+                    replaceEnd: cursorPos + remainingName.length
+                };
+            }
+        }
+        
+        return { prefix: afterEquals.toUpperCase(), start: lastEquals, existingParen: false, replaceEnd: cursorPos };
+    }
+    
+    return null;
+}
+
+function updateAutocomplete() {
+    const result = getCurrentFunctionPrefix();
+    
+    if (result === null) {
+        hideAutocomplete();
+        return;
+    }
+    
+    const { prefix, start, existingParen, replaceEnd } = result;
+    autocompleteStart = start;
+    autocompleteExistingParen = existingParen;
+    autocompleteReplaceEnd = replaceEnd;
+    
+    // Filter functions that start with the prefix
+    autocompleteItems = FUNCTION_LIST.filter(fn => fn.startsWith(prefix));
+    
+    if (autocompleteItems.length === 0) {
+        hideAutocomplete();
+        return;
+    }
+    
+    selectedIndex = 0;
+    renderAutocomplete();
+    positionAutocomplete();
+    showAutocomplete();
+}
+
+function renderAutocomplete() {
+    autocompleteDropdown.innerHTML = autocompleteItems.map((item, index) => 
+        `<div class="autocomplete-item${index === selectedIndex ? ' selected' : ''}" data-index="${index}" data-value="${item}">=${item}()</div>`
+    ).join('');
+    
+    // Add click handlers
+    autocompleteDropdown.querySelectorAll('.autocomplete-item').forEach(el => {
+        el.addEventListener('click', () => {
+            selectAutocompleteItem(parseInt(el.dataset.index));
+        });
+    });
+}
+
+function positionAutocomplete() {
+    // Get cursor position in textarea
+    const cursorPos = textarea.selectionStart;
+    
+    // Create a temporary span to measure text position
+    const textBeforeCursor = textarea.value.substring(0, cursorPos);
+    const lines = textBeforeCursor.split('\n');
+    const currentLineIndex = lines.length - 1;
+    const currentLineText = lines[currentLineIndex];
+    
+    // Calculate position
+    const lineHeight = 20.8; // Approximate line height (13px * 1.6)
+    const charWidth = 7.8; // Approximate character width for monospace
+    
+    const top = (currentLineIndex + 1) * lineHeight + 16; // +16 for padding
+    const left = currentLineText.length * charWidth + 16 + 50; // +50 for line numbers width
+    
+    autocompleteDropdown.style.top = `${Math.min(top, 400)}px`;
+    autocompleteDropdown.style.left = `${Math.min(left, 300)}px`;
+}
+
+function showAutocomplete() {
+    autocompleteDropdown.classList.add('show');
+    autocompleteVisible = true;
+}
+
+function hideAutocomplete() {
+    autocompleteDropdown.classList.remove('show');
+    autocompleteVisible = false;
+    autocompleteItems = [];
+    selectedIndex = 0;
+}
+
+function selectAutocompleteItem(index) {
+    if (index < 0 || index >= autocompleteItems.length) return;
+    
+    const selectedFunction = autocompleteItems[index];
+    const params = getFunctionParams(selectedFunction);
+    
+    // If there's already a parenthesis, just replace the function name
+    if (autocompleteExistingParen) {
+        const insertion = `=${selectedFunction}`;
+        const newPos = autocompleteStart + insertion.length;
+        
+        replaceTextRange(autocompleteStart, autocompleteReplaceEnd, insertion, newPos);
+        
+        hideAutocomplete();
+        updateEditor();
+        updateParameterHint();
+        textarea.focus();
+        return;
+    }
+    
+    // Build the full function structure with proper indentation
+    const currentText = textarea.value.substring(0, autocompleteStart);
+    const lastNewline = currentText.lastIndexOf('\n');
+    const currentLineStart = currentText.substring(lastNewline + 1);
+    const baseIndent = currentLineStart.match(/^(\t*)/)[1] || '';
+    const innerIndent = baseIndent + '\t';
+    
+    let insertion;
+    let cursorOffset;
+    
+    if (params.length === 0) {
+        // No parameters - just insert function with empty parens
+        insertion = `=${selectedFunction}()`;
+        cursorOffset = insertion.length - 1; // Position cursor inside ()
+    } else {
+        // Has parameters - create multi-line structure
+        insertion = `=${selectedFunction}(\n${innerIndent}\n${baseIndent})`;
+        cursorOffset = `=${selectedFunction}(\n${innerIndent}`.length; // Position cursor on the indented line
+    }
+    
+    const newPos = autocompleteStart + cursorOffset;
+    
+    replaceTextRange(autocompleteStart, autocompleteReplaceEnd, insertion, newPos);
+    
+    hideAutocomplete();
+    updateEditor();
+    updateParameterHint();
+    textarea.focus();
+}
+
+function navigateAutocomplete(direction) {
+    if (!autocompleteVisible || autocompleteItems.length === 0) return;
+    
+    selectedIndex += direction;
+    
+    if (selectedIndex < 0) selectedIndex = autocompleteItems.length - 1;
+    if (selectedIndex >= autocompleteItems.length) selectedIndex = 0;
+    
+    renderAutocomplete();
+    
+    // Scroll selected item into view
+    const selectedEl = autocompleteDropdown.querySelector('.autocomplete-item.selected');
+    if (selectedEl) {
+        selectedEl.scrollIntoView({ block: 'nearest' });
+    }
+}
+
+// Parameter hint functions
+function getCurrentFunctionContext() {
+    const cursorPos = textarea.selectionStart;
+    const text = textarea.value.substring(0, cursorPos);
+    
+    // Track function calls and their positions
+    let functionStack = [];
+    let bracketDepth = 0;
+    let i = 0;
+    
+    while (i < text.length) {
+        const char = text[i];
+        
+        // Track brackets to ignore content inside [[ ]]
+        if (char === '[') bracketDepth++;
+        if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
+        
+        // Look for function pattern: =FUNCTIONNAME( or just FUNCTIONNAME( for nested
+        if (bracketDepth === 0) {
+            // Check for function start
+            let functionMatch = null;
+            
+            // Check if this could be start of a function name
+            if (char === '=' || (functionStack.length > 0 && /[A-Z!]/.test(char))) {
+                let nameStart = char === '=' ? i + 1 : i;
+                let name = '';
+                let j = nameStart;
+                
+                while (j < text.length && /[A-Z!]/.test(text[j])) {
+                    name += text[j];
+                    j++;
+                }
+                
+                if (text[j] === '(' && FUNCTIONS.has(name)) {
+                    functionStack.push({
+                        name: name,
+                        paramIndex: 0,
+                        start: i
+                    });
+                    i = j; // Skip to the (
+                }
+            }
+            
+            // Count semicolons for current function's parameter index
+            if (char === ';' && functionStack.length > 0) {
+                functionStack[functionStack.length - 1].paramIndex++;
+            }
+            
+            // Handle closing parenthesis
+            if (char === ')' && functionStack.length > 0) {
+                functionStack.pop();
+            }
+        }
+        
+        i++;
+    }
+    
+    // Return the full function stack (not just innermost)
+    return functionStack.length > 0 ? functionStack : null;
+}
+
+function updateParameterHint() {
+    const contextStack = getCurrentFunctionContext();
+    
+    if (!contextStack || contextStack.length === 0) {
+        hideParameterHint();
+        return;
+    }
+    
+    // Build hint HTML for each function in the stack
+    const hintLines = contextStack.map((context, stackIndex) => {
+        const params = getFunctionParams(context.name);
+        if (!params || params.length === 0) {
+            return null;
+        }
+        
+        const indent = '  '.repeat(stackIndex);
+        const paramHtml = params.map((param, index) => {
+            const isActive = index === context.paramIndex || 
+                            (index === params.length - 1 && context.paramIndex >= params.length);
+            // Highlight active param for ALL functions in the stack
+            return `<span class="param${isActive ? ' active' : ''}">${param}</span>`;
+        }).join('<span class="param">; </span>');
+        
+        return `<div class="hint-line">${indent}<span class="function-name">${context.name}</span>(${paramHtml})</div>`;
+    }).filter(line => line !== null);
+    
+    if (hintLines.length === 0) {
+        hideParameterHint();
+        return;
+    }
+    
+    parameterHint.innerHTML = hintLines.join('');
+    showParameterHint();
+}
+
+function showParameterHint() {
+    parameterHint.classList.add('show');
+}
+
+function hideParameterHint() {
+    parameterHint.classList.remove('show');
+}
+
+// Format formula with indentation
+function formatFormula(formula) {
+    let result = '';
+    let indentLevel = 0;
+    const indentSize = 3;
+    let bracketDepth = 0;
+    let inString = false;
+    let stringChar = '';
+
+    for (let i = 0; i < formula.length; i++) {
+        const char = formula[i];
+        
+        // Track string literals (single or double quotes)
+        if ((char === '"' || char === "'") && (i === 0 || formula[i-1] !== '\\')) {
+            if (!inString) {
+                inString = true;
+                stringChar = char;
+            } else if (char === stringChar) {
+                inString = false;
+            }
+        }
+
+        if (char === '[') bracketDepth++;
+        if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
+
+        // If inside brackets or string, preserve everything as-is
+        if (bracketDepth > 0 || inString) {
+            result += char;
+            continue;
+        }
+
+        if (char === '(') {
+            result += char;
+            indentLevel++;
+            if (i + 1 < formula.length && formula[i + 1] !== ')') {
+                result += '\n' + ' '.repeat(indentLevel * indentSize);
+            }
+        } else if (char === ')') {
+            indentLevel = Math.max(0, indentLevel - 1);
+            if (result.trim().slice(-1) !== '(') {
+                result += '\n' + ' '.repeat(indentLevel * indentSize);
+            }
+            result += char;
+        } else if (char === ',' || char === ';') {
+            result += char + '\n' + ' '.repeat(indentLevel * indentSize);
+        } else if (char.match(/\s/)) {
+            // Skip whitespace outside of brackets/strings (formatting handles indentation)
+            // But preserve spaces that are part of the content on the current line
+            const lastNewline = result.lastIndexOf('\n');
+            const currentLine = result.substring(lastNewline + 1);
+            // Only skip if we're at the start of a line (after indentation is handled)
+            if (currentLine.trim().length > 0) {
+                result += char;
+            }
+        } else {
+            result += char;
+        }
+    }
+
+    // Remove blank lines (lines that contain only whitespace)
+    result = result.split('\n').filter(line => line.trim().length > 0).join('\n');
+
+    return result;
+}
+
+
+
+
+// Tokenize for syntax highlighting
+function tokenize(code) {
+    const tokens = [];
+    let i = 0;
+    let functionDepthStack = [];
+
+    while (i < code.length) {
+        // Handle comments - // until end of line
+        if (code[i] === '/' && code[i + 1] === '/') {
+            let value = '';
+            while (i < code.length && code[i] !== '\n') {
+                value += code[i];
+                i++;
+            }
+            tokens.push({ type: 'comment', value });
+            continue;
+        }
+
+        if (/\s/.test(code[i])) {
+            let value = '';
+            while (i < code.length && /\s/.test(code[i])) {
+                value += code[i];
+                i++;
+            }
+            tokens.push({ type: 'whitespace', value });
+            continue;
+        }
+
+        if (code[i] === '"') {
+            let value = '"';
+            i++;
+            while (i < code.length && code[i] !== '"') {
+                value += code[i];
+                i++;
+            }
+            if (i < code.length) {
+                value += '"';
+                i++;
+            }
+            tokens.push({ type: 'string', value });
+            continue;
+        }
+
+        if (code[i] === "'") {
+            let value = "'";
+            i++;
+            while (i < code.length && code[i] !== "'") {
+                value += code[i];
+                i++;
+            }
+            if (i < code.length) {
+                value += "'";
+                i++;
+            }
+            tokens.push({ type: 'string', value });
+            continue;
+        }
+
+        if (/\d/.test(code[i])) {
+            let value = '';
+            while (i < code.length && /[\d.]/.test(code[i])) {
+                value += code[i];
+                i++;
+            }
+            tokens.push({ type: 'number', value });
+            continue;
+        }
+
+        // Handle function names starting with !
+        if (code[i] === '!' && i + 1 < code.length && /[a-zA-Z]/.test(code[i + 1])) {
+            let value = '!';
+            i++;
+            while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) {
+                value += code[i];
+                i++;
+            }
+            if (code[i] === '(' && FUNCTIONS.has(value.toUpperCase())) {
+                tokens.push({ type: 'function', value: value + '(' });
+                functionDepthStack.push(1);
+                i++;
+            } else {
+                tokens.push({ type: 'identifier', value });
+            }
+            continue;
+        }
+
+        if (/[a-zA-Z_]/.test(code[i])) {
+            let value = '';
+            while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) {
+                value += code[i];
+                i++;
+            }
+            if (code[i] === '(' && FUNCTIONS.has(value.toUpperCase())) {
+                tokens.push({ type: 'function', value: value + '(' });
+                functionDepthStack.push(1);
+                i++;
+            } else {
+                tokens.push({ type: 'identifier', value });
+            }
+            continue;
+        }
+
+        if (code[i] === '(') {
+            for (let j = 0; j < functionDepthStack.length; j++) {
+                functionDepthStack[j]++;
+            }
+            tokens.push({ type: 'parenthesis', value: '(' });
+            i++;
+            continue;
+        }
+
+        if (code[i] === ')') {
+            let isClosingFunction = false;
+            for (let j = functionDepthStack.length - 1; j >= 0; j--) {
+                functionDepthStack[j]--;
+                if (functionDepthStack[j] === 0) {
+                    isClosingFunction = true;
+                    functionDepthStack.splice(j, 1);
+                    break;
+                }
+            }
+            tokens.push({ type: isClosingFunction ? 'function' : 'parenthesis', value: ')' });
+            i++;
+            continue;
+        }
+
+        if (/[+\-*\/=<>&|;,]/.test(code[i])) {
+            tokens.push({ type: 'operator', value: code[i] });
+            i++;
+            continue;
+        }
+
+        if (code[i] === '[' || code[i] === ']') {
+            tokens.push({ type: 'bracket', value: code[i] });
+            i++;
+            continue;
+        }
+
+        tokens.push({ type: 'other', value: code[i] });
+        i++;
+    }
+
+    return tokens;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function applySyntaxHighlighting(code) {
+    const tokens = tokenize(code);
+    return tokens.map(token => {
+        const escaped = escapeHtml(token.value);
+        switch (token.type) {
+            case 'function': return `<span class="function">${escaped}</span>`;
+            case 'string': return `<span class="string">${escaped}</span>`;
+            case 'number': return `<span class="number">${escaped}</span>`;
+            case 'operator': return `<span class="operator">${escaped}</span>`;
+            case 'parenthesis': return `<span class="parenthesis">${escaped}</span>`;
+            case 'bracket': return `<span class="bracket">${escaped}</span>`;
+            case 'comment': return `<span class="comment">${escaped}</span>`;
+            default: return escaped;
+        }
+    }).join('');
+}
+
+function updateLineNumbers(code) {
+    const lines = code.split('\n');
+    lineNumbers.innerHTML = lines.map((_, i) => 
+        `<div class="line-number">${i + 1}</div>`
+    ).join('');
+}
+
+function updateEditor() {
+    const code = textarea.value;
+    highlight.innerHTML = applySyntaxHighlighting(code) + '\n';
+    updateLineNumbers(code);
+}
+
+function formatLive() { 
+    const raw = textarea.value;
+    const formatted = addIndentationAndSpacing(raw);
+    const highlighted = applySyntaxHighlighting(formatted);
+    formattedCode.innerHTML = highlighted;
+}
+
+// Handle paste - format the pasted content
+textarea.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const formatted = formatFormula(pastedText);
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const newPos = start + formatted.length;
+    
+    replaceTextRange(start, end, formatted, newPos);
+    
+    updateEditor();
+    hideAutocomplete();
+    updateParameterHint();
+    extractAndDisplayFields();
+    showNotification('Formula formatted!');
+});
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', (e) => {
+    if (!autocompleteDropdown.contains(e.target) && e.target !== textarea) {
+        hideAutocomplete();
+        hideParameterHint();
+    }
+});
+
+// Update parameter hint and autocomplete on cursor movement (click)
+textarea.addEventListener('click', () => {
+    updateAutocomplete();
+    updateParameterHint();
+});
+
+textarea.addEventListener('keyup', (e) => {
+    // Update on arrow keys for cursor movement (but not when navigating autocomplete)
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+        if (!autocompleteVisible) {
+            updateAutocomplete();
+        }
+        updateParameterHint();
+    }
+});
+
+// Hide hints when textarea loses focus
+textarea.addEventListener('blur', () => {
+    // Small delay to allow clicking on autocomplete items
+    setTimeout(() => {
+        if (document.activeElement !== textarea && !autocompleteDropdown.contains(document.activeElement)) {
+            hideAutocomplete();
+            hideParameterHint();
+        }
+    }, 150);
+});
+
+// Restore hints when textarea gains focus
+textarea.addEventListener('focus', () => {
+    updateAutocomplete();
+    updateParameterHint();
+});
+
+// Handle input for live updates (includes undo/redo)
+textarea.addEventListener('input', (e) => {
+    updateEditor();
+    updateAutocomplete();
+    updateParameterHint();
+    extractAndDisplayFields();
+   //formatLive();
+});
+
+// Sync scroll between textarea, highlight, and line numbers
+textarea.addEventListener('scroll', () => {
+    // Use transform for smoother sync of highlight layer
+    highlight.style.transform = `translate(${-textarea.scrollLeft}px, ${-textarea.scrollTop}px)`;
+    // Sync line numbers vertically
+    lineNumbers.style.transform = `translateY(${-textarea.scrollTop}px)`;
+});
+
+// Handle tab key
+textarea.addEventListener('keydown', (e) => {
+    // Handle autocomplete navigation
+    if (autocompleteVisible) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateAutocomplete(1);
+            return;
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateAutocomplete(-1);
+            return;
+        }
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            selectAutocompleteItem(selectedIndex);
+            return;
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            hideAutocomplete();
+            return;
+        }
+    }
+    
+    // Handle Enter - maintain current indentation
+    if (e.key === 'Enter' && !autocompleteVisible) {
+        e.preventDefault();
+        
+        const cursorPos = textarea.selectionStart;
+        const textBefore = textarea.value.substring(0, cursorPos);
+        
+        // Get the current line's indentation
+        const lastNewline = textBefore.lastIndexOf('\n');
+        const currentLine = textBefore.substring(lastNewline + 1);
+        const indentMatch = currentLine.match(/^(\s*)/);
+        const currentIndent = indentMatch ? indentMatch[1] : '';
+        
+        // Check if we're after an opening parenthesis - add extra indent
+        const charBefore = textBefore.trimEnd().slice(-1);
+        const indentSize = 3;
+        let insertion;
+        
+        if (charBefore === '(') {
+            // Add extra indentation after opening paren
+            const extraIndent = currentIndent + ' '.repeat(indentSize);
+            insertion = '\n' + extraIndent;
+        } else {
+            insertion = '\n' + currentIndent;
+        }
+        
+        const newPos = cursorPos + insertion.length;
+        
+        insertTextAtCursor(insertion, newPos, newPos);
+        updateEditor();
+        return;
+    }
+    
+    // Handle Backspace - delete entire indent level if cursor is in leading whitespace
+    if (e.key === 'Backspace') {
+        const cursorPos = textarea.selectionStart;
+        const selectionEnd = textarea.selectionEnd;
+        
+        // Only handle if no text is selected
+        if (cursorPos === selectionEnd && cursorPos > 0) {
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
+            
+            // Get current line info
+            const lastNewline = textBefore.lastIndexOf('\n');
+            const currentLineStart = lastNewline + 1;
+            const textOnCurrentLine = textBefore.substring(currentLineStart);
+            
+            // Check if we're in leading whitespace (only spaces before cursor on this line)
+            if (/^\s+$/.test(textOnCurrentLine)) {
+                const indentSize = 3;
+                const currentIndentLength = textOnCurrentLine.length;
+                
+                // Calculate how many spaces to remove to get to previous indent level
+                const spacesToRemove = currentIndentLength % indentSize === 0 
+                    ? indentSize 
+                    : currentIndentLength % indentSize;
+                
+                if (spacesToRemove > 0 && currentIndentLength >= spacesToRemove) {
+                    e.preventDefault();
+                    
+                    const newPos = cursorPos - spacesToRemove;
+                    replaceTextRange(newPos, cursorPos, '', newPos);
+                    
+                    updateEditor();
+                    return;
+                }
+            }
+        }
+    }
+    
+    // Handle Tab - indent selection or insert spaces
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const indentSize = 3;
+        const indent = ' '.repeat(indentSize);
+        
+        // Check if there's a selection spanning multiple characters
+        if (start !== end) {
+            const text = textarea.value;
+            
+            // Find the start of the first selected line
+            let lineStart = start;
+            while (lineStart > 0 && text[lineStart - 1] !== '\n') {
+                lineStart--;
+            }
+            
+            // Find the end of the last selected line
+            let lineEnd = end;
+            while (lineEnd < text.length && text[lineEnd] !== '\n') {
+                lineEnd++;
+            }
+            
+            // Get the selected lines
+            const selectedText = text.substring(lineStart, lineEnd);
+            const lines = selectedText.split('\n');
+            
+            let newText;
+            let newStart, newEnd;
+            
+            if (e.shiftKey) {
+                // Shift+Tab: Unindent
+                newText = lines.map(line => {
+                    if (line.startsWith(indent)) {
+                        return line.substring(indentSize);
+                    } else if (line.startsWith(' ')) {
+                        // Remove as many leading spaces as possible up to indentSize
+                        let spacesToRemove = 0;
+                        while (spacesToRemove < indentSize && line[spacesToRemove] === ' ') {
+                            spacesToRemove++;
+                        }
+                        return line.substring(spacesToRemove);
+                    }
+                    return line;
+                }).join('\n');
+                
+                const diff = selectedText.length - newText.length;
+                newStart = Math.max(lineStart, start - (lines[0].length - (newText.split('\n')[0] || '').length));
+                newEnd = end - diff;
+            } else {
+                // Tab: Indent
+                newText = lines.map(line => indent + line).join('\n');
+                newStart = start + indentSize;
+                newEnd = end + (lines.length * indentSize);
+            }
+            
+            // Replace the text
+            textarea.setSelectionRange(lineStart, lineEnd);
+            document.execCommand('insertText', false, newText);
+            
+            // Restore selection
+            textarea.setSelectionRange(
+                Math.max(0, newStart),
+                Math.min(textarea.value.length, newEnd)
+            );
+            
+            updateEditor();
+        } else {
+            // No selection - just insert spaces
+            insertTextAtCursor(indent, start + indentSize, start + indentSize);
+            updateEditor();
+        }
+    }
+});
+
+// Calculate indent level based on unmatched opening parens (outside brackets)
+function getIndentLevel(text) {
+    let level = 0;
+    let bracketDepth = 0;
+    
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === '[') bracketDepth++;
+        if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
+        
+        if (bracketDepth === 0) {
+            if (char === '(') level++;
+            if (char === ')') level = Math.max(0, level - 1);
+        }
+    }
+    
+    return level;
+}
+
+// Copy formatted (with indentation)
+// Remove comments from code
+function stripComments(code) {
+    // Remove comments (// to end of line) but preserve the newline
+    return code.replace(/\/\/[^\n]*/g, '');
+}
+
+function copyFormatted() {
+    const code = textarea.value;
+    if (!code.trim()) {
+        showNotification('Nothing to copy!', 'error');
+        return;
+    }
+    // Strip comments but keep formatting
+    let cleaned = stripComments(code);
+    // Remove empty lines that were just comments
+    cleaned = cleaned.split('\n').filter(line => line.trim() !== '').join('\n');
+    
+    navigator.clipboard.writeText(cleaned)
+        .then(() => showNotification('Copied formatted!'))
+        .catch(() => showNotification('Failed to copy', 'error'));
+}
+
+// Copy raw (without formatting)
+function copyRaw() {
+    const code = textarea.value;
+    if (!code.trim()) {
+        showNotification('Nothing to copy!', 'error');
+        return;
+    }
+    // Strip comments first
+    let raw = stripComments(code);
+    raw = raw.replace(/[\n\r\t]+/g, '');
+    raw = raw.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+    // Clean up any extra spaces left from removed comments
+    raw = raw.replace(/\s+/g, ' ').replace(/; /g, ';').replace(/ ;/g, ';');
+    
+    navigator.clipboard.writeText(raw)
+        .then(() => showNotification('Copied raw!'))
+        .catch(() => showNotification('Failed to copy', 'error'));
+}
+
+function clearEditor() {
+    setTextareaContent('', 0);
+    updateEditor();
+    extractAndDisplayFields();
+    showNotification('Cleared!');
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = 'notification' + (type === 'error' ? ' error' : '');
+    notification.classList.add('show');
+    setTimeout(() => notification.classList.remove('show'), 2500);
+}
+
+// Help modal
+function toggleHelpModal() {
+    document.getElementById('helpModal').classList.toggle('show');
+    document.getElementById('helpModalOverlay').classList.toggle('show');
+}
+
+// Theme toggle
+function toggleTheme() {
+    const body = document.body;
+    const themeIcon = document.querySelector('.theme-icon');
+    
+    body.classList.toggle('light-mode');
+    
+    const isLight = body.classList.contains('light-mode');
+    themeIcon.textContent = isLight ? '☀️' : '🌙';
+    
+    // Save preference to localStorage
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+// Load saved theme on page load
+function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const themeIcon = document.querySelector('.theme-icon');
+    
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        themeIcon.textContent = '☀️';
+    }
+}
+
+// Sidebar functions
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+// Left Sidebar - Saved Formulas functions
+function toggleFormulasSidebar() {
+    document.getElementById('leftSidebar').classList.toggle('open');
+    document.getElementById('leftSidebarOverlay').classList.toggle('show');
+}
+
+// Get saved formulas from localStorage
+function getSavedFormulas() {
+    const formulas = localStorage.getItem('savedFormulas');
+    return formulas ? JSON.parse(formulas) : [];
+}
+
+// Save formulas to localStorage
+function setSavedFormulas(formulas) {
+    localStorage.setItem('savedFormulas', JSON.stringify(formulas));
+}
+
+// Save current formula
+function saveFormula() {
+    const nameInput = document.getElementById('formulaNameInput');
+    const name = nameInput.value.trim();
+    const content = textarea.value;
+    
+    if (!name) {
+        showNotification('Please enter a formula name', 'error');
+        nameInput.focus();
+        return;
+    }
+    
+    if (!content.trim()) {
+        showNotification('Cannot save empty formula', 'error');
+        return;
+    }
+    
+    const formulas = getSavedFormulas();
+    
+    // Check if name already exists
+    const existingIndex = formulas.findIndex(f => f.name.toLowerCase() === name.toLowerCase());
+    
+    const formula = {
+        id: existingIndex >= 0 ? formulas[existingIndex].id : Date.now().toString(),
+        name: name,
+        content: content,
+        updatedAt: new Date().toISOString()
+    };
+    
+    if (existingIndex >= 0) {
+        formulas[existingIndex] = formula;
+        showNotification(`Formula "${name}" updated!`);
+    } else {
+        formulas.unshift(formula);
+        showNotification(`Formula "${name}" saved!`);
+    }
+    
+    setSavedFormulas(formulas);
+    nameInput.value = '';
+    renderFormulasList();
+}
+
+// Load a formula into the editor
+function loadFormula(id) {
+    const formulas = getSavedFormulas();
+    const formula = formulas.find(f => f.id === id);
+    
+    if (formula) {
+        setTextareaContent(formula.content, formula.content.length);
+        document.getElementById('formulaNameInput').value = formula.name;
+        updateEditor();
+        extractAndDisplayFields();
+        toggleFormulasSidebar();
+        showNotification(`Loaded "${formula.name}"`);
+    }
+}
+
+// Delete a formula
+function deleteFormula(id, event) {
+    event.stopPropagation();
+    
+    const formulas = getSavedFormulas();
+    const formula = formulas.find(f => f.id === id);
+    
+    if (formula && confirm(`Delete "${formula.name}"?`)) {
+        const updatedFormulas = formulas.filter(f => f.id !== id);
+        setSavedFormulas(updatedFormulas);
+        renderFormulasList();
+        showNotification(`Deleted "${formula.name}"`);
+    }
+}
+
+// Format date for display
+function formatDate(isoString) {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    
+    return date.toLocaleDateString();
+}
+
+// Render the formulas list
+function renderFormulasList() {
+    const formulas = getSavedFormulas();
+    const container = document.getElementById('formulasList');
+    
+    if (formulas.length === 0) {
+        container.innerHTML = `
+            <div class="no-formulas">
+                <div class="no-formulas-icon">📁</div>
+                <div>No saved formulas yet</div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = formulas.map(formula => `
+        <div class="formula-item" onclick="loadFormula('${formula.id}')">
+            <div class="formula-item-info">
+                <div class="formula-item-name">${escapeHtml(formula.name)}</div>
+                <div class="formula-item-date">${formatDate(formula.updatedAt)}</div>
+            </div>
+            <div class="formula-item-actions">
+                <button class="formula-action-btn delete" onclick="deleteFormula('${formula.id}', event)" title="Delete">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Export all formulas to a JSON file
+function exportFormulas() {
+    const formulas = getSavedFormulas();
+    
+    if (formulas.length === 0) {
+        showNotification('No formulas to export', 'error');
+        return;
+    }
+    
+    const exportData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        formulas: formulas
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `formulas-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification(`Exported ${formulas.length} formula${formulas.length > 1 ? 's' : ''}`);
+}
+
+// Import formulas from a JSON file
+function importFormulas(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            // Validate the import data
+            if (!data.formulas || !Array.isArray(data.formulas)) {
+                showNotification('Invalid import file format', 'error');
+                return;
+            }
+            
+            const existingFormulas = getSavedFormulas();
+            const existingNames = new Set(existingFormulas.map(f => f.name.toLowerCase()));
+            
+            let imported = 0;
+            let skipped = 0;
+            
+            for (const formula of data.formulas) {
+                // Validate each formula has required fields
+                if (!formula.name || !formula.content) {
+                    skipped++;
+                    continue;
+                }
+                
+                // Check for duplicates by name
+                if (existingNames.has(formula.name.toLowerCase())) {
+                    // Update existing formula
+                    const existingIndex = existingFormulas.findIndex(
+                        f => f.name.toLowerCase() === formula.name.toLowerCase()
+                    );
+                    if (existingIndex >= 0) {
+                        existingFormulas[existingIndex] = {
+                            ...existingFormulas[existingIndex],
+                            content: formula.content,
+                            updatedAt: new Date().toISOString()
+                        };
+                        imported++;
+                    }
+                } else {
+                    // Add new formula
+                    existingFormulas.unshift({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                        name: formula.name,
+                        content: formula.content,
+                        updatedAt: formula.updatedAt || new Date().toISOString()
+                    });
+                    existingNames.add(formula.name.toLowerCase());
+                    imported++;
+                }
+            }
+            
+            setSavedFormulas(existingFormulas);
+            renderFormulasList();
+            
+            if (imported > 0) {
+                showNotification(`Imported ${imported} formula${imported > 1 ? 's' : ''}${skipped > 0 ? `, ${skipped} skipped` : ''}`);
+            } else {
+                showNotification('No formulas were imported', 'error');
+            }
+        } catch (err) {
+            showNotification('Failed to parse import file', 'error');
+            console.error('Import error:', err);
+        }
+    };
+    
+    reader.readAsText(file);
+    
+    // Reset the file input so the same file can be imported again
+    event.target.value = '';
+}
+
+
+function extractFields(code) {
+    const fieldPattern = /\[\[\s*([^\]]+?)\s*\]\]/g;
+    const fields = new Set();
+    let match;
+    
+    while ((match = fieldPattern.exec(code)) !== null) {
+        fields.add(match[1].trim());
+    }
+    
+    return Array.from(fields).sort();
+}
+
+function extractAndDisplayFields() {
+    const code = textarea.value;
+    const fields = extractFields(code);
+    const container = document.getElementById('fieldsContainer');
+    
+    if (fields.length === 0) {
+        container.innerHTML = '<div class="no-fields">No fields detected. Add field tokens like [[FieldName]] to your formula.</div>';
+        return;
+    }
+    
+    // Preserve existing values
+    const oldValues = { ...fieldValues };
+    fieldValues = {};
+    
+    container.innerHTML = fields.map(field => {
+        const existingValue = oldValues[field] || '';
+        fieldValues[field] = existingValue;
+        return `
+            <div class="field-item">
+                <label class="field-label">[[ ${field} ]]</label>
+                <input type="text" 
+                       class="field-input" 
+                       placeholder="Enter value..."
+                       value="${escapeHtml(existingValue)}"
+                       onchange="updateFieldValue('${escapeHtml(field)}', this.value)"
+                       oninput="updateFieldValue('${escapeHtml(field)}', this.value)">
+            </div>
+        `;
+    }).join('');
+}
+
+function updateFieldValue(field, value) {
+    fieldValues[field] = value;
+}
+
+// ============================================
+// UI Functions
+// ============================================
+
+function toggleFunctionStatus() {
+    const container = document.getElementById('functionStatusContainer');
+    const toggle = document.querySelector('.function-status-toggle');
+    container.classList.toggle('show');
+    toggle.textContent = container.classList.contains('show') ? 'Hide Details' : 'Show Details';
+}
+
+function renderFunctionStatus() {
+    const summaryEl = document.getElementById('functionStatusSummary');
+    const gridEl = document.getElementById('functionStatusGrid');
+    
+    let implemented = 0, partial = 0, notImplemented = 0;
+    
+    const items = Object.entries(FUNCTION_DATA).map(([name, data]) => {
+        const status = data.status;
+        if (status === 'implemented') implemented++;
+        else if (status === 'partial') partial++;
+        else notImplemented++;
+        
+        const icon = status === 'implemented' ? '✓' : status === 'partial' ? '◐' : '✗';
+        return `<div class="function-status-item ${status}"><span class="status-icon">${icon}</span>${name}</div>`;
+    });
+    
+    summaryEl.innerHTML = `
+        <div class="status-count implemented">✓ ${implemented} Implemented</div>
+        <div class="status-count partial">◐ ${partial} Partial</div>
+        <div class="status-count not-implemented">✗ ${notImplemented} Not Available</div>
+    `;
+    
+    gridEl.innerHTML = items.join('');
+}
+
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function renderFunctionReference() {
+    const container = document.getElementById('functionList');
+    container.innerHTML = FUNCTION_LIST.map(name => {
+        const data = FUNCTION_DATA[name];
+        const syntax = getFunctionSyntax(name);
+        return `
+        <div class="function-item" data-name="${name}">
+            <div class="function-header" onclick="toggleFunction(this)">
+                <span class="function-name">=${name}()</span>
+                <span class="function-arrow">▼</span>
+            </div>
+            <div class="function-details">
+                <div class="function-syntax">${escapeHtml(syntax)}</div>
+                <div class="function-description">${data.description}</div>
+                <div class="function-example">
+                    <div class="function-example-label">Example</div>
+                    <div class="function-example-code">${escapeHtml(data.example)}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    }).join('');
+}
+
+function toggleFunction(header) {
+}
+
+function filterFunctions() {
+    const search = document.getElementById('functionSearch').value.toLowerCase();
+    const container = document.getElementById('functionList');
+    
+    const filtered = FUNCTION_LIST.filter(name => name.toLowerCase().includes(search));
+    
+    container.innerHTML = filtered.map(name => {
+        const data = FUNCTION_DATA[name];
+        const syntax = getFunctionSyntax(name);
+        return `
+        <div class="function-item" data-name="${name}">
+            <div class="function-header" onclick="toggleFunction(this)">
+                <span class="function-name">=${name}()</span>
+                <span class="function-arrow">▼</span>
+            </div>
+            <div class="function-details">
+                <div class="function-syntax">${escapeHtml(syntax)}</div>
+                <div class="function-description">${data.description}</div>
+                <div class="function-example">
+                    <div class="function-example-label">Example</div>
+                    <div class="function-example-code">${escapeHtml(data.example)}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    }).join('');
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadSavedTheme();
+    loadSettings();
+    renderFunctionReference();
+    renderFormulasList();
+    renderFunctionStatus();
+    updateEditor();
+});
