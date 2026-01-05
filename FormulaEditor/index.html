@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formula Editor</title>
+    <link rel="icon" type="image/png" href="faviconV2.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <div class="status-dot"></div>
+        <span class="header-title"><a href="../" style="color: inherit; text-decoration: none;">ProcessPlan Tools</a> | Formula Editor</span>
+    </div>
+    <div class="header-buttons">
+        <button class="help-btn" onclick="toggleHelpModal()" title="Help">
+            <span>?</span>
+        </button>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark mode">
+            <span class="theme-icon">🌙</span>
+        </button>
+        <button class="toggle-formulas-btn" onclick="toggleFormulasSidebar()">
+            <span>💾</span> View Saved Formulas
+        </button>
+        <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+            <span>📚</span> Functions
+        </button>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="help-modal-overlay" id="helpModalOverlay" onclick="toggleHelpModal()"></div>
+<div class="help-modal" id="helpModal">
+    <div class="help-modal-header">
+        <h2>Formula Editor Help</h2>
+        <button class="help-modal-close" onclick="toggleHelpModal()">×</button>
+    </div>
+    <div class="help-modal-content">
+        <section class="help-section">
+            <h3>What is this?</h3>
+            <p>The Formula Editor is a tool for writing and editing ProcessPlan formulas with syntax highlighting, auto-completion, and formatting.</p>
+        </section>
+        
+        <section class="help-section">
+            <h3>Features</h3>
+            <ul class="help-features-list">
+                <li>
+                    <strong>Syntax Highlighting</strong>
+                    <p>Functions, strings, numbers, and field tokens are color-coded for easy reading.</p>
+                </li>
+                <li>
+                    <strong>Auto-Complete</strong>
+                    <p>Type <code>=</code> followed by letters to see matching functions. Press <kbd>Tab</kbd> or <kbd>Enter</kbd> to insert the complete function structure.</p>
+                </li>
+                <li>
+                    <strong>Parameter Hints</strong>
+                    <p>When inside a function, see parameter names below the editor. The current parameter is highlighted. Works with nested functions too!</p>
+                </li>
+                <li>
+                    <strong>Auto-Formatting</strong>
+                    <p>Paste any formula and it will be automatically formatted with proper indentation.</p>
+                </li>
+                <li>
+                    <strong>Comments</strong>
+                    <p>Add notes with <code>// your comment</code>. Comments are automatically removed when copying the formula.</p>
+                </li>
+                <li>
+                    <strong>Save Formulas</strong>
+                    <p>Save formulas locally for quick access later. Import/export to share or backup.</p>
+                </li>
+                <li>
+                    <strong>Function Reference</strong>
+                    <p>Click "Functions" to browse all available ProcessPlan functions with descriptions and examples.</p>
+                </li>
+            </ul>
+        </section>
+        
+        <section class="help-section">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="help-shortcuts">
+                <div class="shortcut"><kbd>Tab</kbd> <span>Insert 2 spaces / Indent selection / Accept autocomplete</span></div>
+                <div class="shortcut"><kbd>Shift+Tab</kbd> <span>Unindent selection</span></div>
+                <div class="shortcut"><kbd>Enter</kbd> <span>New line with auto-indent</span></div>
+                <div class="shortcut"><kbd>Ctrl/Cmd+Z</kbd> <span>Undo</span></div>
+                <div class="shortcut"><kbd>Ctrl/Cmd+Y</kbd> <span>Redo</span></div>
+                <div class="shortcut"><kbd>Esc</kbd> <span>Close autocomplete</span></div>
+            </div>
+        </section>
+        
+        <section class="help-section">
+            <h3>Tips</h3>
+            <ul class="help-tips">
+                <li>Use <code>[[Field Name]]</code> syntax for field tokens</li>
+                <li>Add comments with <code>//</code> to document your formulas</li>
+                <li>Copy Formatted keeps indentation, Copy Raw removes it (both strip comments)</li>
+                <li>The compiler section is currently non-functioning.</li>
+            </ul>
+        </section>
+    </div>
+</div>
+
+<!-- Left Sidebar Overlay -->
+<div class="left-sidebar-overlay" id="leftSidebarOverlay" onclick="toggleFormulasSidebar()"></div>
+
+<!-- Left Sidebar - Saved Formulas -->
+<div class="left-sidebar" id="leftSidebar">
+    <div class="left-sidebar-header">
+        <span class="left-sidebar-title">Saved Formulas</span>
+        <button class="left-sidebar-close" onclick="toggleFormulasSidebar()">×</button>
+    </div>
+    <div class="save-section">
+        <div class="save-input-group">
+            <input type="text" class="save-input" id="formulaNameInput" placeholder="Formula name..." onkeydown="if(event.key === 'Enter') saveFormula()">
+            <button class="save-btn" onclick="saveFormula()">Save</button>
+        </div>
+    </div>
+    <div class="formulas-list-header">
+        <span>Your Formulas</span>
+        <div class="import-export-btns">
+            <button class="icon-btn" onclick="exportFormulas()" title="Export all formulas">
+                <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor">
+                    <path d="M256 48l-128 128h96v176h64V176h96L256 48z M416 352v96H96v-96H32v128c0 17.7 14.3 32 32 32h384c17.7 0 32-14.3 32-32V352h-64z"/>
+                </svg>
+            </button>
+            <button class="icon-btn" onclick="document.getElementById('importFile').click()" title="Import formulas">
+                <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor">
+                    <path d="M256 352l128-128h-96V48h-64v176h-96l128 128z M416 352v96H96v-96H32v128c0 17.7 14.3 32 32 32h384c17.7 0 32-14.3 32-32V352h-64z"/>
+                </svg>
+            </button>
+            <input type="file" id="importFile" accept=".json" style="display: none" onchange="importFormulas(event)">
+        </div>
+    </div>
+    <div class="formulas-list" id="formulasList">
+        <div class="no-formulas">
+            <div class="no-formulas-icon">📁</div>
+            <div>No saved formulas yet</div>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <span class="sidebar-title">Function Reference</span>
+        <button class="sidebar-close" onclick="toggleSidebar()">×</button>
+    </div>
+    <div class="sidebar-search">
+        <input type="text" id="functionSearch" placeholder="Search functions..." oninput="filterFunctions()">
+    </div>
+    <div class="sidebar-content" id="functionList">
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="editor-card">
+        <div class="editor-header">
+            <span class="editor-title">Formula Editor</span>
+            <div class="editor-actions">
+                <button class="btn btn-secondary" onclick="copyFormatted()">Copy Formatted</button>
+                <button class="btn btn-secondary" onclick="copyRaw()">Copy Raw</button>
+                <button class="btn btn-secondary" onclick="clearEditor()">Clear</button>
+            </div>
+        </div>
+        <div class="code-editor" id="codeEditor">
+            <div class="line-numbers-wrapper">
+                <div class="line-numbers" id="lineNumbers"></div>
+            </div>
+            <div class="code-area">
+                <div class="code-highlight" id="codeHighlight"></div>
+                <textarea class="code-textarea" id="codeTextarea" placeholder="Paste or type your formula here..." spellcheck="false"></textarea>
+                <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+            </div>
+        </div>
+        <div class="parameter-hint" id="parameterHint"></div>
+    </div>
+
+    <!-- Compiler Section -->
+    <div class="compiler-card">
+        <div class="compiler-header">
+            <span class="compiler-title">Formula Compiler</span>
+            <button class="btn btn-primary" onclick="compileFormula()">Compile</button>
+        </div>
+        <div class="compiler-content">
+            <div class="compiler-warning">
+                <span class="warning-icon">⚠️</span>
+                <span>For testing purposes only. Outputs may not exactly match ProcessPlan results.</span>
+            </div>
+            <div class="fields-section">
+                <div class="fields-title">Field Values</div>
+                <div id="fieldsContainer" class="fields-grid">
+                    <div class="no-fields">No fields detected. Add field tokens like [[FieldName]] to your formula.</div>
+                </div>
+            </div>
+            <div class="output-section">
+                <div class="output-title">Compiled Output</div>
+                <div id="compilerOutput" class="output-box">Output will appear here after compilation...</div>
+            </div>
+            <div class="function-status-section">
+                <div class="function-status-header">
+                    <span class="function-status-title">Function Support</span>
+                    <button class="function-status-toggle" onclick="toggleFunctionStatus()">Show Details</button>
+                </div>
+                <div class="function-status-container" id="functionStatusContainer">
+                    <div class="function-status-summary" id="functionStatusSummary"></div>
+                    <div class="function-status-grid" id="functionStatusGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="notification" class="notification"></div>
+
+<!-- Load JavaScript files in order -->
+<script src="functions.js"></script>
+<script src="compiler.js"></script>
+<script src="editor.js"></script>
+
+</body>
+</html>
