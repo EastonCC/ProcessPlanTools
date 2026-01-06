@@ -81,7 +81,7 @@
         <section class="help-section">
             <h3>Keyboard Shortcuts</h3>
             <div class="help-shortcuts">
-                <div class="shortcut"><kbd>Tab</kbd> <span>Insert 2 spaces / Indent selection / Accept autocomplete</span></div>
+                <div class="shortcut"><kbd>Tab</kbd> <span>Insert tab / Indent selection / Accept autocomplete</span></div>
                 <div class="shortcut"><kbd>Shift+Tab</kbd> <span>Unindent selection</span></div>
                 <div class="shortcut"><kbd>Enter</kbd> <span>New line with auto-indent</span></div>
                 <div class="shortcut"><kbd>Ctrl/Cmd+Z</kbd> <span>Undo</span></div>
@@ -168,14 +168,24 @@
                 <button class="btn btn-secondary" onclick="clearEditor()">Clear</button>
             </div>
         </div>
-        <div class="code-editor" id="codeEditor">
-            <div class="line-numbers-wrapper">
-                <div class="line-numbers" id="lineNumbers"></div>
+        <div class="editor-body">
+            <div class="code-editor" id="codeEditor">
+                <div class="line-numbers-wrapper">
+                    <div class="line-numbers" id="lineNumbers"></div>
+                </div>
+                <div class="code-area">
+                    <div class="code-highlight" id="codeHighlight"></div>
+                    <textarea class="code-textarea" id="codeTextarea" placeholder="Paste or type your formula here..." spellcheck="false"></textarea>
+                    <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+                </div>
             </div>
-            <div class="code-area">
-                <div class="code-highlight" id="codeHighlight"></div>
-                <textarea class="code-textarea" id="codeTextarea" placeholder="Paste or type your formula here..." spellcheck="false"></textarea>
-                <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+            <div class="function-help-panel" id="functionHelpPanel">
+                <div class="help-panel-header">
+                    <span class="help-panel-function">Function</span>
+                </div>
+                <div class="help-panel-description">Description will appear here</div>
+                <div class="help-panel-example-label">Example:</div>
+                <div class="help-panel-example">Example will appear here</div>
             </div>
         </div>
         <div class="parameter-hint" id="parameterHint"></div>
@@ -191,6 +201,22 @@
             <div class="compiler-warning">
                 <span class="warning-icon">⚠️</span>
                 <span>For testing purposes only. Outputs may not exactly match ProcessPlan results.</span>
+            </div>
+            <div class="video-tutorial-section">
+                <a href="#" class="video-tutorial-link" onclick="toggleVideoTutorial(event)">
+                    <span class="video-icon">▶</span>
+                    <span>How can I accurately test my formulas in ProcessPlan?</span>
+                </a>
+                <div class="video-container" id="videoContainer">
+                    <iframe 
+                        id="tutorialVideo"
+                        src="https://www.youtube.com/embed/qtF5p__t6-4"
+                        title="Evaluating Formulas in ProcessPlan" 
+                        frameborder="0" 
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen>
+                    </iframe>
+                </div>
             </div>
             <div class="fields-section">
                 <div class="fields-title">Field Values</div>
