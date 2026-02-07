@@ -29,19 +29,6 @@ let settings = {
     parameterHints: true
 };
 
-// Indentation settings - single source of truth
-const INDENT_SIZE = 1;
-const INDENT_CHAR = '\t';
-const INDENT_UNIT = INDENT_CHAR;
-
-// Helper function to get current line's leading whitespace
-function getCurrentIndent(text) {
-    const lastNewline = text.lastIndexOf('\n');
-    const currentLineStart = text.substring(lastNewline + 1);
-    const indentMatch = currentLineStart.match(/^([ \t]*)/);
-    return indentMatch ? indentMatch[1] : '';
-}
-
 // Helper function to modify textarea while preserving undo/redo history
 function insertTextAtCursor(text, selectStart = null, selectEnd = null) {
     textarea.focus();
@@ -94,9 +81,9 @@ function updateSetting(key, value) {
     saveSettings();
     
     if (!settings.parameterHints) {
-        hideAllHints();
+        hideParameterHint();
     } else {
-        updateAllHints();
+        updateParameterHint();
     }
     
     if (!settings.autoComplete) {
@@ -153,6 +140,7 @@ function getCurrentFunctionPrefix() {
     
     return null;
 }
+
 
 function updateAutocomplete() {
     const result = getCurrentFunctionPrefix();
@@ -242,15 +230,17 @@ function selectAutocompleteItem(index) {
         
         hideAutocomplete();
         updateEditor();
-        updateAllHints();
+        updateParameterHint();
         textarea.focus();
         return;
     }
     
     // Build the full function structure with proper indentation
     const currentText = textarea.value.substring(0, autocompleteStart);
-    const baseIndent = getCurrentIndent(currentText);
-    const innerIndent = baseIndent + INDENT_UNIT;
+    const lastNewline = currentText.lastIndexOf('\n');
+    const currentLineStart = currentText.substring(lastNewline + 1);
+    const baseIndent = currentLineStart.match(/^(\t*)/)[1] || '';
+    const innerIndent = baseIndent + '\t';
     
     let insertion;
     let cursorOffset;
@@ -271,7 +261,7 @@ function selectAutocompleteItem(index) {
     
     hideAutocomplete();
     updateEditor();
-    updateAllHints();
+    updateParameterHint();
     textarea.focus();
 }
 
@@ -357,7 +347,7 @@ function updateParameterHint() {
     const contextStack = getCurrentFunctionContext();
     
     if (!contextStack || contextStack.length === 0) {
-        hideAllHints();
+        hideParameterHint();
         return;
     }
     
@@ -380,7 +370,7 @@ function updateParameterHint() {
     }).filter(line => line !== null);
     
     if (hintLines.length === 0) {
-        hideAllHints();
+        hideParameterHint();
         return;
     }
     
@@ -396,110 +386,20 @@ function hideParameterHint() {
     parameterHint.classList.remove('show');
 }
 
-// Function help panel - shows description and example
-function updateFunctionHelp() {
-    const helpPanel = document.getElementById('functionHelpPanel');
-    if (!helpPanel) return;
-    
-    const contextStack = getCurrentFunctionContext();
-    
-    if (!contextStack || contextStack.length === 0) {
-        hideFunctionHelp();
-        return;
-    }
-    
-    // Get the innermost function (the one we're currently in)
-    const currentFunction = contextStack[contextStack.length - 1];
-    const funcName = currentFunction.name;
-    const funcData = FUNCTION_DATA[funcName];
-    
-    if (!funcData) {
-        hideFunctionHelp();
-        return;
-    }
-    
-    helpPanel.innerHTML = `
-        <div class="help-panel-header">
-            <span class="help-panel-function">${funcName}</span>
-            <span class="help-panel-status ${funcData.status}" title="${funcData.status === 'implemented' ? 'Implemented in the compiler' : funcData.status === 'partial' ? 'Partially implemented in the compiler' : 'Not implemented in the compiler'}">${funcData.status === 'implemented' ? '✓' : funcData.status === 'partial' ? '◐' : '✗'}</span>
-        </div>
-        <div class="help-panel-description">${funcData.description}</div>
-        <div class="help-panel-example-label">Example:</div>
-        <div class="help-panel-example">${escapeHtml(funcData.example)}</div>
-    `;
-    
-    showFunctionHelp();
-}
-
-function showFunctionHelp() {
-    const helpPanel = document.getElementById('functionHelpPanel');
-    if (helpPanel) helpPanel.classList.add('show');
-}
-
-function hideFunctionHelp() {
-    const helpPanel = document.getElementById('functionHelpPanel');
-    if (helpPanel) helpPanel.classList.remove('show');
-}
-
-// Helper to update all contextual hints
-function updateAllHints() {
-    updateParameterHint();
-    updateFunctionHelp();
-}
-
-// Helper to hide all hints
-function hideAllHints() {
-    hideParameterHint();
-    hideFunctionHelp();
-}
-
 // Format formula with indentation
 function formatFormula(formula) {
-    // First, normalize the formula by removing existing formatting
-    // This ensures consistent output regardless of input formatting
-    let normalized = '';
+    let result = '';
+    let indentLevel = 0;
+    const indentSize = 3;
     let bracketDepth = 0;
     let inString = false;
     let stringChar = '';
-    
+
     for (let i = 0; i < formula.length; i++) {
         const char = formula[i];
         
-        // Track string literals
-        if ((char === '"' || char === "'") && (i === 0 || formula[i-1] !== '\\')) {
-            if (!inString) {
-                inString = true;
-                stringChar = char;
-            } else if (char === stringChar) {
-                inString = false;
-            }
-        }
-        
-        // Track brackets
-        if (char === '[') bracketDepth++;
-        if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
-        
-        // Keep everything inside brackets or strings as-is
-        if (bracketDepth > 0 || inString) {
-            normalized += char;
-        } else if (!char.match(/\s/)) {
-            // Outside brackets/strings: keep non-whitespace only
-            normalized += char;
-        }
-    }
-    
-    // Now format the normalized formula
-    let result = '';
-    let indentLevel = 0;
-    bracketDepth = 0;
-    inString = false;
-    stringChar = '';
-
-    for (let i = 0; i < normalized.length; i++) {
-        const char = normalized[i];
-        
         // Track string literals (single or double quotes)
-        if ((char === '"' || char === "'") && (i === 0 || normalized[i-1] !== '\\')) {
+        if ((char === '"' || char === "'") && (i === 0 || formula[i-1] !== '\\')) {
             if (!inString) {
                 inString = true;
                 stringChar = char;
@@ -520,27 +420,33 @@ function formatFormula(formula) {
         if (char === '(') {
             result += char;
             indentLevel++;
-            // Look ahead to see if this is an empty function call
-            if (i + 1 < normalized.length && normalized[i + 1] !== ')') {
-                result += '\n' + INDENT_UNIT.repeat(indentLevel);
+            if (i + 1 < formula.length && formula[i + 1] !== ')') {
+                result += '\n' + ' '.repeat(indentLevel * indentSize);
             }
         } else if (char === ')') {
             indentLevel = Math.max(0, indentLevel - 1);
-            // Add newline before ) if the last line has content
-            const lastNewlineIdx = result.lastIndexOf('\n');
-            const lastLine = result.substring(lastNewlineIdx + 1);
-            const lastLineTrimmed = lastLine.trim();
-            
-            if (lastLineTrimmed.length > 0 && !result.trimEnd().endsWith('(')) {
-                result += '\n' + INDENT_UNIT.repeat(indentLevel);
+            if (result.trim().slice(-1) !== '(') {
+                result += '\n' + ' '.repeat(indentLevel * indentSize);
             }
             result += char;
         } else if (char === ',' || char === ';') {
-            result += char + '\n' + INDENT_UNIT.repeat(indentLevel);
+            result += char + '\n' + ' '.repeat(indentLevel * indentSize);
+        } else if (char.match(/\s/)) {
+            // Skip whitespace outside of brackets/strings (formatting handles indentation)
+            // But preserve spaces that are part of the content on the current line
+            const lastNewline = result.lastIndexOf('\n');
+            const currentLine = result.substring(lastNewline + 1);
+            // Only skip if we're at the start of a line (after indentation is handled)
+            if (currentLine.trim().length > 0) {
+                result += char;
+            }
         } else {
             result += char;
         }
     }
+
+    // Remove blank lines (lines that contain only whitespace)
+    result = result.split('\n').filter(line => line.trim().length > 0).join('\n');
 
     return result;
 }
@@ -729,7 +635,7 @@ function updateEditor() {
     updateLineNumbers(code);
 }
 
-function formatLive() { 
+function formatLive() {
     const raw = textarea.value;
     const formatted = addIndentationAndSpacing(raw);
     const highlighted = applySyntaxHighlighting(formatted);
@@ -750,7 +656,7 @@ textarea.addEventListener('paste', (e) => {
     
     updateEditor();
     hideAutocomplete();
-    updateAllHints();
+    updateParameterHint();
     extractAndDisplayFields();
     showNotification('Formula formatted!');
 });
@@ -759,14 +665,14 @@ textarea.addEventListener('paste', (e) => {
 document.addEventListener('click', (e) => {
     if (!autocompleteDropdown.contains(e.target) && e.target !== textarea) {
         hideAutocomplete();
-        hideAllHints();
+        hideParameterHint();
     }
 });
 
 // Update parameter hint and autocomplete on cursor movement (click)
 textarea.addEventListener('click', () => {
     updateAutocomplete();
-    updateAllHints();
+    updateParameterHint();
 });
 
 textarea.addEventListener('keyup', (e) => {
@@ -775,7 +681,7 @@ textarea.addEventListener('keyup', (e) => {
         if (!autocompleteVisible) {
             updateAutocomplete();
         }
-        updateAllHints();
+        updateParameterHint();
     }
 });
 
@@ -785,7 +691,7 @@ textarea.addEventListener('blur', () => {
     setTimeout(() => {
         if (document.activeElement !== textarea && !autocompleteDropdown.contains(document.activeElement)) {
             hideAutocomplete();
-            hideAllHints();
+            hideParameterHint();
         }
     }, 150);
 });
@@ -793,16 +699,16 @@ textarea.addEventListener('blur', () => {
 // Restore hints when textarea gains focus
 textarea.addEventListener('focus', () => {
     updateAutocomplete();
-    updateAllHints();
+    updateParameterHint();
 });
 
 // Handle input for live updates (includes undo/redo)
 textarea.addEventListener('input', (e) => {
     updateEditor();
     updateAutocomplete();
-    updateAllHints();
+    updateParameterHint();
     extractAndDisplayFields();
-   //formatLive();
+    formatLive();
 });
 
 // Sync scroll between textarea, highlight, and line numbers
@@ -845,7 +751,6 @@ textarea.addEventListener('keydown', (e) => {
         
         const cursorPos = textarea.selectionStart;
         const textBefore = textarea.value.substring(0, cursorPos);
-        const textAfter = textarea.value.substring(cursorPos);
         
         // Get the current line's indentation
         const lastNewline = textBefore.lastIndexOf('\n');
@@ -853,25 +758,14 @@ textarea.addEventListener('keydown', (e) => {
         const indentMatch = currentLine.match(/^(\s*)/);
         const currentIndent = indentMatch ? indentMatch[1] : '';
         
-        // Check if we're after an opening parenthesis ON THE CURRENT LINE - add extra indent
-        const currentLineTrimmed = currentLine.trimEnd();
-        const charBefore = currentLineTrimmed.slice(-1);
+        // Check if we're after an opening parenthesis - add extra indent
+        const charBefore = textBefore.trimEnd().slice(-1);
+        const indentSize = 3;
         let insertion;
         
         if (charBefore === '(') {
-            // Check if there's a ) immediately after cursor (empty parens case)
-            if (textAfter.trimStart().startsWith(')')) {
-                // Expand empty parens: put cursor on indented line, ) on line below at base indent
-                const innerIndent = currentIndent + INDENT_UNIT;
-                insertion = '\n' + innerIndent + '\n' + currentIndent;
-                const newPos = cursorPos + 1 + innerIndent.length; // Position cursor on the indented line
-                
-                insertTextAtCursor(insertion, newPos, newPos);
-                updateEditor();
-                return;
-            }
             // Add extra indentation after opening paren
-            const extraIndent = currentIndent + INDENT_UNIT;
+            const extraIndent = currentIndent + ' '.repeat(indentSize);
             insertion = '\n' + extraIndent;
         } else {
             insertion = '\n' + currentIndent;
@@ -899,61 +793,15 @@ textarea.addEventListener('keydown', (e) => {
             const currentLineStart = lastNewline + 1;
             const textOnCurrentLine = textBefore.substring(currentLineStart);
             
-            // Check if we're in leading whitespace (only spaces/tabs before cursor on this line)
-            // OR if the line is only whitespace and ) (cursor right before the paren)
-            const restOfLine = textAfter.split('\n')[0];
-            const isOnlyWhitespaceBeforeCursor = /^[ \t]*$/.test(textOnCurrentLine);
-            const restStartsWithParen = restOfLine.trimStart().startsWith(')');
-            
-            if (isOnlyWhitespaceBeforeCursor && restStartsWithParen) {
-                // Find the matching opening paren to determine correct indent
-                const textBeforeLine = lastNewline >= 0 ? textarea.value.substring(0, lastNewline) : '';
-                let parenDepth = 1;
-                let matchIndent = '';
-                let foundMatch = false;
-                
-                // Scan backwards to find matching (
-                for (let i = textBeforeLine.length - 1; i >= 0 && parenDepth > 0; i--) {
-                    const char = textBeforeLine[i];
-                    if (char === ')') parenDepth++;
-                    if (char === '(') {
-                        parenDepth--;
-                        if (parenDepth === 0) {
-                            // Found matching paren, get its line's indent
-                            const lineStart = textBeforeLine.lastIndexOf('\n', i) + 1;
-                            const line = textBeforeLine.substring(lineStart);
-                            const indentMatch = line.match(/^([ \t]*)/);
-                            matchIndent = indentMatch ? indentMatch[1] : '';
-                            foundMatch = true;
-                        }
-                    }
-                }
-                
-                // Snap to match indent if current indent differs
-                if (foundMatch && textOnCurrentLine !== matchIndent) {
-                    e.preventDefault();
-                    const newPos = currentLineStart + matchIndent.length;
-                    replaceTextRange(currentLineStart, cursorPos, matchIndent, newPos);
-                    updateEditor();
-                    return;
-                }
-                
-                // If already at correct indent (or no match found), check if we should delete the line
-                if (foundMatch && textOnCurrentLine === matchIndent && textOnCurrentLine.length === 0) {
-                    // Already at base indent with no whitespace - let normal backspace happen
-                    // This will merge with the previous line
-                    return;
-                }
-            }
-            
-            // Check if we're in leading whitespace for normal indent backspace
-            if (/^[ \t]+$/.test(textOnCurrentLine)) {
+            // Check if we're in leading whitespace (only spaces before cursor on this line)
+            if (/^\s+$/.test(textOnCurrentLine)) {
+                const indentSize = 3;
                 const currentIndentLength = textOnCurrentLine.length;
                 
-                // Normal indent backspace - remove one indent level
-                const spacesToRemove = currentIndentLength % INDENT_SIZE === 0 
-                    ? INDENT_SIZE 
-                    : currentIndentLength % INDENT_SIZE;
+                // Calculate how many spaces to remove to get to previous indent level
+                const spacesToRemove = currentIndentLength % indentSize === 0 
+                    ? indentSize 
+                    : currentIndentLength % indentSize;
                 
                 if (spacesToRemove > 0 && currentIndentLength >= spacesToRemove) {
                     e.preventDefault();
@@ -968,11 +816,13 @@ textarea.addEventListener('keydown', (e) => {
         }
     }
     
-    // Handle Tab - indent selection or insert tab
+    // Handle Tab - indent selection or insert spaces
     if (e.key === 'Tab') {
         e.preventDefault();
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
+        const indentSize = 3;
+        const indent = ' '.repeat(indentSize);
         
         // Check if there's a selection spanning multiple characters
         if (start !== end) {
@@ -1000,14 +850,12 @@ textarea.addEventListener('keydown', (e) => {
             if (e.shiftKey) {
                 // Shift+Tab: Unindent
                 newText = lines.map(line => {
-                    if (line.startsWith(INDENT_UNIT)) {
-                        return line.substring(INDENT_SIZE);
-                    } else if (line.startsWith('\t')) {
-                        return line.substring(1);
+                    if (line.startsWith(indent)) {
+                        return line.substring(indentSize);
                     } else if (line.startsWith(' ')) {
-                        // Remove leading spaces (up to a tab-width worth)
+                        // Remove as many leading spaces as possible up to indentSize
                         let spacesToRemove = 0;
-                        while (spacesToRemove < 4 && line[spacesToRemove] === ' ') {
+                        while (spacesToRemove < indentSize && line[spacesToRemove] === ' ') {
                             spacesToRemove++;
                         }
                         return line.substring(spacesToRemove);
@@ -1020,9 +868,9 @@ textarea.addEventListener('keydown', (e) => {
                 newEnd = end - diff;
             } else {
                 // Tab: Indent
-                newText = lines.map(line => INDENT_UNIT + line).join('\n');
-                newStart = start + INDENT_SIZE;
-                newEnd = end + (lines.length * INDENT_SIZE);
+                newText = lines.map(line => indent + line).join('\n');
+                newStart = start + indentSize;
+                newEnd = end + (lines.length * indentSize);
             }
             
             // Replace the text
@@ -1037,8 +885,8 @@ textarea.addEventListener('keydown', (e) => {
             
             updateEditor();
         } else {
-            // No selection - just insert tab
-            insertTextAtCursor(INDENT_UNIT, start + INDENT_SIZE, start + INDENT_SIZE);
+            // No selection - just insert spaces
+            insertTextAtCursor(indent, start + indentSize, start + indentSize);
             updateEditor();
         }
     }
@@ -1409,15 +1257,33 @@ function extractFields(code) {
     return Array.from(fields).sort();
 }
 
+// Track current fields to avoid unnecessary re-renders
+let currentFieldsList = [];
+
 function extractAndDisplayFields() {
     const code = textarea.value;
     const fields = extractFields(code);
     const container = document.getElementById('fieldsContainer');
     
     if (fields.length === 0) {
-        container.innerHTML = '<div class="no-fields">No fields detected. Add field tokens like [[FieldName]] to your formula.</div>';
+        if (currentFieldsList.length !== 0) {
+            container.innerHTML = '<div class="no-fields">No fields detected. Add field tokens like [[FieldName]] to your formula.</div>';
+            currentFieldsList = [];
+        }
         return;
     }
+    
+    // Check if fields list has changed
+    const fieldsChanged = fields.length !== currentFieldsList.length || 
+                          fields.some((f, i) => f !== currentFieldsList[i]);
+    
+    if (!fieldsChanged) {
+        // Fields haven't changed, don't re-render (preserves input values)
+        return;
+    }
+    
+    // Fields changed - need to re-render
+    currentFieldsList = fields;
     
     // Preserve existing values
     const oldValues = { ...fieldValues };
@@ -1426,18 +1292,27 @@ function extractAndDisplayFields() {
     container.innerHTML = fields.map(field => {
         const existingValue = oldValues[field] || '';
         fieldValues[field] = existingValue;
+        const escapedField = escapeHtml(field).replace(/'/g, "\\'");
         return `
             <div class="field-item">
-                <label class="field-label">[[ ${field} ]]</label>
+                <label class="field-label">[[ ${escapeHtml(field)} ]]</label>
                 <input type="text" 
                        class="field-input" 
+                       data-field="${escapeHtml(field)}"
                        placeholder="Enter value..."
-                       value="${escapeHtml(existingValue)}"
-                       onchange="updateFieldValue('${escapeHtml(field)}', this.value)"
-                       oninput="updateFieldValue('${escapeHtml(field)}', this.value)">
+                       onchange="updateFieldValue(this.dataset.field, this.value)"
+                       oninput="updateFieldValue(this.dataset.field, this.value)">
             </div>
         `;
     }).join('');
+    
+    // Set values programmatically to handle special characters properly
+    fields.forEach(field => {
+        const input = container.querySelector(`input[data-field="${CSS.escape(field)}"]`);
+        if (input && oldValues[field]) {
+            input.value = oldValues[field];
+        }
+    });
 }
 
 function updateFieldValue(field, value) {
@@ -1453,12 +1328,6 @@ function toggleFunctionStatus() {
     const toggle = document.querySelector('.function-status-toggle');
     container.classList.toggle('show');
     toggle.textContent = container.classList.contains('show') ? 'Hide Details' : 'Show Details';
-}
-
-function toggleVideoTutorial(event) {
-    event.preventDefault();
-    const container = document.getElementById('videoContainer');
-    container.classList.toggle('show');
 }
 
 function renderFunctionStatus() {
@@ -1515,6 +1384,7 @@ function renderFunctionReference() {
 }
 
 function toggleFunction(header) {
+    header.parentElement.classList.toggle('open');
 }
 
 function filterFunctions() {
