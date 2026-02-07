@@ -112,11 +112,6 @@ function compilerTokenize(formula) {
             i++;
             continue;
         }
-        if (formula[i] === ',') {
-            tokens.push({ type: 'COMMA', value: ',' });
-            i++;
-            continue;
-        }
         
         // Arithmetic operators for CALC
         if (/[+\-*/%]/.test(formula[i])) {
@@ -126,8 +121,9 @@ function compilerTokenize(formula) {
         }
         
         // Plain text/identifier (until we hit a delimiter)
+        // Commas are now treated as text, not separators
         let text = '';
-        while (i < formula.length && !/[\s\[\]();,=]/.test(formula[i])) {
+        while (i < formula.length && !/[\s\[\]();=]/.test(formula[i])) {
             text += formula[i];
             i++;
         }
@@ -248,7 +244,7 @@ class FormulaParser {
                     if (parenDepth === 0) break;
                     parenDepth--;
                 }
-                if ((cur.type === 'SEMICOLON' || cur.type === 'COMMA') && parenDepth === 0) break;
+                if (cur.type === 'SEMICOLON' && parenDepth === 0) break;
                 
                 if (cur.type === 'FUNCTION') {
                     argParts.push(this.parseFunctionCall());
@@ -264,8 +260,8 @@ class FormulaParser {
                 args.push(new ASTNode('CONCAT', null, argParts));
             }
             
-            // Skip semicolon/comma separator
-            if (this.current() && (this.current().type === 'SEMICOLON' || this.current().type === 'COMMA')) {
+            // Skip semicolon separator
+            if (this.current() && this.current().type === 'SEMICOLON') {
                 this.consume();
             }
         }
@@ -659,13 +655,6 @@ class FormulaEvaluator {
                 const max = this.toNumber(evalArg(2));
                 return (num >= min && num <= max) ? 1 : 0;
             }
-
-            case 'BNUM': {
-                const num = this.toNumber(evalArg(0));
-                const min = this.toNumber(evalArg(1));
-                const max = this.toNumber(evalArg(2));
-                return (num > min && num < max) ? 1 : 0;
-            }
             
             // Logic functions
             case 'IF': {
@@ -1028,14 +1017,7 @@ class FormulaEvaluator {
                 const d2 = this.parseDate(evalArg(2));
                 return (d && d1 && d2 && d > d1 && d < d2) ? 1 : 0;
             }
-
-            case 'BEDATE': {
-                const d = this.parseDate(evalArg(0));
-                const d1 = this.parseDate(evalArg(1));
-                const d2 = this.parseDate(evalArg(2));
-                return (d && d1 && d2 && d >= d1 && d <= d2) ? 1 : 0;
-            }
-                
+            
             case 'MONTHLASTDAY': {
                 const d = this.parseDate(evalArg(0));
                 if (!d) return '';
