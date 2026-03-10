@@ -635,13 +635,6 @@ function updateEditor() {
     updateLineNumbers(code);
 }
 
-function formatLive() {
-    const raw = textarea.value;
-    const formatted = addIndentationAndSpacing(raw);
-    const highlighted = applySyntaxHighlighting(formatted);
-    formattedCode.innerHTML = highlighted;
-}
-
 // Handle paste - format the pasted content
 textarea.addEventListener('paste', (e) => {
     e.preventDefault();
@@ -708,7 +701,6 @@ textarea.addEventListener('input', (e) => {
     updateAutocomplete();
     updateParameterHint();
     extractAndDisplayFields();
-    formatLive();
 });
 
 // Sync scroll between textarea, highlight, and line numbers
@@ -972,6 +964,13 @@ function showNotification(message, type = 'success') {
 function toggleHelpModal() {
     document.getElementById('helpModal').classList.toggle('show');
     document.getElementById('helpModalOverlay').classList.toggle('show');
+}
+
+// Video tutorial toggle
+function toggleVideoTutorial(event) {
+    event.preventDefault();
+    const container = document.getElementById('videoContainer');
+    container.classList.toggle('show');
 }
 
 // Theme toggle
