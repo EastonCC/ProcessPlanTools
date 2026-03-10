@@ -29,7 +29,7 @@ function compilerTokenize(formula) {
                 value += formula[i];
                 i++;
             }
-            i += 2; // Skip ]]
+            if (i < formula.length) i += 2; // Skip ]]
             tokens.push({ type: 'FIELD', value: value.trim() });
             continue;
         }
@@ -47,7 +47,7 @@ function compilerTokenize(formula) {
                     i++;
                 }
             }
-            i++; // Skip closing quote
+            if (i < formula.length) i++; // Skip closing quote
             tokens.push({ type: 'STRING', value });
             continue;
         }
@@ -60,31 +60,37 @@ function compilerTokenize(formula) {
                 value += formula[i];
                 i++;
             }
-            i++; // Skip closing quote
+            if (i < formula.length) i++; // Skip closing quote
             tokens.push({ type: 'STRING', value });
             continue;
         }
         
-        // Number
+        // Number (only match standalone numbers, not digits that are part of text like buyers[0])
         if (/\d/.test(formula[i]) || (formula[i] === '-' && /\d/.test(formula[i + 1]))) {
-            let value = '';
-            if (formula[i] === '-') {
-                value += '-';
-                i++;
+            // Check if this number is part of a larger text token
+            // Look back to see if previous character was a text character (letter, dot, bracket)
+            if (i > 0 && /[a-zA-Z_.\[\]]/.test(formula[i - 1])) {
+                // This digit is part of a text token - fall through to text handling below
+            } else {
+                let value = '';
+                if (formula[i] === '-') {
+                    value += '-';
+                    i++;
+                }
+                while (i < formula.length && /[\d.]/.test(formula[i])) {
+                    value += formula[i];
+                    i++;
+                }
+                tokens.push({ type: 'NUMBER', value: parseFloat(value) });
+                continue;
             }
-            while (i < formula.length && /[\d.]/.test(formula[i])) {
-                value += formula[i];
-                i++;
-            }
-            tokens.push({ type: 'NUMBER', value: parseFloat(value) });
-            continue;
         }
         
         // Function call starting with = and possibly !
         if (formula[i] === '=') {
             i++;
             let name = '';
-            if (formula[i] === '!') {
+            if (i < formula.length && formula[i] === '!') {
                 name += '!';
                 i++;
             }
@@ -121,9 +127,16 @@ function compilerTokenize(formula) {
         }
         
         // Plain text/identifier (until we hit a delimiter)
-        // Commas are now treated as text, not separators
+        // Include single brackets, dots, digits as part of text (e.g. buyers[0].name)
+        // Only stop at whitespace, semicolons, parentheses, equals, or double-bracket [[ 
         let text = '';
-        while (i < formula.length && !/[\s\[\]();=]/.test(formula[i])) {
+        while (i < formula.length) {
+            // Stop at whitespace, semicolons, parentheses, equals
+            if (/[\s();=]/.test(formula[i])) break;
+            // Stop at double bracket [[ (field reference start)
+            if (formula[i] === '[' && formula[i + 1] === '[') break;
+            // Stop at double bracket ]] (field reference end)  
+            if (formula[i] === ']' && formula[i + 1] === ']') break;
             text += formula[i];
             i++;
         }
@@ -131,9 +144,9 @@ function compilerTokenize(formula) {
             // Check if it looks like a date
             if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
                 tokens.push({ type: 'DATE', value: text });
-            } else if (/^\d+$/.test(text)) {
+            } else if (/^-?\d+$/.test(text)) {
                 tokens.push({ type: 'NUMBER', value: parseInt(text) });
-            } else if (/^\d*\.\d+$/.test(text)) {
+            } else if (/^-?\d*\.\d+$/.test(text)) {
                 tokens.push({ type: 'NUMBER', value: parseFloat(text) });
             } else {
                 tokens.push({ type: 'TEXT', value: text });
@@ -266,7 +279,9 @@ class FormulaParser {
             }
         }
         
-        this.consume('RPAREN');
+        if (this.current() && this.current().type === 'RPAREN') {
+            this.consume('RPAREN');
+        }
         
         return new ASTNode('FUNCTION', funcName, args);
     }
@@ -656,6 +671,13 @@ class FormulaEvaluator {
                 return (num >= min && num <= max) ? 1 : 0;
             }
             
+            case 'BNUM': {
+                const num = this.toNumber(evalArg(0));
+                const min = this.toNumber(evalArg(1));
+                const max = this.toNumber(evalArg(2));
+                return (num > min && num < max) ? 1 : 0;
+            }
+            
             // Logic functions
             case 'IF': {
                 // Process condition-result pairs
@@ -935,17 +957,13 @@ class FormulaEvaluator {
                         const abs = Math.abs(amount);
                         const fullWeeks = Math.floor(abs / 5);
                         const remainder = abs % 5;
-                        // Step 1: add full workweeks
                         result.setDate(result.getDate() + sign * fullWeeks * 7);
-                        // Step 2: handle remainder
                         let dow = result.getDay();
-                        // Normalize weekday index (Mon=0 ... Fri=4)
                         const weekdayIndex =
                             dow === 0 ? -1 :
                             dow === 6 ? -2 :
                             dow - 1;
                         let extraDays = remainder;
-                        // Crossing weekend?
                         if (weekdayIndex + remainder >= 5) {
                             extraDays += 2;
                         }
@@ -983,7 +1001,6 @@ class FormulaEvaluator {
                 const interval = this.toNumber(evalArg(1));
                 const d = this.parseDate(evalArg(2));
                 if (!d) return '';
-                // Simplified rounding
                 return d.toISOString().split('T')[0];
             }
             
@@ -1016,6 +1033,13 @@ class FormulaEvaluator {
                 const d1 = this.parseDate(evalArg(1));
                 const d2 = this.parseDate(evalArg(2));
                 return (d && d1 && d2 && d > d1 && d < d2) ? 1 : 0;
+            }
+            
+            case 'BEDATE': {
+                const d = this.parseDate(evalArg(0));
+                const d1 = this.parseDate(evalArg(1));
+                const d2 = this.parseDate(evalArg(2));
+                return (d && d1 && d2 && d >= d1 && d <= d2) ? 1 : 0;
             }
             
             case 'MONTHLASTDAY': {
@@ -1063,11 +1087,17 @@ class FormulaEvaluator {
                 const jsonStr = this.stringify(evalArg(1));
                 try {
                     const obj = JSON.parse(jsonStr);
-                    const parts = path.split('.');
+                    // Support dot notation and bracket notation like buyers[0].name
+                    const parts = path.match(/[^.\[\]]+/g) || [];
                     let current = obj;
                     for (const part of parts) {
                         if (current === null || current === undefined) return '';
-                        current = current[part];
+                        // Try numeric index first for array access
+                        if (/^\d+$/.test(part)) {
+                            current = current[parseInt(part)];
+                        } else {
+                            current = current[part];
+                        }
                     }
                     return typeof current === 'object' ? JSON.stringify(current) : this.stringify(current);
                 } catch (e) {
@@ -1268,7 +1298,8 @@ function renderFunctionStatus() {
     
     let implemented = 0, partial = 0, notImplemented = 0;
     
-    const items = Object.entries(FUNCTION_STATUS).map(([name, status]) => {
+    const items = Object.entries(FUNCTION_DATA).map(([name, data]) => {
+        const status = data.status;
         if (status === 'implemented') implemented++;
         else if (status === 'partial') partial++;
         else notImplemented++;
@@ -1286,6 +1317,9 @@ function renderFunctionStatus() {
     gridEl.innerHTML = items.join('');
 }
 
-function escapeRegex(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Only define escapeRegex if not already defined (it's also in editor.js)
+if (typeof escapeRegex === 'undefined') {
+    function escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
 }
