@@ -1,0 +1,3719 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Populate Sale Details &amp; Solici... Actions — Reorganized</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap" rel="stylesheet" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pp-yellow: #ffe401;
+  --pp-page-bg: #f5f5f5;
+  --pp-white: #ffffff;
+  --pp-text: #1a1a1a;
+  --pp-text-secondary: #6b6b6b;
+  --pp-text-faint: #9b9b9b;
+  --pp-border: #e0e0e0;
+  --pp-border-soft: #eeeeee;
+  --pp-hover: #fafafa;
+  --pp-hover-stronger: #f0f0f0;
+  --pp-blue: #1976d2;
+  --pp-blue-hover: #1565c0;
+  --pp-blue-light: #e3f2fd;
+  --pp-blue-bg-soft: #eaf3fb;
+  --pp-orange: #ed6c02;
+  --pp-orange-light: #fff4e5;
+  --pp-green: #2e7d32;
+  --pp-green-light: #e8f5e9;
+  --pp-red: #d32f2f;
+  --pp-red-light: #ffebee;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 1px 3px rgba(63,63,68,0.05), 0 1px 2px 0 rgba(63,63,68,0.15);
+  --shadow-drawer: 0 0 1px 0 rgba(0,0,0,0.31), 0 3px 4px -2px rgba(0,0,0,0.25);
+}
+
+body {
+  font-family: 'Roboto', -apple-system, sans-serif;
+  font-size: 14px;
+  background: var(--pp-page-bg);
+  color: var(--pp-text);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.top-bar {
+  height: 64px;
+  background: var(--pp-yellow);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.top-bar-logo {
+  width: 36px;
+  height: 36px;
+  background: white;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--pp-yellow);
+  margin-right: 24px;
+}
+.top-bar-spacer { flex: 1; }
+.top-bar-search {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.7);
+  color: white;
+  padding: 4px 0;
+  font-size: 14px;
+  width: 200px;
+  outline: none;
+}
+.top-bar-search::placeholder { color: rgba(255,255,255,0.85); }
+.top-bar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #2e9e7a;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 500;
+  margin-left: 24px;
+  font-size: 13px;
+}
+
+.layout {
+  display: flex;
+  min-height: calc(100vh - 64px);
+}
+
+.sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid var(--pp-border);
+  padding: 12px 0;
+  flex-shrink: 0;
+  z-index: 5;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: var(--pp-text);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.sidebar-item:hover { background: var(--pp-hover); }
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  color: var(--pp-text-secondary);
+  font-size: 16px;
+}
+.sidebar-chevron {
+  margin-left: auto;
+  color: var(--pp-text-faint);
+  font-size: 11px;
+}
+
+.main-wrap {
+  flex: 1;
+  background: var(--pp-page-bg);
+  position: relative;
+  overflow-x: auto;
+  transition: margin-right 0.3s ease;
+}
+.main-wrap.drawer-open { margin-right: 480px; }
+.main { padding: 32px 40px 80px; max-width: 100%; }
+.page-title {
+  font-size: 32px;
+  font-weight: 400;
+  margin-bottom: 24px;
+  color: var(--pp-text);
+}
+
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  background: white;
+  padding: 0 8px;
+  border-radius: 4px 4px 0 0;
+  box-shadow: var(--shadow-md);
+  border-bottom: 1px solid var(--pp-border);
+}
+.tab {
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pp-text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--pp-text); }
+.tab.active {
+  color: var(--pp-blue);
+  border-bottom-color: var(--pp-blue);
+}
+.tab-badge {
+  background: var(--pp-border);
+  color: var(--pp-text-secondary);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.tab.active .tab-badge {
+  background: var(--pp-blue-light);
+  color: var(--pp-blue);
+}
+
+.panel {
+  background: white;
+  border-radius: 0 0 4px 4px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+.panel-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--pp-border-soft);
+  gap: 4px;
+}
+.toolbar-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--pp-text-secondary);
+  font-size: 18px;
+  transition: background 0.15s;
+}
+.toolbar-btn:hover { background: var(--pp-hover); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.pp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.pp-table thead th {
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 500;
+  color: var(--pp-text);
+  border-bottom: 1px solid var(--pp-border);
+  background: white;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.pp-table thead th .sort-icon {
+  display: inline-block;
+  margin-left: 4px;
+  color: var(--pp-text-faint);
+  font-size: 12px;
+}
+.pp-table tbody td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--pp-border-soft);
+  color: var(--pp-text);
+  white-space: nowrap;
+}
+.pp-table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.pp-table tbody tr:hover { background: var(--pp-hover); }
+.pp-table tbody tr.active-row { background: var(--pp-blue-bg-soft); }
+.pp-table tbody tr.active-row:hover { background: var(--pp-blue-bg-soft); }
+.pp-table tbody tr.disabled td {
+  color: var(--pp-text-faint);
+  text-decoration: line-through;
+}
+.pp-table .col-checkbox { width: 50px; padding-left: 16px; }
+.pp-table .col-num { width: 50px; color: var(--pp-text-secondary); }
+.pp-table .col-name { min-width: 280px; }
+.pp-table .col-type { width: 220px; }
+.pp-table .col-success, .pp-table .col-failure { width: 200px; }
+.pp-table .col-comments { width: 150px; color: var(--pp-text-faint); font-style: italic; font-size: 12px; }
+.pp-table .col-date { width: 120px; color: var(--pp-text-secondary); font-size: 12px; }
+.pp-table .col-by { width: 140px; color: var(--pp-text-secondary); font-size: 12px; }
+
+.pp-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #bdbdbd;
+  border-radius: 2px;
+  background: white;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.go-to {
+  color: var(--pp-orange);
+  font-weight: 500;
+}
+
+.inputs-block {
+  background: linear-gradient(180deg, var(--pp-blue-light) 0%, white 100%);
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--pp-border);
+}
+.inputs-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.inputs-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--pp-blue);
+  color: white;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-weight: 500;
+  font-family: 'Roboto Mono', monospace;
+}
+.inputs-title { font-size: 18px; font-weight: 500; }
+.inputs-subtitle {
+  font-size: 12px;
+  color: var(--pp-text-secondary);
+  margin-top: 2px;
+}
+.inputs-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.input-card {
+  background: white;
+  border: 1px solid var(--pp-border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.input-card:hover { border-color: var(--pp-blue); box-shadow: 0 0 0 1px var(--pp-blue) inset; }
+.input-card.active-row { border-color: var(--pp-blue); background: var(--pp-blue-bg-soft); }
+.input-card-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--pp-blue-light);
+  color: var(--pp-blue);
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-family: 'Roboto Mono', monospace;
+  flex-shrink: 0;
+}
+.input-card-name { font-weight: 500; font-size: 13px; }
+.input-card-meta { font-size: 11px; color: var(--pp-text-faint); margin-top: 2px; }
+.input-readonly-tag {
+  display: inline-block;
+  background: var(--pp-text-faint);
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 4px;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+.input-card-remove {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--pp-text-faint);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.15s;
+}
+.input-card:hover .input-card-remove { opacity: 1; }
+.input-card-remove:hover { background: var(--pp-red-light); color: var(--pp-red); }
+.input-card-add {
+  border-style: dashed;
+  background: transparent;
+}
+.input-card-add:hover {
+  background: white;
+  border-style: solid;
+}
+
+/* PROCESS FIELD PICKER */
+.field-picker-list {
+  margin-top: 8px;
+}
+.field-picker-item {
+  padding: 12px 14px;
+  border: 1px solid var(--pp-border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.field-picker-item:hover {
+  border-color: var(--pp-blue);
+  background: var(--pp-blue-bg-soft);
+}
+.field-picker-item.added {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--pp-page-bg);
+}
+.field-picker-item.added:hover {
+  border-color: var(--pp-border);
+  background: var(--pp-page-bg);
+}
+.field-picker-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--pp-blue-light);
+  color: var(--pp-blue);
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.field-picker-name { font-weight: 500; font-size: 14px; }
+.field-picker-meta {
+  font-size: 11px;
+  color: var(--pp-text-faint);
+  margin-top: 2px;
+}
+.field-picker-added-tag {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--pp-green);
+  font-weight: 500;
+}
+
+.group-section { border-bottom: 1px solid var(--pp-border-soft); }
+.group-section:last-child { border-bottom: none; }
+
+.group-header {
+  display: flex;
+  align-items: center;
+  padding: 14px 24px;
+  cursor: pointer;
+  user-select: none;
+  background: white;
+  transition: background 0.1s;
+  gap: 12px;
+  position: relative;
+}
+.group-header:hover { background: var(--pp-hover); }
+
+.group-chevron {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--pp-text-secondary);
+  transition: transform 0.2s;
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+}
+.group-section.collapsed .group-chevron { transform: rotate(-90deg); }
+
+.group-name { font-size: 15px; font-weight: 500; color: var(--pp-text); }
+.group-name-edit {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--pp-text);
+  border: 1px solid var(--pp-blue);
+  border-radius: 4px;
+  padding: 2px 8px;
+  outline: none;
+  font-family: inherit;
+  background: white;
+  min-width: 200px;
+}
+
+.group-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--pp-text-secondary);
+}
+.group-count .disabled-count { color: var(--pp-orange); margin-left: 4px; }
+
+.group-tools {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.group-header:hover .group-tools { opacity: 1; }
+.group-tool-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--pp-text-secondary);
+  font-size: 14px;
+  transition: background 0.15s;
+}
+.group-tool-btn:hover { background: var(--pp-hover-stronger); color: var(--pp-text); }
+
+.group-conditional-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  background: var(--pp-orange-light);
+  color: var(--pp-orange);
+  border-radius: 12px;
+  border: 1px solid #ffd9a8;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.group-conditional-badge::before {
+  content: 'IF';
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+.group-body { background: var(--pp-page-bg); }
+.group-section.collapsed .group-body { display: none; }
+
+.conditional-note {
+  margin: 8px 24px 0;
+  padding: 12px 14px;
+  background: var(--pp-orange-light);
+  border-left: 3px solid var(--pp-orange);
+  font-size: 12px;
+  color: #813f00;
+  border-radius: 0 4px 4px 0;
+}
+.conditional-note .cond-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--pp-orange);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.conditional-note .cond-formula {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  background: white;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #ffd9a8;
+  color: var(--pp-text);
+  white-space: pre-wrap;
+}
+.conditional-note .cond-summary {
+  margin-top: 6px;
+  font-style: italic;
+  font-size: 11px;
+  color: #6b3a00;
+}
+
+.group-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 8px;
+  table-layout: fixed;
+}
+.group-table thead th {
+  text-align: left;
+  padding: 10px 16px;
+  font-weight: 500;
+  color: var(--pp-text-secondary);
+  border-bottom: 1px solid var(--pp-border);
+  background: white;
+  white-space: nowrap;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.group-table thead th:first-child { padding-left: 60px; }
+.group-table tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.group-table tbody tr:hover { background: white; }
+.group-table tbody tr.active-row { background: var(--pp-blue-bg-soft); }
+.group-table tbody tr.disabled td {
+  color: var(--pp-text-faint);
+  text-decoration: line-through;
+}
+.group-table td {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--pp-border-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.group-table .gcol-num { width: 90px; padding-left: 60px; color: var(--pp-text-secondary); font-size: 12px; }
+.action-num-label {
+  display: inline-block;
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.group-table .gcol-name { width: 240px; }
+.group-table .gcol-type { width: 180px; color: var(--pp-text-secondary); font-size: 12px; }
+.group-table .gcol-success { width: 130px; color: var(--pp-text-secondary); font-size: 12px; }
+.group-table .gcol-failure { width: 170px; color: var(--pp-text-secondary); font-size: 12px; }
+.group-table .gcol-comments { width: 130px; color: var(--pp-text-faint); font-size: 12px; font-style: italic; }
+.group-table .gcol-date { width: 100px; color: var(--pp-text-secondary); font-size: 12px; }
+.group-table .gcol-by { width: 130px; color: var(--pp-text-secondary); font-size: 12px; }
+.group-table tbody tr:last-child td { border-bottom: none; }
+
+.add-action-row {
+  padding: 10px 16px 10px 60px;
+  background: var(--pp-page-bg);
+  border-top: 1px dashed var(--pp-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--pp-blue);
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.add-action-row:hover { background: var(--pp-blue-bg-soft); }
+.add-action-row::before {
+  content: '+';
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--pp-blue);
+  color: white;
+  text-align: center;
+  line-height: 18px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.empty-group-msg {
+  padding: 20px 24px 20px 60px;
+  font-size: 13px;
+  color: var(--pp-text-faint);
+  font-style: italic;
+  background: var(--pp-page-bg);
+}
+
+.group-section.drag-over .group-body {
+  background: var(--pp-blue-bg-soft);
+  outline: 2px dashed var(--pp-blue);
+  outline-offset: -2px;
+}
+
+.group-table tbody tr.dragging {
+  opacity: 0.4;
+}
+
+.group-table tbody tr.drag-over-row {
+  border-top: 2px solid var(--pp-blue);
+}
+
+.drag-handle {
+  display: inline-block;
+  cursor: grab;
+  color: var(--pp-text-faint);
+  font-size: 14px;
+  padding: 0 4px;
+  user-select: none;
+}
+.drag-handle:active { cursor: grabbing; }
+
+/* Loose action — a single action sitting between groups */
+.loose-action {
+  background: white;
+  border-bottom: 1px solid var(--pp-border-soft);
+  cursor: pointer;
+  transition: background 0.1s;
+  display: grid;
+  grid-template-columns: 90px 1fr 180px 130px 170px 130px 100px 130px;
+  align-items: center;
+  font-size: 13px;
+}
+.loose-action:hover { background: var(--pp-hover); }
+.loose-action.active-row { background: var(--pp-blue-bg-soft); }
+.loose-action.disabled { color: var(--pp-text-faint); text-decoration: line-through; }
+.loose-action.dragging { opacity: 0.4; }
+.loose-action &gt; div {
+  padding: 10px 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.loose-action .gcol-num { padding-left: 60px; color: var(--pp-text-secondary); font-size: 12px; }
+.loose-action .gcol-type { color: var(--pp-text-secondary); font-size: 12px; }
+.loose-action .gcol-success { color: var(--pp-text-secondary); font-size: 12px; }
+.loose-action .gcol-failure { color: var(--pp-text-secondary); font-size: 12px; }
+.loose-action .gcol-comments { color: var(--pp-text-faint); font-size: 12px; font-style: italic; }
+.loose-action .gcol-date { color: var(--pp-text-secondary); font-size: 12px; }
+.loose-action .gcol-by { color: var(--pp-text-secondary); font-size: 12px; }
+.loose-action::before {
+  /* subtle left bar to distinguish loose actions visually */
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--pp-border);
+  border-radius: 2px;
+}
+.loose-action { position: relative; }
+
+/* Drop zone between items */
+.drop-zone {
+  height: 4px;
+  background: transparent;
+  transition: background 0.15s, height 0.15s;
+  margin: 0;
+}
+.drop-zone.drag-active {
+  height: 24px;
+  background: var(--pp-blue-bg-soft);
+  border-top: 2px solid var(--pp-blue);
+  border-bottom: 2px solid var(--pp-blue);
+  position: relative;
+}
+.drop-zone.drag-active::after {
+  content: 'Drop here';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pp-blue);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Auto-expand hover indicator for closed groups */
+.group-section.collapsed.drag-hover-collapsed .group-header {
+  background: var(--pp-blue-bg-soft);
+  box-shadow: 0 0 0 2px var(--pp-blue) inset;
+}
+
+.empty-state {
+  padding: 60px 40px;
+  text-align: center;
+  color: var(--pp-text-secondary);
+}
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  background: var(--pp-page-bg);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  color: var(--pp-text-faint);
+}
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--pp-text);
+  margin-bottom: 8px;
+}
+.empty-state p {
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  border-top: 1px solid var(--pp-border-soft);
+  gap: 16px;
+  font-size: 13px;
+  color: var(--pp-text-secondary);
+}
+
+/* DRAWER */
+.drawer {
+  position: fixed;
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  width: 480px;
+  background: white;
+  box-shadow: -4px 0 12px rgba(0,0,0,0.05);
+  border-left: 1px solid var(--pp-border);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--pp-border);
+  background: white;
+  position: sticky;
+  top: 0;
+  box-shadow: var(--shadow-drawer);
+  z-index: 1;
+}
+.drawer-title {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--pp-text);
+}
+.drawer-actions { display: flex; gap: 4px; }
+.drawer-action-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--pp-text-secondary);
+  font-size: 18px;
+  transition: background 0.15s;
+}
+.drawer-action-btn:hover { background: var(--pp-hover); }
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px 80px;
+}
+
+.field { margin-bottom: 20px; position: relative; }
+.field-label {
+  font-size: 11px;
+  color: var(--pp-text-secondary);
+  position: absolute;
+  top: -7px;
+  left: 12px;
+  background: white;
+  padding: 0 4px;
+  z-index: 1;
+}
+.field-label.required::after { content: ' *'; color: var(--pp-red); }
+.field-input,
+.field-select,
+.field-textarea {
+  width: 100%;
+  border: 1px solid var(--pp-border);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  background: white;
+  color: var(--pp-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field-input:focus,
+.field-select:focus,
+.field-textarea:focus { border-color: var(--pp-blue); }
+.field-textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+.field-textarea.formula {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  white-space: pre;
+  min-height: 240px;
+}
+.field-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3e%3cpath fill='%23757575' d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 32px;
+}
+
+.section-heading {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 28px 0 16px;
+  color: var(--pp-text);
+}
+
+.formula-row { display: flex; gap: 8px; align-items: flex-start; }
+.formula-row .field-textarea { flex: 1; }
+.formula-tools { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.toggle {
+  width: 38px;
+  height: 22px;
+  background: #ccc;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.toggle.on { background: var(--pp-blue); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.toggle.on::after { transform: translateX(16px); }
+.toggle-label { font-size: 14px; }
+
+.divider { height: 1px; background: var(--pp-border-soft); margin: 16px 0; }
+.last-modified { font-size: 13px; color: var(--pp-text-secondary); margin: 16px 0; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.btn-outline {
+  background: white;
+  border-color: var(--pp-border);
+  color: var(--pp-text-secondary);
+}
+.btn-outline:hover { background: var(--pp-hover); border-color: #999; }
+.btn-blue { background: var(--pp-blue); color: white; }
+.btn-blue:hover { background: var(--pp-blue-hover); }
+.btn-full { width: 100%; }
+
+.group-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid var(--pp-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  min-width: 200px;
+  z-index: 200;
+  overflow: hidden;
+  display: none;
+}
+.group-menu.open { display: block; }
+.group-menu-item {
+  padding: 10px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.group-menu-item:hover { background: var(--pp-hover); }
+.group-menu-item .menu-icon {
+  color: var(--pp-text-secondary);
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+.group-menu-divider { height: 1px; background: var(--pp-border-soft); margin: 4px 0; }
+
+.usage-list {
+  background: var(--pp-page-bg);
+  border-radius: 4px;
+  padding: 8px;
+}
+.usage-item {
+  padding: 8px 10px;
+  background: white;
+  border-radius: 3px;
+  margin-bottom: 4px;
+  border: 1px solid var(--pp-border-soft);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.usage-item:last-child { margin-bottom: 0; }
+.usage-num {
+  background: var(--pp-blue-light);
+  color: var(--pp-blue);
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-weight: 500;
+  font-size: 11px;
+  font-family: 'Roboto Mono', monospace;
+  flex-shrink: 0;
+}
+.usage-name { flex: 1; }
+
+.field-hint {
+  font-size: 12px;
+  color: var(--pp-text-secondary);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.field-hint code {
+  background: var(--pp-page-bg);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.condition-callout {
+  background: linear-gradient(180deg, var(--pp-orange-light) 0%, white 100%);
+  border: 1px solid #ffd9a8;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.condition-callout-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--pp-orange);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.condition-callout p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b3a00;
+}
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="top-bar-logo">P!</div>
+  <div class="top-bar-spacer"></div>
+  <input type="text" class="top-bar-search" placeholder="Quick Search" />
+  <div class="top-bar-avatar">EC</div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-item"><span class="sidebar-icon">♡</span><span>Favorites</span><span class="sidebar-chevron">▾</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">⌂</span><span>My Tasks</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">✉</span><span>My Messages (0)</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">▶</span><span>Start a Process</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">↻</span><span>Active Processes</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">✦</span><span>ProSeer AI</span><span class="sidebar-chevron">▾</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">▥</span><span>Reports</span><span class="sidebar-chevron">▾</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">◈</span><span>Knowledge Base</span><span class="sidebar-chevron">▾</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">⚙</span><span>Administration</span><span class="sidebar-chevron">▾</span></div>
+    <div class="sidebar-item"><span class="sidebar-icon">?</span><span>Help</span><span class="sidebar-chevron">▾</span></div>
+  </aside>
+
+  <div class="main-wrap" id="mainWrap">
+    <main class="main">
+      <h1 class="page-title">Populate Sale Details &amp; Solici... Actions</h1>
+
+      <div class="tab-bar">
+        <div class="tab" data-tab="flat">Standard List<span class="tab-badge">48</span></div>
+        <div class="tab active" data-tab="grouped">Reorganized<span class="tab-badge">3 inputs · 8 groups</span></div>
+      </div>
+
+      <div class="tab-content" id="tab-flat">
+        <div class="panel">
+          <div class="panel-toolbar">
+            <button class="toolbar-btn" title="Refresh">↻</button>
+            <button class="toolbar-btn" title="Job settings">⊞</button>
+            <button class="toolbar-btn" title="Filter">⌕</button>
+            <button class="toolbar-btn" title="Columns">⫴</button>
+          </div>
+          <table class="pp-table">
+            <thead>
+              <tr>
+                <th class="col-checkbox"><span class="pp-checkbox"></span></th>
+                <th class="col-num"># <span class="sort-icon">↑</span></th>
+                <th class="col-name">Action Name</th>
+                <th class="col-type">Action Type</th>
+                <th class="col-success">On Success</th>
+                <th class="col-failure">On Failure</th>
+                <th class="col-comments">Comments</th>
+                <th class="col-date">Modified Date</th>
+                <th class="col-by">Modified By</th>
+              </tr>
+            </thead>
+            <tbody id="flatTableBody"><tr data-action-num="1">
+      <td><span class="pp-checkbox"></span></td>
+      <td>1</td>
+      <td>Focus Window "chrome.exe"</td>
+      <td>Window - Focus</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="2">
+      <td><span class="pp-checkbox"></span></td>
+      <td>2</td>
+      <td>Find "Under Offer"</td>
+      <td>Typing - Find Text (CTRL+F)</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="3">
+      <td><span class="pp-checkbox"></span></td>
+      <td>3</td>
+      <td>Click under offer button</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-28</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="4">
+      <td><span class="pp-checkbox"></span></td>
+      <td>4</td>
+      <td>Hold Contract JSON</td>
+      <td>Process Field - Hold Value</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="5">
+      <td><span class="pp-checkbox"></span></td>
+      <td>5</td>
+      <td>Hold Purchase Solicitor</td>
+      <td>Process Field - Hold Value</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="6">
+      <td><span class="pp-checkbox"></span></td>
+      <td>6</td>
+      <td>Hold Vendor Solicitor</td>
+      <td>Process Field - Hold Value</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="7">
+      <td><span class="pp-checkbox"></span></td>
+      <td>7</td>
+      <td>Determine if Purchase Solicitor is person or company</td>
+      <td>AI - Text Prompt</td>
+      <td>Proceed</td>
+      <td><span class="go-to">Go To Action 11</span></td>
+      <td></td>
+      <td>2026-04-28</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="8">
+      <td><span class="pp-checkbox"></span></td>
+      <td>8</td>
+      <td>Determine if Vendor Solicitor is person or company</td>
+      <td>AI - Text Prompt</td>
+      <td>Proceed</td>
+      <td><span class="go-to">Go To Action 11</span></td>
+      <td></td>
+      <td>2026-04-28</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="9">
+      <td><span class="pp-checkbox"></span></td>
+      <td>9</td>
+      <td>Get first/last name for Purchase Solicitor</td>
+      <td>AI - Text Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="10">
+      <td><span class="pp-checkbox"></span></td>
+      <td>10</td>
+      <td>Get first/last name for Vendor Solicitor</td>
+      <td>AI - Text Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="11">
+      <td><span class="pp-checkbox"></span></td>
+      <td>11</td>
+      <td>Click sold type</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="12">
+      <td><span class="pp-checkbox"></span></td>
+      <td>12</td>
+      <td>Check if auction or private treaty</td>
+      <td>Evaluate Formula</td>
+      <td>Proceed</td>
+      <td>Proceed</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="13">
+      <td><span class="pp-checkbox"></span></td>
+      <td>13</td>
+      <td>Click auction or private treaty</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="14">
+      <td><span class="pp-checkbox"></span></td>
+      <td>14</td>
+      <td>Click sale price</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="15">
+      <td><span class="pp-checkbox"></span></td>
+      <td>15</td>
+      <td>Type sale price</td>
+      <td>Typing - Type Text</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="16">
+      <td><span class="pp-checkbox"></span></td>
+      <td>16</td>
+      <td>Click deposit</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="17">
+      <td><span class="pp-checkbox"></span></td>
+      <td>17</td>
+      <td>Clear Field (CTRL+A)</td>
+      <td>Typing - Clear Field (CTRL+A)</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="18">
+      <td><span class="pp-checkbox"></span></td>
+      <td>18</td>
+      <td>Calculate Deposit Amount</td>
+      <td>Evaluate Formula</td>
+      <td>Proceed</td>
+      <td>Proceed</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="19">
+      <td><span class="pp-checkbox"></span></td>
+      <td>19</td>
+      <td>Type deposit amount</td>
+      <td>Typing - Type Text</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="20">
+      <td><span class="pp-checkbox"></span></td>
+      <td>20</td>
+      <td>Cooling Off Date dd/MM/yyyy</td>
+      <td>Evaluate Formula</td>
+      <td>Proceed</td>
+      <td>Proceed</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="21">
+      <td><span class="pp-checkbox"></span></td>
+      <td>21</td>
+      <td>Settlement date dd/MM/yyyy</td>
+      <td>Evaluate Formula</td>
+      <td>Proceed</td>
+      <td>Proceed</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="22">
+      <td><span class="pp-checkbox"></span></td>
+      <td>22</td>
+      <td>Contract date dd/MM/yyyy</td>
+      <td>Evaluate Formula</td>
+      <td>Proceed</td>
+      <td>Proceed</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="23">
+      <td><span class="pp-checkbox"></span></td>
+      <td>23</td>
+      <td>Click contract/conditional date box</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="24">
+      <td><span class="pp-checkbox"></span></td>
+      <td>24</td>
+      <td>Type contract/conditional date</td>
+      <td>Typing - Type Text</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="25">
+      <td><span class="pp-checkbox"></span></td>
+      <td>25</td>
+      <td>Click "Deposit Due"</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="26">
+      <td><span class="pp-checkbox"></span></td>
+      <td>26</td>
+      <td>Type cooling off / deposit due date</td>
+      <td>Typing - Type Text</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="27">
+      <td><span class="pp-checkbox"></span></td>
+      <td>27</td>
+      <td>Click "Unconditional"</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="28">
+      <td><span class="pp-checkbox"></span></td>
+      <td>28</td>
+      <td>Type cooling off / deposit due date</td>
+      <td>Typing - Type Text</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="29">
+      <td><span class="pp-checkbox"></span></td>
+      <td>29</td>
+      <td>Click "Settlement"</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="30">
+      <td><span class="pp-checkbox"></span></td>
+      <td>30</td>
+      <td>Type settlement date</td>
+      <td>Typing - Type Text</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="31">
+      <td><span class="pp-checkbox"></span></td>
+      <td>31</td>
+      <td>Set gross commission to 1 if it was not populated</td>
+      <td>AI - Screen Related Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="32">
+      <td><span class="pp-checkbox"></span></td>
+      <td>32</td>
+      <td>Find "Set as under offer"</td>
+      <td>Typing - Find Text (CTRL+F)</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="33">
+      <td><span class="pp-checkbox"></span></td>
+      <td>33</td>
+      <td>Click Set as under offer</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="34">
+      <td><span class="pp-checkbox"></span></td>
+      <td>34</td>
+      <td>Screen Related Prompt</td>
+      <td>AI - Screen Related Prompt</td>
+      <td>Proceed</td>
+      <td>Proceed</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="35">
+      <td><span class="pp-checkbox"></span></td>
+      <td>35</td>
+      <td>Gross Commission Failed to Populate RW Macarthur</td>
+      <td>Human Assistance</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-23</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="36">
+      <td><span class="pp-checkbox"></span></td>
+      <td>36</td>
+      <td>Click vendor</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="37">
+      <td><span class="pp-checkbox"></span></td>
+      <td>37</td>
+      <td>Type Vendor Solicitor</td>
+      <td>Typing - Type Text</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td>First type solicitors name, check if the solicitor exists in the system, click it if so, otherwise, create a new one. AI determines if the solicitor is a company or an individual based on their name.</td>
+      <td>2026-04-28</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="38">
+      <td><span class="pp-checkbox"></span></td>
+      <td>38</td>
+      <td>Delay 6 Seconds</td>
+      <td>Robot - Delay (Seconds)</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="39">
+      <td><span class="pp-checkbox"></span></td>
+      <td>39</td>
+      <td>Check if vendor solicitor exists</td>
+      <td>AI - Screen Related Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="40">
+      <td><span class="pp-checkbox"></span></td>
+      <td>40</td>
+      <td>Check if vendor solicitor needs to be added</td>
+      <td>AI - Screen Related Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="41">
+      <td><span class="pp-checkbox"></span></td>
+      <td>41</td>
+      <td>Populate vendor solicitor info</td>
+      <td>AI - Screen Related Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-28</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="42">
+      <td><span class="pp-checkbox"></span></td>
+      <td>42</td>
+      <td>Click "Purchaser"</td>
+      <td>Computer Vision - Mouse C...</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="43">
+      <td><span class="pp-checkbox"></span></td>
+      <td>43</td>
+      <td>Type Purchaser Solicitor</td>
+      <td>Typing - Type Text</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="44">
+      <td><span class="pp-checkbox"></span></td>
+      <td>44</td>
+      <td>Delay 6 Seconds</td>
+      <td>Robot - Delay (Seconds)</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="45">
+      <td><span class="pp-checkbox"></span></td>
+      <td>45</td>
+      <td>Check if purchase solicitor exists</td>
+      <td>AI - Screen Related Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="46">
+      <td><span class="pp-checkbox"></span></td>
+      <td>46</td>
+      <td>Check if purchase solicitor is person or company, and select</td>
+      <td>AI - Screen Related Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-24</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="47">
+      <td><span class="pp-checkbox"></span></td>
+      <td>47</td>
+      <td>Populate purchaser solicitor info</td>
+      <td>AI - Browser Related Prompt</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-28</td>
+      <td>Easton (Support)</td>
+    </tr><tr data-action-num="48">
+      <td><span class="pp-checkbox"></span></td>
+      <td>48</td>
+      <td>Type Field Value</td>
+      <td>Computer Vision - Type Field Value</td>
+      <td>Proceed</td>
+      <td>Exit and Shut Down A.I. Em...</td>
+      <td></td>
+      <td>2026-04-28</td>
+      <td>Easton (Support)</td>
+    </tr></tbody>
+          </table>
+          <div class="pagination">
+            <span>Rows per page: 50</span>
+            <span>1-48 of 48</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content active" id="tab-grouped">
+        <div class="panel">
+          <div class="panel-toolbar">
+            
+            
+            
+            
+            <div style="flex: 1;"></div>
+            <button class="btn btn-outline" id="addActionBtn" style="padding: 6px 14px; font-size: 12px;">+ Add Action</button>
+            <button class="btn btn-outline" id="addGroupBtn" style="padding: 6px 14px; font-size: 12px;">+ Add Group</button>
+          </div>
+
+          <div class="inputs-block">
+            <div class="inputs-header">
+              <div class="inputs-icon">{ }</div>
+              <div>
+                <div class="inputs-title">Job Inputs</div>
+                <div class="inputs-subtitle">Values held from the parent process — available to all actions below. Click any input to view details.</div>
+              </div>
+            </div>
+            <div class="inputs-list" id="inputsList"><div class="input-card" data-input-num="4">
+      <div class="input-card-icon">{ }</div>
+      <div style="flex: 1; min-width: 0;">
+        <div class="input-card-name">contract_json <span class="input-readonly-tag" title="Read-only">RO</span></div>
+        <div class="input-card-meta">JSON · Contract JSON</div>
+      </div>
+      <button class="input-card-remove" title="Remove input" data-input-num="4">×</button>
+    </div><div class="input-card" data-input-num="5">
+      <div class="input-card-icon">{ }</div>
+      <div style="flex: 1; min-width: 0;">
+        <div class="input-card-name">purchase_solicitor</div>
+        <div class="input-card-meta">Text · Purchase Solicitor</div>
+      </div>
+      <button class="input-card-remove" title="Remove input" data-input-num="5">×</button>
+    </div><div class="input-card" data-input-num="6">
+      <div class="input-card-icon">{ }</div>
+      <div style="flex: 1; min-width: 0;">
+        <div class="input-card-name">vendor_solicitor</div>
+        <div class="input-card-meta">Text · Vendor Solicitor</div>
+      </div>
+      <button class="input-card-remove" title="Remove input" data-input-num="6">×</button>
+    </div><div class="input-card input-card-add">
+    <div class="input-card-icon" style="background: var(--pp-page-bg); color: var(--pp-text-secondary);">+</div>
+    <div>
+      <div class="input-card-name" style="color: var(--pp-blue);">Add Input</div>
+      <div class="input-card-meta">Pick a process field</div>
+    </div>
+  </div></div>
+          </div>
+
+          <div id="groupsContainer"><div class="drop-zone" data-insert-idx="0"></div><div class="loose-action" data-action-num="1" draggable="true">
+    <div class="gcol-num"><span class="drag-handle" title="Drag">⋮⋮</span><span class="action-num-label">1</span></div>
+    <div title="Focus Window &quot;chrome.exe&quot;">Focus Window "chrome.exe"</div>
+    <div class="gcol-type" title="Window - Focus">Window - Focus</div>
+    <div class="gcol-success">Proceed</div>
+    <div class="gcol-failure">Exit and Shut Down A.I. Em...</div>
+    <div class="gcol-comments" title=""></div>
+    <div class="gcol-date">2026-04-23</div>
+    <div class="gcol-by">Easton (Support)</div>
+  </div><div class="drop-zone" data-insert-idx="1"></div><div class="group-section" data-group-id="g2">
+    <div class="group-header" data-group-id="g2">
+      <span class="group-chevron">▾</span>
+      <span class="group-name">Mark as Under Offer</span>
+      <span class="group-count">
+        2 active
+      </span>
+      
+      <div class="group-tools">
+        <button class="group-tool-btn" data-act="up" title="Move group up">▲</button>
+        <button class="group-tool-btn" data-act="down" title="Move group down">▼</button>
+        <button class="group-tool-btn" data-act="rename" title="Rename group">✎</button>
+        <button class="group-tool-btn" data-act="condition" title="Add condition">⚡</button>
+        <button class="group-tool-btn" data-act="more" title="More">⋯</button>
+      </div>
+    </div>
+    <div class="group-body">
+      
+      
+        <table class="group-table">
+          <thead>
+            <tr>
+              <th class="gcol-num">#</th>
+              <th class="gcol-name">Action Name</th>
+              <th class="gcol-type">Action Type</th>
+              <th class="gcol-success">On Success</th>
+              <th class="gcol-failure">On Failure</th>
+              <th class="gcol-comments">Comments</th>
+              <th class="gcol-date">Modified Date</th>
+              <th class="gcol-by">Modified By</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr data-action-num="2" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">2</span></td>
+                  <td class="gcol-name" title="Find &quot;Under Offer&quot;">Find "Under Offer"</td>
+                  <td class="gcol-type" title="Typing - Find Text (CTRL+F)">Typing - Find Text (CTRL+F)</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="3" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">3</span></td>
+                  <td class="gcol-name" title="Click under offer button">Click under offer button</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-28</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+          </tbody>
+        </table>
+      
+      <div class="add-action-row" data-group-id="g2">Add action to "Mark as Under Offer"</div>
+    </div>
+  </div><div class="drop-zone" data-insert-idx="2"></div><div data-group-id="g3" class="group-section collapsed">
+    <div class="group-header" data-group-id="g3">
+      <span class="group-chevron">▾</span>
+      <span class="group-name">Detect Solicitor Types</span>
+      <span class="group-count">
+        4 active
+      </span>
+      <span class="group-conditional-badge" title="This group runs conditionally">conditional</span>
+      <div class="group-tools">
+        <button class="group-tool-btn" data-act="up" title="Move group up">▲</button>
+        <button class="group-tool-btn" data-act="down" title="Move group down">▼</button>
+        <button class="group-tool-btn" data-act="rename" title="Rename group">✎</button>
+        <button class="group-tool-btn" data-act="condition" title="Edit condition">⚡</button>
+        <button class="group-tool-btn" data-act="more" title="More">⋯</button>
+      </div>
+    </div>
+    <div class="group-body">
+      
+    <div class="conditional-note">
+      <div class="cond-label">Run when</div>
+      <div class="cond-formula">=NOT_EQUALS(
+   [[ Action 7: Determine if Purchase Solicitor is person or company ]];
+   "company"
+)</div>
+      <div class="cond-summary">Run name extraction only if the solicitor is a person.</div>
+    </div>
+  
+      
+        <table class="group-table">
+          <thead>
+            <tr>
+              <th class="gcol-num">#</th>
+              <th class="gcol-name">Action Name</th>
+              <th class="gcol-type">Action Type</th>
+              <th class="gcol-success">On Success</th>
+              <th class="gcol-failure">On Failure</th>
+              <th class="gcol-comments">Comments</th>
+              <th class="gcol-date">Modified Date</th>
+              <th class="gcol-by">Modified By</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr data-action-num="7" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">7</span></td>
+                  <td class="gcol-name" title="Determine if Purchase Solicitor is person or company">Determine if Purchase Solicitor is person or company</td>
+                  <td class="gcol-type" title="AI - Text Prompt">AI - Text Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure"><span class="go-to">Go To Action 11</span></td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-28</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="8" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">8</span></td>
+                  <td class="gcol-name" title="Determine if Vendor Solicitor is person or company">Determine if Vendor Solicitor is person or company</td>
+                  <td class="gcol-type" title="AI - Text Prompt">AI - Text Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure"><span class="go-to">Go To Action 11</span></td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-28</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="9" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">9</span></td>
+                  <td class="gcol-name" title="Get first/last name for Purchase Solicitor">Get first/last name for Purchase Solicitor</td>
+                  <td class="gcol-type" title="AI - Text Prompt">AI - Text Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="10" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">10</span></td>
+                  <td class="gcol-name" title="Get first/last name for Vendor Solicitor">Get first/last name for Vendor Solicitor</td>
+                  <td class="gcol-type" title="AI - Text Prompt">AI - Text Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+          </tbody>
+        </table>
+      
+      <div class="add-action-row" data-group-id="g3">Add action to "Detect Solicitor Types"</div>
+    </div>
+  </div><div class="drop-zone" data-insert-idx="3"></div><div class="group-section collapsed" data-group-id="g4">
+    <div class="group-header" data-group-id="g4">
+      <span class="group-chevron">▾</span>
+      <span class="group-name">Sale Type &amp; Pricing</span>
+      <span class="group-count">
+        9 active
+      </span>
+      
+      <div class="group-tools">
+        <button class="group-tool-btn" data-act="up" title="Move group up">▲</button>
+        <button class="group-tool-btn" data-act="down" title="Move group down">▼</button>
+        <button class="group-tool-btn" data-act="rename" title="Rename group">✎</button>
+        <button class="group-tool-btn" data-act="condition" title="Add condition">⚡</button>
+        <button class="group-tool-btn" data-act="more" title="More">⋯</button>
+      </div>
+    </div>
+    <div class="group-body">
+      
+      
+        <table class="group-table">
+          <thead>
+            <tr>
+              <th class="gcol-num">#</th>
+              <th class="gcol-name">Action Name</th>
+              <th class="gcol-type">Action Type</th>
+              <th class="gcol-success">On Success</th>
+              <th class="gcol-failure">On Failure</th>
+              <th class="gcol-comments">Comments</th>
+              <th class="gcol-date">Modified Date</th>
+              <th class="gcol-by">Modified By</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr data-action-num="11" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">11</span></td>
+                  <td class="gcol-name" title="Click sold type">Click sold type</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="12" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">12</span></td>
+                  <td class="gcol-name" title="Check if auction or private treaty">Check if auction or private treaty</td>
+                  <td class="gcol-type" title="Evaluate Formula">Evaluate Formula</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Proceed</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="13" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">13</span></td>
+                  <td class="gcol-name" title="Click auction or private treaty">Click auction or private treaty</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="14" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">14</span></td>
+                  <td class="gcol-name" title="Click sale price">Click sale price</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="15" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">15</span></td>
+                  <td class="gcol-name" title="Type sale price">Type sale price</td>
+                  <td class="gcol-type" title="Typing - Type Text">Typing - Type Text</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="16" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">16</span></td>
+                  <td class="gcol-name" title="Click deposit">Click deposit</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="17" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">17</span></td>
+                  <td class="gcol-name" title="Clear Field (CTRL+A)">Clear Field (CTRL+A)</td>
+                  <td class="gcol-type" title="Typing - Clear Field (CTRL+A)">Typing - Clear Field (CTRL+A)</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="18" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">18</span></td>
+                  <td class="gcol-name" title="Calculate Deposit Amount">Calculate Deposit Amount</td>
+                  <td class="gcol-type" title="Evaluate Formula">Evaluate Formula</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Proceed</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="19" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">19</span></td>
+                  <td class="gcol-name" title="Type deposit amount">Type deposit amount</td>
+                  <td class="gcol-type" title="Typing - Type Text">Typing - Type Text</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+          </tbody>
+        </table>
+      
+      <div class="add-action-row" data-group-id="g4">Add action to "Sale Type &amp; Pricing"</div>
+    </div>
+  </div><div class="drop-zone" data-insert-idx="4"></div><div class="group-section collapsed" data-group-id="g5">
+    <div class="group-header" data-group-id="g5">
+      <span class="group-chevron">▾</span>
+      <span class="group-name">Key Dates</span>
+      <span class="group-count">
+        11 active
+      </span>
+      
+      <div class="group-tools">
+        <button class="group-tool-btn" data-act="up" title="Move group up">▲</button>
+        <button class="group-tool-btn" data-act="down" title="Move group down">▼</button>
+        <button class="group-tool-btn" data-act="rename" title="Rename group">✎</button>
+        <button class="group-tool-btn" data-act="condition" title="Add condition">⚡</button>
+        <button class="group-tool-btn" data-act="more" title="More">⋯</button>
+      </div>
+    </div>
+    <div class="group-body">
+      
+      
+        <table class="group-table">
+          <thead>
+            <tr>
+              <th class="gcol-num">#</th>
+              <th class="gcol-name">Action Name</th>
+              <th class="gcol-type">Action Type</th>
+              <th class="gcol-success">On Success</th>
+              <th class="gcol-failure">On Failure</th>
+              <th class="gcol-comments">Comments</th>
+              <th class="gcol-date">Modified Date</th>
+              <th class="gcol-by">Modified By</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr data-action-num="20" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">20</span></td>
+                  <td class="gcol-name" title="Cooling Off Date dd/MM/yyyy">Cooling Off Date dd/MM/yyyy</td>
+                  <td class="gcol-type" title="Evaluate Formula">Evaluate Formula</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Proceed</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="21" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">21</span></td>
+                  <td class="gcol-name" title="Settlement date dd/MM/yyyy">Settlement date dd/MM/yyyy</td>
+                  <td class="gcol-type" title="Evaluate Formula">Evaluate Formula</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Proceed</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="22" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">22</span></td>
+                  <td class="gcol-name" title="Contract date dd/MM/yyyy">Contract date dd/MM/yyyy</td>
+                  <td class="gcol-type" title="Evaluate Formula">Evaluate Formula</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Proceed</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="23" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">23</span></td>
+                  <td class="gcol-name" title="Click contract/conditional date box">Click contract/conditional date box</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="24" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">24</span></td>
+                  <td class="gcol-name" title="Type contract/conditional date">Type contract/conditional date</td>
+                  <td class="gcol-type" title="Typing - Type Text">Typing - Type Text</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="25" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">25</span></td>
+                  <td class="gcol-name" title="Click &quot;Deposit Due&quot;">Click "Deposit Due"</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="26" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">26</span></td>
+                  <td class="gcol-name" title="Type cooling off / deposit due date">Type cooling off / deposit due date</td>
+                  <td class="gcol-type" title="Typing - Type Text">Typing - Type Text</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="27" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">27</span></td>
+                  <td class="gcol-name" title="Click &quot;Unconditional&quot;">Click "Unconditional"</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="28" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">28</span></td>
+                  <td class="gcol-name" title="Type cooling off / deposit due date">Type cooling off / deposit due date</td>
+                  <td class="gcol-type" title="Typing - Type Text">Typing - Type Text</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="29" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">29</span></td>
+                  <td class="gcol-name" title="Click &quot;Settlement&quot;">Click "Settlement"</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="30" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">30</span></td>
+                  <td class="gcol-name" title="Type settlement date">Type settlement date</td>
+                  <td class="gcol-type" title="Typing - Type Text">Typing - Type Text</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+          </tbody>
+        </table>
+      
+      <div class="add-action-row" data-group-id="g5">Add action to "Key Dates"</div>
+    </div>
+  </div><div class="drop-zone" data-insert-idx="5"></div><div class="group-section collapsed" data-group-id="g6">
+    <div class="group-header" data-group-id="g6">
+      <span class="group-chevron">▾</span>
+      <span class="group-name">Commission &amp; Status Finalization</span>
+      <span class="group-count">
+        5 active
+      </span>
+      
+      <div class="group-tools">
+        <button class="group-tool-btn" data-act="up" title="Move group up">▲</button>
+        <button class="group-tool-btn" data-act="down" title="Move group down">▼</button>
+        <button class="group-tool-btn" data-act="rename" title="Rename group">✎</button>
+        <button class="group-tool-btn" data-act="condition" title="Add condition">⚡</button>
+        <button class="group-tool-btn" data-act="more" title="More">⋯</button>
+      </div>
+    </div>
+    <div class="group-body">
+      
+      
+        <table class="group-table">
+          <thead>
+            <tr>
+              <th class="gcol-num">#</th>
+              <th class="gcol-name">Action Name</th>
+              <th class="gcol-type">Action Type</th>
+              <th class="gcol-success">On Success</th>
+              <th class="gcol-failure">On Failure</th>
+              <th class="gcol-comments">Comments</th>
+              <th class="gcol-date">Modified Date</th>
+              <th class="gcol-by">Modified By</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr data-action-num="31" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">31</span></td>
+                  <td class="gcol-name" title="Set gross commission to 1 if it was not populated">Set gross commission to 1 if it was not populated</td>
+                  <td class="gcol-type" title="AI - Screen Related Prompt">AI - Screen Related Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="32" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">32</span></td>
+                  <td class="gcol-name" title="Find &quot;Set as under offer&quot;">Find "Set as under offer"</td>
+                  <td class="gcol-type" title="Typing - Find Text (CTRL+F)">Typing - Find Text (CTRL+F)</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="33" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">33</span></td>
+                  <td class="gcol-name" title="Click Set as under offer">Click Set as under offer</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="34" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">34</span></td>
+                  <td class="gcol-name" title="Screen Related Prompt">Screen Related Prompt</td>
+                  <td class="gcol-type" title="AI - Screen Related Prompt">AI - Screen Related Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Proceed</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="35" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">35</span></td>
+                  <td class="gcol-name" title="Gross Commission Failed to Populate RW Macarthur">Gross Commission Failed to Populate RW Macarthur</td>
+                  <td class="gcol-type" title="Human Assistance">Human Assistance</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-23</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+          </tbody>
+        </table>
+      
+      <div class="add-action-row" data-group-id="g6">Add action to "Commission &amp; Status Finalization"</div>
+    </div>
+  </div><div class="drop-zone" data-insert-idx="6"></div><div class="group-section collapsed" data-group-id="g7">
+    <div class="group-header" data-group-id="g7">
+      <span class="group-chevron">▾</span>
+      <span class="group-name">Populate Vendor Solicitor</span>
+      <span class="group-count">
+        6 active
+      </span>
+      <span class="group-conditional-badge" title="This group runs conditionally">conditional</span>
+      <div class="group-tools">
+        <button class="group-tool-btn" data-act="up" title="Move group up">▲</button>
+        <button class="group-tool-btn" data-act="down" title="Move group down">▼</button>
+        <button class="group-tool-btn" data-act="rename" title="Rename group">✎</button>
+        <button class="group-tool-btn" data-act="condition" title="Edit condition">⚡</button>
+        <button class="group-tool-btn" data-act="more" title="More">⋯</button>
+      </div>
+    </div>
+    <div class="group-body">
+      
+    <div class="conditional-note">
+      <div class="cond-label">Run when</div>
+      <div class="cond-formula">=NOT_EQUALS(
+   [[ Action 39: Check if vendor solicitor exists ]];
+   "exists"
+)</div>
+      <div class="cond-summary">Only populate if the solicitor is not already in the system.</div>
+    </div>
+  
+      
+        <table class="group-table">
+          <thead>
+            <tr>
+              <th class="gcol-num">#</th>
+              <th class="gcol-name">Action Name</th>
+              <th class="gcol-type">Action Type</th>
+              <th class="gcol-success">On Success</th>
+              <th class="gcol-failure">On Failure</th>
+              <th class="gcol-comments">Comments</th>
+              <th class="gcol-date">Modified Date</th>
+              <th class="gcol-by">Modified By</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr data-action-num="36" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">36</span></td>
+                  <td class="gcol-name" title="Click vendor">Click vendor</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="37" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">37</span></td>
+                  <td class="gcol-name" title="Type Vendor Solicitor">Type Vendor Solicitor</td>
+                  <td class="gcol-type" title="Typing - Type Text">Typing - Type Text</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title="First type solicitors name, check if the solicitor exists in the system, click it if so, otherwise, create a new one. AI determines if the solicitor is a company or an individual based on their name.">First type solicitors name, check if the solicitor exists in the system, click it if so, otherwise, create a new one. AI determines if the solicitor is a company or an individual based on their name.</td>
+                  <td class="gcol-date">2026-04-28</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="38" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">38</span></td>
+                  <td class="gcol-name" title="Delay 6 Seconds">Delay 6 Seconds</td>
+                  <td class="gcol-type" title="Robot - Delay (Seconds)">Robot - Delay (Seconds)</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="39" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">39</span></td>
+                  <td class="gcol-name" title="Check if vendor solicitor exists">Check if vendor solicitor exists</td>
+                  <td class="gcol-type" title="AI - Screen Related Prompt">AI - Screen Related Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="40" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">40</span></td>
+                  <td class="gcol-name" title="Check if vendor solicitor needs to be added">Check if vendor solicitor needs to be added</td>
+                  <td class="gcol-type" title="AI - Screen Related Prompt">AI - Screen Related Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="41" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">41</span></td>
+                  <td class="gcol-name" title="Populate vendor solicitor info">Populate vendor solicitor info</td>
+                  <td class="gcol-type" title="AI - Screen Related Prompt">AI - Screen Related Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-28</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+          </tbody>
+        </table>
+      
+      <div class="add-action-row" data-group-id="g7">Add action to "Populate Vendor Solicitor"</div>
+    </div>
+  </div><div class="drop-zone" data-insert-idx="7"></div><div class="group-section collapsed" data-group-id="g8">
+    <div class="group-header" data-group-id="g8">
+      <span class="group-chevron">▾</span>
+      <span class="group-name">Populate Purchaser Solicitor</span>
+      <span class="group-count">
+        7 active
+      </span>
+      <span class="group-conditional-badge" title="This group runs conditionally">conditional</span>
+      <div class="group-tools">
+        <button class="group-tool-btn" data-act="up" title="Move group up">▲</button>
+        <button class="group-tool-btn" data-act="down" title="Move group down">▼</button>
+        <button class="group-tool-btn" data-act="rename" title="Rename group">✎</button>
+        <button class="group-tool-btn" data-act="condition" title="Edit condition">⚡</button>
+        <button class="group-tool-btn" data-act="more" title="More">⋯</button>
+      </div>
+    </div>
+    <div class="group-body">
+      
+    <div class="conditional-note">
+      <div class="cond-label">Run when</div>
+      <div class="cond-formula">=NOT_EQUALS(
+   [[ Action 45: Check if purchase solicitor exists ]];
+   "exists"
+)</div>
+      <div class="cond-summary">Only populate if the solicitor is not already in the system.</div>
+    </div>
+  
+      
+        <table class="group-table">
+          <thead>
+            <tr>
+              <th class="gcol-num">#</th>
+              <th class="gcol-name">Action Name</th>
+              <th class="gcol-type">Action Type</th>
+              <th class="gcol-success">On Success</th>
+              <th class="gcol-failure">On Failure</th>
+              <th class="gcol-comments">Comments</th>
+              <th class="gcol-date">Modified Date</th>
+              <th class="gcol-by">Modified By</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr data-action-num="42" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">42</span></td>
+                  <td class="gcol-name" title="Click &quot;Purchaser&quot;">Click "Purchaser"</td>
+                  <td class="gcol-type" title="Computer Vision - Mouse C...">Computer Vision - Mouse C...</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="43" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">43</span></td>
+                  <td class="gcol-name" title="Type Purchaser Solicitor">Type Purchaser Solicitor</td>
+                  <td class="gcol-type" title="Typing - Type Text">Typing - Type Text</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="44" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">44</span></td>
+                  <td class="gcol-name" title="Delay 6 Seconds">Delay 6 Seconds</td>
+                  <td class="gcol-type" title="Robot - Delay (Seconds)">Robot - Delay (Seconds)</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="45" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">45</span></td>
+                  <td class="gcol-name" title="Check if purchase solicitor exists">Check if purchase solicitor exists</td>
+                  <td class="gcol-type" title="AI - Screen Related Prompt">AI - Screen Related Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="46" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">46</span></td>
+                  <td class="gcol-name" title="Check if purchase solicitor is person or company, and select">Check if purchase solicitor is person or company, and select</td>
+                  <td class="gcol-type" title="AI - Screen Related Prompt">AI - Screen Related Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-24</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="47" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">47</span></td>
+                  <td class="gcol-name" title="Populate purchaser solicitor info">Populate purchaser solicitor info</td>
+                  <td class="gcol-type" title="AI - Browser Related Prompt">AI - Browser Related Prompt</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-28</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+                <tr data-action-num="48" draggable="true">
+                  <td class="gcol-num"><span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="action-num-label">48</span></td>
+                  <td class="gcol-name" title="Type Field Value">Type Field Value</td>
+                  <td class="gcol-type" title="Computer Vision - Type Field Value">Computer Vision - Type Field Value</td>
+                  <td class="gcol-success">Proceed</td>
+                  <td class="gcol-failure">Exit and Shut Down A.I. Em...</td>
+                  <td class="gcol-comments" title=""></td>
+                  <td class="gcol-date">2026-04-28</td>
+                  <td class="gcol-by">Easton (Support)</td>
+                </tr>
+              
+          </tbody>
+        </table>
+      
+      <div class="add-action-row" data-group-id="g8">Add action to "Populate Purchaser Solicitor"</div>
+    </div>
+  </div><div class="drop-zone" data-insert-idx="8"></div></div>
+
+          <div class="pagination">
+            <span id="actionCount">3 inputs · 45 actions across 7 groups</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<aside class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-title" id="drawerTitle">Detail</div>
+    <div class="drawer-actions">
+      <button class="drawer-action-btn" title="Save">💾</button>
+      <button class="drawer-action-btn" title="Close" id="drawerClose">⊗</button>
+    </div>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+
+<div class="group-menu" id="groupMenu" style="top: 683.067px; left: 1656px;">
+    <div class="group-menu-item" data-act="rename"><span class="menu-icon">✎</span>Rename group</div>
+    <div class="group-menu-item" data-act="condition"><span class="menu-icon">⚡</span>Edit condition</div>
+    <div class="group-menu-item" data-act="remove-condition"><span class="menu-icon">⊗</span>Remove condition</div>
+    <div class="group-menu-divider"></div>
+    <div class="group-menu-item" data-act="up"><span class="menu-icon">▲</span>Move up</div>
+    <div class="group-menu-item" data-act="down"><span class="menu-icon">▼</span>Move down</div>
+    <div class="group-menu-divider"></div>
+    <div class="group-menu-item" data-act="disable" style="color: var(--pp-red);"><span class="menu-icon">⊘</span>Disable all in group</div>
+    <div class="group-menu-item" data-act="delete-group" style="color: var(--pp-red);"><span class="menu-icon">🗑</span>Delete group</div>
+  </div>
+
+<script>
+const ACTIONS = [
+  { num: 1, name: 'Focus Window "chrome.exe"', type: 'Window - Focus', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 2, name: 'Find "Under Offer"', type: 'Typing - Find Text (CTRL+F)', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 3, name: 'Click under offer button', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-28', by: 'Easton (Support)', disabled: false },
+  { num: 4, name: 'Hold Contract JSON', type: 'Process Field - Hold Value', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false, isInput: true, varName: 'contract_json', dataType: 'JSON', sourceField: 'Contract JSON', readOnly: true },
+  { num: 5, name: 'Hold Purchase Solicitor', type: 'Process Field - Hold Value', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false, isInput: true, varName: 'purchase_solicitor', dataType: 'Text', sourceField: 'Purchase Solicitor', readOnly: false },
+  { num: 6, name: 'Hold Vendor Solicitor', type: 'Process Field - Hold Value', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false, isInput: true, varName: 'vendor_solicitor', dataType: 'Text', sourceField: 'Vendor Solicitor', readOnly: false },
+  { num: 7, name: 'Determine if Purchase Solicitor is person or company', type: 'AI - Text Prompt', success: 'Proceed', failure: 'Go To Action 11', date: '2026-04-28', by: 'Easton (Support)', disabled: false },
+  { num: 8, name: 'Determine if Vendor Solicitor is person or company', type: 'AI - Text Prompt', success: 'Proceed', failure: 'Go To Action 11', date: '2026-04-28', by: 'Easton (Support)', disabled: false },
+  { num: 9, name: 'Get first/last name for Purchase Solicitor', type: 'AI - Text Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 10, name: 'Get first/last name for Vendor Solicitor', type: 'AI - Text Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 11, name: 'Click sold type', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 12, name: 'Check if auction or private treaty', type: 'Evaluate Formula', success: 'Proceed', failure: 'Proceed', date: '2026-04-23', by: 'Easton (Support)', disabled: false,
+    formula: '=IF(\n   =EQUALS(\n      =JSONQUERY(\n         is_auction;\n         [[ Action 4: Hold Contract JSON (Process Field Value) ]]\n      );\n      0\n   );\n   Private Treaty;\n   Auction\n)' },
+  { num: 13, name: 'Click auction or private treaty', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 14, name: 'Click sale price', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 15, name: 'Type sale price', type: 'Typing - Type Text', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 16, name: 'Click deposit', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 17, name: 'Clear Field (CTRL+A)', type: 'Typing - Clear Field (CTRL+A)', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 18, name: 'Calculate Deposit Amount', type: 'Evaluate Formula', success: 'Proceed', failure: 'Proceed', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 19, name: 'Type deposit amount', type: 'Typing - Type Text', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 20, name: 'Cooling Off Date dd/MM/yyyy', type: 'Evaluate Formula', success: 'Proceed', failure: 'Proceed', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 21, name: 'Settlement date dd/MM/yyyy', type: 'Evaluate Formula', success: 'Proceed', failure: 'Proceed', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 22, name: 'Contract date dd/MM/yyyy', type: 'Evaluate Formula', success: 'Proceed', failure: 'Proceed', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 23, name: 'Click contract/conditional date box', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 24, name: 'Type contract/conditional date', type: 'Typing - Type Text', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 25, name: 'Click "Deposit Due"', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 26, name: 'Type cooling off / deposit due date', type: 'Typing - Type Text', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 27, name: 'Click "Unconditional"', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 28, name: 'Type cooling off / deposit due date', type: 'Typing - Type Text', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 29, name: 'Click "Settlement"', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 30, name: 'Type settlement date', type: 'Typing - Type Text', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 31, name: 'Set gross commission to 1 if it was not populated', type: 'AI - Screen Related Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 32, name: 'Find "Set as under offer"', type: 'Typing - Find Text (CTRL+F)', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 33, name: 'Click Set as under offer', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 34, name: 'Screen Related Prompt', type: 'AI - Screen Related Prompt', success: 'Proceed', failure: 'Proceed', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 35, name: 'Gross Commission Failed to Populate RW Macarthur', type: 'Human Assistance', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-23', by: 'Easton (Support)', disabled: false },
+  { num: 36, name: 'Click vendor', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 37, name: 'Type Vendor Solicitor', type: 'Typing - Type Text', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-28', by: 'Easton (Support)', disabled: false, comments: 'First type solicitors name, check if the solicitor exists in the system, click it if so, otherwise, create a new one. AI determines if the solicitor is a company or an individual based on their name.' },
+  { num: 38, name: 'Delay 6 Seconds', type: 'Robot - Delay (Seconds)', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 39, name: 'Check if vendor solicitor exists', type: 'AI - Screen Related Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 40, name: 'Check if vendor solicitor needs to be added', type: 'AI - Screen Related Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 41, name: 'Populate vendor solicitor info', type: 'AI - Screen Related Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-28', by: 'Easton (Support)', disabled: false },
+  { num: 42, name: 'Click "Purchaser"', type: 'Computer Vision - Mouse C...', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 43, name: 'Type Purchaser Solicitor', type: 'Typing - Type Text', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 44, name: 'Delay 6 Seconds', type: 'Robot - Delay (Seconds)', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 45, name: 'Check if purchase solicitor exists', type: 'AI - Screen Related Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 46, name: 'Check if purchase solicitor is person or company, and select', type: 'AI - Screen Related Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-24', by: 'Easton (Support)', disabled: false },
+  { num: 47, name: 'Populate purchaser solicitor info', type: 'AI - Browser Related Prompt', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-28', by: 'Easton (Support)', disabled: false },
+  { num: 48, name: 'Type Field Value', type: 'Computer Vision - Type Field Value', success: 'Proceed', failure: 'Exit and Shut Down A.I. Em...', date: '2026-04-28', by: 'Easton (Support)', disabled: false },
+];
+
+const ALL_ACTION_TYPES = [
+  'Window - Focus', 'Computer Vision - Mouse Click', 'Computer Vision - Type Field Value',
+  'Typing - Type Text', 'Typing - Find Text (CTRL+F)', 'Typing - Clear Field (CTRL+A)', 'Typing - Press Key',
+  'AI - Text Prompt', 'AI - Screen Related Prompt', 'AI - Browser Related Prompt',
+  'Process Field - Hold Value', 'Process Field - Get Value', 'Process Field - Replace Text',
+  'Process Field - Append Text', 'Process Field - Replace File', 'Process Field - Append File',
+  'Process Field - Download Files',
+  'Evaluate Formula', 'Human Assistance', 'Robot - Delay (Seconds)', 'Go To Action'
+];
+
+// Available process fields for this job (the full universe inputs can be drawn from)
+const PROCESS_FIELDS = [
+  { name: 'Realtair JSON', dataType: 'Serialized Data', readOnly: false, suggestedVar: 'realtair_json' },
+  { name: 'Test', dataType: 'Text (1 Row)', readOnly: true, suggestedVar: 'test' },
+  { name: 'email_sender', dataType: 'Email Address', readOnly: false, suggestedVar: 'email_sender' },
+  { name: 'email_subject', dataType: 'Text (1 Row)', readOnly: false, suggestedVar: 'email_subject' },
+  { name: 'email_body', dataType: 'Text (20 Rows)', readOnly: false, suggestedVar: 'email_body' },
+  { name: 'email_attachments', dataType: 'File Attachment', readOnly: false, suggestedVar: 'email_attachments' },
+  { name: 'Contract JSON', dataType: 'Serialized Data', readOnly: true, suggestedVar: 'contract_json' },
+  { name: 'Admin_Email', dataType: 'Email Address', readOnly: false, suggestedVar: 'admin_email' },
+  { name: 'JS_output', dataType: 'Text (5 Rows)', readOnly: false, suggestedVar: 'js_output' },
+  { name: 'Formula_Eval', dataType: 'Text (1 Row)', readOnly: true, suggestedVar: 'formula_eval' },
+  { name: 'Purchase Solicitor', dataType: 'Text (1 Row)', readOnly: false, suggestedVar: 'purchase_solicitor' },
+  { name: 'Vendor Solicitor', dataType: 'Text (1 Row)', readOnly: false, suggestedVar: 'vendor_solicitor' },
+];
+
+const RESULT_OPTIONS = [
+  'Proceed to Next Action', 'Exit and Shut Down A.I. Employee',
+  'Go To Action 11', 'Retry Action', 'Skip Action'
+];
+
+// ITEMS is an ordered list of either groups or loose actions
+// Each entry is either { kind: 'group', id, name, actions: [num...], conditional?, formula?, summary? }
+// or { kind: 'action', num }
+let ITEMS = [
+  { kind: 'action', num: 1 },
+  { kind: 'group', id: 'g2', name: 'Mark as Under Offer', actions: [2, 3] },
+  { kind: 'group', id: 'g3', name: 'Detect Solicitor Types', actions: [7, 8, 9, 10],
+    conditional: true,
+    formula: '=NOT_EQUALS(\n   [[ Action 7: Determine if Purchase Solicitor is person or company ]];\n   "company"\n)',
+    summary: 'Run name extraction only if the solicitor is a person.' },
+  { kind: 'group', id: 'g4', name: 'Sale Type &amp; Pricing', actions: [11, 12, 13, 14, 15, 16, 17, 18, 19] },
+  { kind: 'group', id: 'g5', name: 'Key Dates', actions: [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { kind: 'group', id: 'g6', name: 'Commission &amp; Status Finalization', actions: [31, 32, 33, 34, 35] },
+  { kind: 'group', id: 'g7', name: 'Populate Vendor Solicitor', actions: [36, 37, 38, 39, 40, 41],
+    conditional: true,
+    formula: '=NOT_EQUALS(\n   [[ Action 39: Check if vendor solicitor exists ]];\n   "exists"\n)',
+    summary: 'Only populate if the solicitor is not already in the system.' },
+  { kind: 'group', id: 'g8', name: 'Populate Purchaser Solicitor', actions: [42, 43, 44, 45, 46, 47, 48],
+    conditional: true,
+    formula: '=NOT_EQUALS(\n   [[ Action 45: Check if purchase solicitor exists ]];\n   "exists"\n)',
+    summary: 'Only populate if the solicitor is not already in the system.' },
+];
+
+// Helper: get all groups (for things that just need group iteration)
+function getGroups() { return ITEMS.filter(i =&gt; i.kind === 'group'); }
+function findGroup(id) { return ITEMS.find(i =&gt; i.kind === 'group' &amp;&amp; i.id === id); }
+function findGroupContainingAction(num) {
+  return ITEMS.find(i =&gt; i.kind === 'group' &amp;&amp; i.actions.includes(num));
+}
+function isLooseAction(num) {
+  return ITEMS.some(i =&gt; i.kind === 'action' &amp;&amp; i.num === num);
+}
+
+let activeRow = null;
+let groupMenuTarget = null;
+
+// FLAT TABLE
+function rebuildFlatTable() {
+  const flatBody = document.getElementById('flatTableBody');
+  flatBody.innerHTML = '';
+  // Sort by current num so the flat view reflects renumbering
+  const sorted = [...ACTIONS].sort((a, b) =&gt; a.num - b.num);
+  sorted.forEach(a =&gt; {
+    const tr = document.createElement('tr');
+    tr.dataset.actionNum = a.num;
+    if (a.disabled) tr.classList.add('disabled');
+    const failureDisplay = a.failure.startsWith('Go To') ? `&lt;span class="go-to"&gt;${a.failure}&lt;/span&gt;` : a.failure;
+    tr.innerHTML = `
+      &lt;td&gt;&lt;span class="pp-checkbox"&gt;&lt;/span&gt;&lt;/td&gt;
+      &lt;td&gt;${a.num}&lt;/td&gt;
+      &lt;td&gt;${a.name}&lt;/td&gt;
+      &lt;td&gt;${a.type}&lt;/td&gt;
+      &lt;td&gt;${a.success}&lt;/td&gt;
+      &lt;td&gt;${failureDisplay}&lt;/td&gt;
+      &lt;td&gt;${a.comments || ''}&lt;/td&gt;
+      &lt;td&gt;${a.date}&lt;/td&gt;
+      &lt;td&gt;${a.by}&lt;/td&gt;
+    `;
+    tr.addEventListener('click', () =&gt; openActionDrawer(a, tr));
+    flatBody.appendChild(tr);
+  });
+}
+rebuildFlatTable();
+
+// JOB INPUTS
+function rebuildInputs() {
+  const inputsList = document.getElementById('inputsList');
+  inputsList.innerHTML = '';
+  const inputs = ACTIONS.filter(a =&gt; a.isInput).sort((a, b) =&gt; a.num - b.num);
+  inputs.forEach(input =&gt; {
+    const card = document.createElement('div');
+    card.className = 'input-card';
+    card.dataset.inputNum = input.num;
+    card.innerHTML = `
+      &lt;div class="input-card-icon"&gt;{ }&lt;/div&gt;
+      &lt;div style="flex: 1; min-width: 0;"&gt;
+        &lt;div class="input-card-name"&gt;${input.varName}${input.readOnly ? ' &lt;span class="input-readonly-tag" title="Read-only"&gt;RO&lt;/span&gt;' : ''}&lt;/div&gt;
+        &lt;div class="input-card-meta"&gt;${input.dataType} · ${input.sourceField || 'from action ' + input.num}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;button class="input-card-remove" title="Remove input" data-input-num="${input.num}"&gt;×&lt;/button&gt;
+    `;
+    card.addEventListener('click', e =&gt; {
+      if (e.target.classList.contains('input-card-remove')) return;
+      openInputDrawer(input, card);
+    });
+    card.querySelector('.input-card-remove').addEventListener('click', e =&gt; {
+      e.stopPropagation();
+      removeInput(input);
+    });
+    inputsList.appendChild(card);
+  });
+
+  // Add the "+ Add Input" button card
+  const addCard = document.createElement('div');
+  addCard.className = 'input-card input-card-add';
+  addCard.innerHTML = `
+    &lt;div class="input-card-icon" style="background: var(--pp-page-bg); color: var(--pp-text-secondary);"&gt;+&lt;/div&gt;
+    &lt;div&gt;
+      &lt;div class="input-card-name" style="color: var(--pp-blue);"&gt;Add Input&lt;/div&gt;
+      &lt;div class="input-card-meta"&gt;Pick a process field&lt;/div&gt;
+    &lt;/div&gt;
+  `;
+  addCard.addEventListener('click', () =&gt; openAddInputDrawer());
+  inputsList.appendChild(addCard);
+}
+rebuildInputs();
+
+function removeInput(input) {
+  if (!confirm(`Remove input "${input.varName}"?\n\nThis removes the underlying Hold Value action. Any actions referencing this input will need to be updated.`)) return;
+  const idx = ACTIONS.findIndex(a =&gt; a.num === input.num);
+  if (idx === -1) return;
+  ACTIONS.splice(idx, 1);
+  // Remove from any group or loose
+  ITEMS.forEach(item =&gt; {
+    if (item.kind === 'group') item.actions = item.actions.filter(n =&gt; n !== input.num);
+  });
+  for (let i = ITEMS.length - 1; i &gt;= 0; i--) {
+    if (ITEMS[i].kind === 'action' &amp;&amp; ITEMS[i].num === input.num) ITEMS.splice(i, 1);
+  }
+  renumberActions();
+  renderGroups();
+  rebuildFlatTable();
+  rebuildInputs();
+  closeDrawer();
+}
+
+function addInputFromField(field) {
+  const maxNum = ACTIONS.reduce((m, a) =&gt; Math.max(m, a.num), 0);
+  const newAction = {
+    num: maxNum + 1,
+    name: `Hold ${field.name}`,
+    type: 'Process Field - Hold Value',
+    success: 'Proceed',
+    failure: 'Exit and Shut Down A.I. Em...',
+    date: new Date().toISOString().slice(0, 10),
+    by: 'Easton (Support)',
+    disabled: false,
+    isInput: true,
+    varName: field.suggestedVar,
+    dataType: simplifyDataType(field.dataType),
+    sourceField: field.name,
+    readOnly: field.readOnly,
+  };
+  ACTIONS.push(newAction);
+  // Add to whichever group has other inputs, or as a loose action at the top if none
+  let inputGroup = ITEMS.find(i =&gt; i.kind === 'group' &amp;&amp; i.actions.some(n =&gt; {
+    const a = ACTIONS.find(act =&gt; act.num === n);
+    return a &amp;&amp; a.isInput;
+  }));
+  if (inputGroup) {
+    inputGroup.actions.push(newAction.num);
+  } else {
+    ITEMS.unshift({ kind: 'action', num: newAction.num });
+  }
+  renumberActions();
+  renderGroups();
+  rebuildFlatTable();
+  rebuildInputs();
+  closeDrawer();
+}
+
+function simplifyDataType(processFieldType) {
+  if (processFieldType.startsWith('Serialized')) return 'JSON';
+  if (processFieldType.startsWith('Email')) return 'Email';
+  if (processFieldType.startsWith('File')) return 'File';
+  if (processFieldType.startsWith('Number')) return 'Number';
+  if (processFieldType.startsWith('Date')) return 'Date';
+  return 'Text';
+}
+
+// RENDER
+let dragHoverTimer = null;
+
+function renderGroups() {
+  const container = document.getElementById('groupsContainer');
+  container.innerHTML = '';
+
+  if (ITEMS.length === 0) {
+    container.innerHTML = `
+      &lt;div class="empty-state"&gt;
+        &lt;div class="empty-state-icon"&gt;⊟&lt;/div&gt;
+        &lt;h3&gt;No actions yet&lt;/h3&gt;
+        &lt;p&gt;Add an action or a group to get started.&lt;br&gt;You can drag actions into groups later to organize them.&lt;/p&gt;
+        &lt;div style="display: flex; gap: 8px; justify-content: center;"&gt;
+          &lt;button class="btn btn-blue" onclick="addStandaloneAction()"&gt;+ Add Action&lt;/button&gt;
+          &lt;button class="btn btn-outline" onclick="addNewGroup()"&gt;+ Add Group&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    `;
+    updateActionCount();
+    return;
+  }
+
+  // Render each item, with a drop zone before each one (and one at the end)
+  ITEMS.forEach((item, idx) =&gt; {
+    container.appendChild(makeDropZone(idx));
+    if (item.kind === 'group') {
+      container.appendChild(renderGroupItem(item));
+    } else if (item.kind === 'action') {
+      const action = ACTIONS.find(a =&gt; a.num === item.num);
+      if (action) container.appendChild(renderLooseAction(action));
+    }
+  });
+  // Final drop zone at the very bottom
+  container.appendChild(makeDropZone(ITEMS.length));
+
+  updateActionCount();
+}
+
+function makeDropZone(insertIdx) {
+  const dz = document.createElement('div');
+  dz.className = 'drop-zone';
+  dz.dataset.insertIdx = insertIdx;
+  dz.addEventListener('dragover', e =&gt; {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    dz.classList.add('drag-active');
+  });
+  dz.addEventListener('dragleave', () =&gt; {
+    dz.classList.remove('drag-active');
+  });
+  dz.addEventListener('drop', e =&gt; {
+    e.preventDefault();
+    dz.classList.remove('drag-active');
+    const actionNum = Number(e.dataTransfer.getData('text/plain'));
+    if (!actionNum) return;
+    moveActionToTopLevel(actionNum, Number(dz.dataset.insertIdx));
+  });
+  return dz;
+}
+
+function renderLooseAction(action) {
+  const wrap = document.createElement('div');
+  wrap.className = 'loose-action' + (action.disabled ? ' disabled' : '');
+  wrap.dataset.actionNum = action.num;
+  wrap.draggable = true;
+  const failureDisplay = action.failure.startsWith('Go To') ? `&lt;span class="go-to"&gt;${action.failure}&lt;/span&gt;` : action.failure;
+  wrap.innerHTML = `
+    &lt;div class="gcol-num"&gt;&lt;span class="drag-handle" title="Drag"&gt;⋮⋮&lt;/span&gt;&lt;span class="action-num-label"&gt;${action.num}&lt;/span&gt;&lt;/div&gt;
+    &lt;div title="${escapeAttr(action.name)}"&gt;${action.name}&lt;/div&gt;
+    &lt;div class="gcol-type" title="${escapeAttr(action.type)}"&gt;${action.type}&lt;/div&gt;
+    &lt;div class="gcol-success"&gt;${action.success}&lt;/div&gt;
+    &lt;div class="gcol-failure"&gt;${failureDisplay}&lt;/div&gt;
+    &lt;div class="gcol-comments" title="${escapeAttr(action.comments || '')}"&gt;${action.comments || ''}&lt;/div&gt;
+    &lt;div class="gcol-date"&gt;${action.date}&lt;/div&gt;
+    &lt;div class="gcol-by"&gt;${action.by}&lt;/div&gt;
+  `;
+  wrap.addEventListener('click', e =&gt; {
+    e.stopPropagation();
+    openActionDrawer(action, wrap);
+  });
+  wrap.addEventListener('dragstart', e =&gt; {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', action.num);
+    wrap.classList.add('dragging');
+  });
+  wrap.addEventListener('dragend', () =&gt; wrap.classList.remove('dragging'));
+  return wrap;
+}
+
+function renderGroupItem(group) {
+  const groupActions = group.actions.map(num =&gt; ACTIONS.find(a =&gt; a.num === num)).filter(Boolean);
+  const enabled = groupActions.filter(a =&gt; !a.disabled).length;
+  const disabled = groupActions.filter(a =&gt; a.disabled).length;
+
+  const sectionEl = document.createElement('div');
+  sectionEl.className = 'group-section';
+  sectionEl.dataset.groupId = group.id;
+
+  const conditionalBadge = group.conditional ? `&lt;span class="group-conditional-badge" title="This group runs conditionally"&gt;conditional&lt;/span&gt;` : '';
+  const conditionalNote = group.conditional ? `
+    &lt;div class="conditional-note"&gt;
+      &lt;div class="cond-label"&gt;Run when&lt;/div&gt;
+      &lt;div class="cond-formula"&gt;${escapeHtml(group.formula)}&lt;/div&gt;
+      &lt;div class="cond-summary"&gt;${group.summary}&lt;/div&gt;
+    &lt;/div&gt;
+  ` : '';
+
+  const isEmpty = groupActions.length === 0;
+
+  sectionEl.innerHTML = `
+    &lt;div class="group-header" data-group-id="${group.id}"&gt;
+      &lt;span class="group-chevron"&gt;▾&lt;/span&gt;
+      &lt;span class="group-name"&gt;${group.name}&lt;/span&gt;
+      &lt;span class="group-count"&gt;
+        ${isEmpty ? 'empty' : `${enabled} active${disabled ? ` · &lt;span class="disabled-count"&gt;${disabled} disabled&lt;/span&gt;` : ''}`}
+      &lt;/span&gt;
+      ${conditionalBadge}
+      &lt;div class="group-tools"&gt;
+        &lt;button class="group-tool-btn" data-act="up" title="Move group up"&gt;▲&lt;/button&gt;
+        &lt;button class="group-tool-btn" data-act="down" title="Move group down"&gt;▼&lt;/button&gt;
+        &lt;button class="group-tool-btn" data-act="rename" title="Rename group"&gt;✎&lt;/button&gt;
+        &lt;button class="group-tool-btn" data-act="condition" title="${group.conditional ? 'Edit' : 'Add'} condition"&gt;⚡&lt;/button&gt;
+        &lt;button class="group-tool-btn" data-act="more" title="More"&gt;⋯&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="group-body"&gt;
+      ${conditionalNote}
+      ${isEmpty ? `
+        &lt;div class="empty-group-msg"&gt;No actions yet. Add one below, or drag actions into this group.&lt;/div&gt;
+      ` : `
+        &lt;table class="group-table"&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th class="gcol-num"&gt;#&lt;/th&gt;
+              &lt;th class="gcol-name"&gt;Action Name&lt;/th&gt;
+              &lt;th class="gcol-type"&gt;Action Type&lt;/th&gt;
+              &lt;th class="gcol-success"&gt;On Success&lt;/th&gt;
+              &lt;th class="gcol-failure"&gt;On Failure&lt;/th&gt;
+              &lt;th class="gcol-comments"&gt;Comments&lt;/th&gt;
+              &lt;th class="gcol-date"&gt;Modified Date&lt;/th&gt;
+              &lt;th class="gcol-by"&gt;Modified By&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            ${groupActions.map(a =&gt; {
+              const failureDisplay = a.failure.startsWith('Go To') ? `&lt;span class="go-to"&gt;${a.failure}&lt;/span&gt;` : a.failure;
+              return `
+                &lt;tr data-action-num="${a.num}" draggable="true"${a.disabled ? ' class="disabled"' : ''}&gt;
+                  &lt;td class="gcol-num"&gt;&lt;span class="drag-handle" title="Drag to reorder"&gt;⋮⋮&lt;/span&gt;&lt;span class="action-num-label"&gt;${a.num}&lt;/span&gt;&lt;/td&gt;
+                  &lt;td class="gcol-name" title="${escapeAttr(a.name)}"&gt;${a.name}&lt;/td&gt;
+                  &lt;td class="gcol-type" title="${escapeAttr(a.type)}"&gt;${a.type}&lt;/td&gt;
+                  &lt;td class="gcol-success"&gt;${a.success}&lt;/td&gt;
+                  &lt;td class="gcol-failure"&gt;${failureDisplay}&lt;/td&gt;
+                  &lt;td class="gcol-comments" title="${escapeAttr(a.comments || '')}"&gt;${a.comments || ''}&lt;/td&gt;
+                  &lt;td class="gcol-date"&gt;${a.date}&lt;/td&gt;
+                  &lt;td class="gcol-by"&gt;${a.by}&lt;/td&gt;
+                &lt;/tr&gt;
+              `;
+            }).join('')}
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      `}
+      &lt;div class="add-action-row" data-group-id="${group.id}"&gt;Add action to "${escapeHtml(group.name)}"&lt;/div&gt;
+    &lt;/div&gt;
+  `;
+
+  const header = sectionEl.querySelector('.group-header');
+  header.addEventListener('click', e =&gt; {
+    if (e.target.closest('.group-tools')) return;
+    if (e.target.classList.contains('group-name-edit')) return;
+    sectionEl.classList.toggle('collapsed');
+  });
+
+  // Auto-expand-on-hover when dragging over a collapsed group header
+  header.addEventListener('dragover', e =&gt; {
+    e.preventDefault();
+    if (!sectionEl.classList.contains('collapsed')) return;
+    sectionEl.classList.add('drag-hover-collapsed');
+    if (!dragHoverTimer) {
+      dragHoverTimer = setTimeout(() =&gt; {
+        sectionEl.classList.remove('collapsed');
+        sectionEl.classList.remove('drag-hover-collapsed');
+        dragHoverTimer = null;
+      }, 600);
+    }
+  });
+  header.addEventListener('dragleave', e =&gt; {
+    sectionEl.classList.remove('drag-hover-collapsed');
+    if (dragHoverTimer) {
+      clearTimeout(dragHoverTimer);
+      dragHoverTimer = null;
+    }
+  });
+
+  sectionEl.querySelectorAll('.group-tool-btn').forEach(btn =&gt; {
+    btn.addEventListener('click', e =&gt; {
+      e.stopPropagation();
+      handleGroupTool(btn.dataset.act, group.id, btn);
+    });
+  });
+
+  sectionEl.querySelectorAll('tr[data-action-num]').forEach(tr =&gt; {
+    tr.addEventListener('click', e =&gt; {
+      e.stopPropagation();
+      const action = ACTIONS.find(a =&gt; a.num === Number(tr.dataset.actionNum));
+      openActionDrawer(action, tr);
+    });
+    tr.addEventListener('dragstart', e =&gt; {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', tr.dataset.actionNum);
+      tr.classList.add('dragging');
+    });
+    tr.addEventListener('dragend', () =&gt; tr.classList.remove('dragging'));
+  });
+
+  sectionEl.querySelector('.add-action-row').addEventListener('click', e =&gt; {
+    e.stopPropagation();
+    addActionToGroup(group.id);
+  });
+
+  // Group body drop zone — drop into the group
+  const body = sectionEl.querySelector('.group-body');
+  body.addEventListener('dragover', e =&gt; {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    sectionEl.classList.add('drag-over');
+  });
+  body.addEventListener('dragleave', e =&gt; {
+    if (!body.contains(e.relatedTarget)) {
+      sectionEl.classList.remove('drag-over');
+    }
+  });
+  body.addEventListener('drop', e =&gt; {
+    e.preventDefault();
+    sectionEl.classList.remove('drag-over');
+    const actionNum = Number(e.dataTransfer.getData('text/plain'));
+    if (!actionNum) return;
+    moveActionToGroup(actionNum, group.id);
+  });
+
+  return sectionEl;
+}
+
+function updateActionCount() {
+  const totalInputs = ACTIONS.filter(a =&gt; a.isInput).length;
+  const totalActions = ACTIONS.filter(a =&gt; !a.isInput).length;
+  const groupCount = getGroups().length;
+  const el = document.getElementById('actionCount');
+  if (el) el.textContent = `${totalInputs} input${totalInputs !== 1 ? 's' : ''} · ${totalActions} action${totalActions !== 1 ? 's' : ''} across ${groupCount} group${groupCount !== 1 ? 's' : ''}`;
+}
+
+renderGroups();
+
+function renumberActions() {
+  // Walk ITEMS top to bottom and assign each referenced action a fresh number
+  // CRITICAL: build a list of (action_object, new_num) pairs first, then apply at the end,
+  // because mutating in place can collide (old num 5 → new 7, but another action also had old num 7)
+
+  const assignments = []; // [{ action, newNum }]
+  const oldToNew = new Map(); // for updating refs (Go-To, formulas, etc.)
+  let newNum = 1;
+
+  ITEMS.forEach(item =&gt; {
+    if (item.kind === 'action') {
+      const action = ACTIONS.find(a =&gt; a.num === item.num);
+      if (action) {
+        assignments.push({ action, oldNum: item.num, newNum });
+        oldToNew.set(item.num, newNum);
+        newNum++;
+      }
+    } else if (item.kind === 'group') {
+      item.actions.forEach(oldNum =&gt; {
+        const action = ACTIONS.find(a =&gt; a.num === oldNum);
+        if (action) {
+          assignments.push({ action, oldNum, newNum });
+          oldToNew.set(oldNum, newNum);
+          newNum++;
+        }
+      });
+    }
+  });
+
+  // Apply all the new numbers at once on the action objects
+  assignments.forEach(({ action, newNum }) =&gt; {
+    action.num = newNum;
+  });
+
+  // Update ITEMS arrays/refs to use new numbers
+  ITEMS.forEach(item =&gt; {
+    if (item.kind === 'action') {
+      item.num = oldToNew.get(item.num);
+    } else if (item.kind === 'group') {
+      item.actions = item.actions.map(oldNum =&gt; oldToNew.get(oldNum));
+    }
+  });
+
+  // Update Go-To-Action references in failure strings
+  ACTIONS.forEach(a =&gt; {
+    if (a.failure &amp;&amp; a.failure.startsWith('Go To Action')) {
+      const m = a.failure.match(/Go To Action (\d+)/);
+      if (m) {
+        const referencedOldNum = Number(m[1]);
+        const referencedNewNum = oldToNew.get(referencedOldNum);
+        if (referencedNewNum) {
+          a.failure = `Go To Action ${referencedNewNum}`;
+        }
+      }
+    }
+  });
+
+  // Update group conditional formulas
+  ITEMS.forEach(item =&gt; {
+    if (item.kind === 'group' &amp;&amp; item.formula) {
+      item.formula = item.formula.replace(/\[\[ Action (\d+):/g, (match, oldNumStr) =&gt; {
+        const oldNum = Number(oldNumStr);
+        const newN = oldToNew.get(oldNum);
+        return newN ? `[[ Action ${newN}:` : match;
+      });
+    }
+  });
+
+  // Update action formulas
+  ACTIONS.forEach(a =&gt; {
+    if (a.formula) {
+      a.formula = a.formula.replace(/\[\[ Action (\d+):/g, (match, oldNumStr) =&gt; {
+        const oldNum = Number(oldNumStr);
+        const newN = oldToNew.get(oldNum);
+        return newN ? `[[ Action ${newN}:` : match;
+      });
+    }
+  });
+}
+
+function handleGroupTool(act, groupId, btnEl) {
+  const groupItemIdx = ITEMS.findIndex(i =&gt; i.kind === 'group' &amp;&amp; i.id === groupId);
+  if (groupItemIdx === -1) return;
+
+  if (act === 'up' &amp;&amp; groupItemIdx &gt; 0) {
+    [ITEMS[groupItemIdx], ITEMS[groupItemIdx - 1]] = [ITEMS[groupItemIdx - 1], ITEMS[groupItemIdx]];
+    renumberActions();
+    renderGroups();
+    rebuildFlatTable();
+    rebuildInputs();
+  } else if (act === 'down' &amp;&amp; groupItemIdx &lt; ITEMS.length - 1) {
+    [ITEMS[groupItemIdx], ITEMS[groupItemIdx + 1]] = [ITEMS[groupItemIdx + 1], ITEMS[groupItemIdx]];
+    renumberActions();
+    renderGroups();
+    rebuildFlatTable();
+    rebuildInputs();
+  } else if (act === 'rename') {
+    startRenameGroup(groupId);
+  } else if (act === 'condition') {
+    openGroupConditionDrawer(ITEMS[groupItemIdx]);
+  } else if (act === 'more') {
+    showGroupMenu(ITEMS[groupItemIdx], btnEl);
+  } else if (act === 'disable') {
+    ITEMS[groupItemIdx].actions.forEach(num =&gt; {
+      const a = ACTIONS.find(act =&gt; act.num === num);
+      if (a) a.disabled = true;
+    });
+    renderGroups();
+  } else if (act === 'delete-group') {
+    const grp = ITEMS[groupItemIdx];
+    const actionCount = grp.actions.length;
+    const msg = actionCount === 0
+      ? `Delete group "${grp.name}"?`
+      : `Delete group "${grp.name}" and its ${actionCount} action${actionCount !== 1 ? 's' : ''}?\n\nThis cannot be undone.`;
+    if (!confirm(msg)) return;
+    grp.actions.forEach(num =&gt; {
+      const aIdx = ACTIONS.findIndex(a =&gt; a.num === num);
+      if (aIdx &gt;= 0) ACTIONS.splice(aIdx, 1);
+    });
+    ITEMS.splice(groupItemIdx, 1);
+    renumberActions();
+    renderGroups();
+    rebuildFlatTable();
+    rebuildInputs();
+  }
+}
+
+function startRenameGroup(groupId) {
+  const section = document.querySelector(`[data-group-id="${groupId}"]`);
+  if (!section) return;
+  const nameEl = section.querySelector('.group-name');
+  if (!nameEl) return;
+  const currentName = nameEl.textContent;
+  const input = document.createElement('input');
+  input.className = 'group-name-edit';
+  input.value = currentName;
+  nameEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const finish = (save) =&gt; {
+    const group = findGroup(groupId);
+    if (group &amp;&amp; save &amp;&amp; input.value.trim()) group.name = input.value.trim();
+    renderGroups();
+  };
+  input.addEventListener('blur', () =&gt; finish(true));
+  input.addEventListener('keydown', e =&gt; {
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    if (e.key === 'Escape') finish(false);
+  });
+  input.addEventListener('click', e =&gt; e.stopPropagation());
+}
+
+function showGroupMenu(group, btnEl) {
+  const menu = document.getElementById('groupMenu');
+  menu.innerHTML = `
+    &lt;div class="group-menu-item" data-act="rename"&gt;&lt;span class="menu-icon"&gt;✎&lt;/span&gt;Rename group&lt;/div&gt;
+    &lt;div class="group-menu-item" data-act="condition"&gt;&lt;span class="menu-icon"&gt;⚡&lt;/span&gt;${group.conditional ? 'Edit' : 'Add'} condition&lt;/div&gt;
+    ${group.conditional ? `&lt;div class="group-menu-item" data-act="remove-condition"&gt;&lt;span class="menu-icon"&gt;⊗&lt;/span&gt;Remove condition&lt;/div&gt;` : ''}
+    &lt;div class="group-menu-divider"&gt;&lt;/div&gt;
+    &lt;div class="group-menu-item" data-act="up"&gt;&lt;span class="menu-icon"&gt;▲&lt;/span&gt;Move up&lt;/div&gt;
+    &lt;div class="group-menu-item" data-act="down"&gt;&lt;span class="menu-icon"&gt;▼&lt;/span&gt;Move down&lt;/div&gt;
+    &lt;div class="group-menu-divider"&gt;&lt;/div&gt;
+    &lt;div class="group-menu-item" data-act="disable" style="color: var(--pp-red);"&gt;&lt;span class="menu-icon"&gt;⊘&lt;/span&gt;Disable all in group&lt;/div&gt;
+    &lt;div class="group-menu-item" data-act="delete-group" style="color: var(--pp-red);"&gt;&lt;span class="menu-icon"&gt;🗑&lt;/span&gt;Delete group&lt;/div&gt;
+  `;
+  const rect = btnEl.getBoundingClientRect();
+  menu.style.top = `${rect.bottom + 4}px`;
+  menu.style.left = `${rect.right - 200}px`;
+  menu.classList.add('open');
+  groupMenuTarget = group.id;
+
+  menu.querySelectorAll('.group-menu-item').forEach(item =&gt; {
+    item.addEventListener('click', e =&gt; {
+      e.stopPropagation();
+      const act = item.dataset.act;
+      const g = findGroup(groupMenuTarget);
+      if (act === 'remove-condition') {
+        if (g) { delete g.conditional; delete g.formula; delete g.summary; }
+        renderGroups();
+      } else {
+        handleGroupTool(act, groupMenuTarget, btnEl);
+      }
+      menu.classList.remove('open');
+    });
+  });
+}
+
+document.addEventListener('click', e =&gt; {
+  const menu = document.getElementById('groupMenu');
+  if (!e.target.closest('#groupMenu') &amp;&amp; !e.target.closest('.group-tool-btn')) {
+    menu.classList.remove('open');
+  }
+});
+
+// DRAWER
+const drawer = document.getElementById('drawer');
+const mainWrap = document.getElementById('mainWrap');
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+
+function openDrawer() {
+  drawer.classList.add('open');
+  mainWrap.classList.add('drawer-open');
+}
+function closeDrawer() {
+  drawer.classList.remove('open');
+  mainWrap.classList.remove('drawer-open');
+  if (activeRow) {
+    activeRow.classList.remove('active-row');
+    activeRow = null;
+  }
+}
+function setActiveRow(row) {
+  if (activeRow) activeRow.classList.remove('active-row');
+  activeRow = row;
+  if (row) row.classList.add('active-row');
+}
+
+function openActionDrawer(action, row) {
+  setActiveRow(row);
+  document.getElementById('drawerTitle').textContent = 'A.I. Employee Action';
+
+  const body = document.getElementById('drawerBody');
+  const isFormula = action.type === 'Evaluate Formula';
+
+  body.innerHTML = `
+    &lt;div class="field"&gt;
+      &lt;label class="field-label required"&gt;Action Type&lt;/label&gt;
+      &lt;select class="field-select"&gt;
+        ${ALL_ACTION_TYPES.map(t =&gt; `&lt;option ${t === action.type ? 'selected' : ''}&gt;${t}&lt;/option&gt;`).join('')}
+      &lt;/select&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label required"&gt;Action Name&lt;/label&gt;
+      &lt;input class="field-input" value="${escapeAttr(action.name)}"&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label"&gt;Documentation / Comments / Explanation&lt;/label&gt;
+      &lt;textarea class="field-textarea"&gt;${escapeHtml(action.comments || '')}&lt;/textarea&gt;
+    &lt;/div&gt;
+
+    &lt;div class="section-heading"&gt;Action&lt;/div&gt;
+
+    ${isFormula ? `
+      &lt;div class="field"&gt;
+        &lt;label class="field-label"&gt;Formula&lt;/label&gt;
+        &lt;div class="formula-row"&gt;
+          &lt;textarea class="field-textarea formula"&gt;${escapeHtml(action.formula || '')}&lt;/textarea&gt;
+          &lt;div class="formula-tools"&gt;
+            &lt;button class="drawer-action-btn" title="Import Field Tokens"&gt;⇲&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    ` : `
+      &lt;div class="field-hint"&gt;Configuration for "${action.type}" — varies by action type.&lt;/div&gt;
+    `}
+
+    &lt;div class="toggle-row"&gt;
+      &lt;div class="toggle"&gt;&lt;/div&gt;
+      &lt;span class="toggle-label"&gt;The calling process will provide this value.&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class="section-heading"&gt;Action Result&lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label required"&gt;If Action Is Successful?&lt;/label&gt;
+      &lt;select class="field-select"&gt;
+        ${RESULT_OPTIONS.map(o =&gt; `&lt;option ${o.startsWith('Proceed') &amp;&amp; action.success === 'Proceed' ? 'selected' : ''}&gt;${o}&lt;/option&gt;`).join('')}
+      &lt;/select&gt;
+    &lt;/div&gt;
+
+    &lt;div class="divider"&gt;&lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label required"&gt;If Action Fails?&lt;/label&gt;
+      &lt;select class="field-select"&gt;
+        ${RESULT_OPTIONS.map(o =&gt; {
+          const isSel = (action.failure.startsWith('Go To') &amp;&amp; o.startsWith('Go To')) ||
+                        (action.failure.startsWith('Exit') &amp;&amp; o.startsWith('Exit')) ||
+                        (action.failure === 'Proceed' &amp;&amp; o.startsWith('Proceed'));
+          return `&lt;option ${isSel ? 'selected' : ''}&gt;${o}&lt;/option&gt;`;
+        }).join('')}
+      &lt;/select&gt;
+    &lt;/div&gt;
+
+    &lt;div class="section-heading"&gt;Action Order&lt;/div&gt;
+
+    &lt;div class="field" style="max-width: 180px;"&gt;
+      &lt;label class="field-label required"&gt;Action Order Number&lt;/label&gt;
+      &lt;input type="number" class="field-input" value="${action.num}"&gt;
+    &lt;/div&gt;
+
+    &lt;div class="toggle-row"&gt;
+      &lt;div class="toggle ${!action.disabled ? 'on' : ''}" id="enabledToggle"&gt;&lt;/div&gt;
+      &lt;span class="toggle-label"&gt;Action Enabled&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class="last-modified"&gt;Last Modified: ${action.date}&lt;/div&gt;
+
+    &lt;div style="margin-top: 32px; display: flex; gap: 8px;"&gt;
+      &lt;button class="btn btn-outline" style="flex: 1;"&gt;Duplicate&lt;/button&gt;
+      &lt;button class="btn btn-outline" style="color: var(--pp-red); border-color: var(--pp-red); flex: 1;" id="deleteActionBtn"&gt;Delete&lt;/button&gt;
+    &lt;/div&gt;
+  `;
+
+  body.querySelector('#enabledToggle')?.addEventListener('click', e =&gt; {
+    e.target.classList.toggle('on');
+  });
+
+  body.querySelector('#deleteActionBtn')?.addEventListener('click', () =&gt; {
+    if (!confirm(`Delete action "${action.name}"?`)) return;
+    const idx = ACTIONS.findIndex(a =&gt; a.num === action.num);
+    if (idx &gt;= 0) ACTIONS.splice(idx, 1);
+    ITEMS.forEach(item =&gt; {
+      if (item.kind === 'group') item.actions = item.actions.filter(n =&gt; n !== action.num);
+    });
+    for (let i = ITEMS.length - 1; i &gt;= 0; i--) {
+      if (ITEMS[i].kind === 'action' &amp;&amp; ITEMS[i].num === action.num) ITEMS.splice(i, 1);
+    }
+    renumberActions();
+    renderGroups();
+    rebuildFlatTable();
+    rebuildInputs();
+    closeDrawer();
+  });
+
+  openDrawer();
+}
+
+function openAddInputDrawer() {
+  setActiveRow(null);
+  document.getElementById('drawerTitle').textContent = 'Add Job Input';
+
+  const usedFieldNames = new Set(
+    ACTIONS.filter(a =&gt; a.isInput).map(a =&gt; a.sourceField).filter(Boolean)
+  );
+
+  const body = document.getElementById('drawerBody');
+  body.innerHTML = `
+    &lt;div class="condition-callout" style="background: linear-gradient(180deg, var(--pp-blue-light) 0%, white 100%); border-color: var(--pp-blue);"&gt;
+      &lt;div class="condition-callout-label" style="color: var(--pp-blue);"&gt;Pick a process field&lt;/div&gt;
+      &lt;p style="color: var(--pp-text);"&gt;
+        Job inputs draw from process fields defined on the parent process. Pick one below to make it available to every action in this job as a variable.
+      &lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field-picker-list"&gt;
+      ${PROCESS_FIELDS.map(f =&gt; {
+        const added = usedFieldNames.has(f.name);
+        return `
+          &lt;div class="field-picker-item ${added ? 'added' : ''}" data-field-name="${escapeAttr(f.name)}"&gt;
+            &lt;div class="field-picker-icon"&gt;{ }&lt;/div&gt;
+            &lt;div style="flex: 1; min-width: 0;"&gt;
+              &lt;div class="field-picker-name"&gt;${f.name}${f.readOnly ? ' &lt;span class="input-readonly-tag"&gt;RO&lt;/span&gt;' : ''}&lt;/div&gt;
+              &lt;div class="field-picker-meta"&gt;${f.dataType} · suggested var: &lt;code style="font-size: 11px; background: var(--pp-page-bg); padding: 1px 4px; border-radius: 3px;"&gt;${f.suggestedVar}&lt;/code&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            ${added ? `&lt;span class="field-picker-added-tag"&gt;✓ Added&lt;/span&gt;` : ''}
+          &lt;/div&gt;
+        `;
+      }).join('')}
+    &lt;/div&gt;
+
+    &lt;div class="field-hint" style="margin-top: 16px;"&gt;
+      Don't see a field you need? It must first exist on the parent process. &lt;code&gt;RO&lt;/code&gt; means read-only — these can be referenced in formulas but cannot be written to by actions.
+    &lt;/div&gt;
+  `;
+
+  body.querySelectorAll('.field-picker-item').forEach(item =&gt; {
+    if (item.classList.contains('added')) return;
+    item.addEventListener('click', () =&gt; {
+      const fieldName = item.dataset.fieldName;
+      const field = PROCESS_FIELDS.find(f =&gt; f.name === fieldName);
+      if (field) addInputFromField(field);
+    });
+  });
+
+  openDrawer();
+}
+
+function openInputDrawer(input, card) {
+  setActiveRow(card);
+  document.getElementById('drawerTitle').textContent = 'Job Input';
+
+  const usages = findInputUsages(input);
+  const writers = findInputWriters(input);
+
+  const body = document.getElementById('drawerBody');
+  body.innerHTML = `
+    &lt;div class="condition-callout" style="background: linear-gradient(180deg, var(--pp-blue-light) 0%, white 100%); border-color: var(--pp-blue);"&gt;
+      &lt;div class="condition-callout-label" style="color: var(--pp-blue);"&gt;Job Input&lt;/div&gt;
+      &lt;p style="color: var(--pp-text);"&gt;
+        A value provided by the parent process — available to every action below as a variable.
+        Inputs replace what used to be "Hold Value" actions buried inside the action list.
+      &lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label required"&gt;Variable Name&lt;/label&gt;
+      &lt;input class="field-input" value="${input.varName}" style="font-family: 'Roboto Mono', monospace;"&gt;
+      &lt;div class="field-hint"&gt;Used to reference this input in formulas and prompts. Convention: lowercase with underscores.&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label required"&gt;Display Label&lt;/label&gt;
+      &lt;input class="field-input" value="${escapeAttr(input.name.replace(/^Hold /, ''))}"&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label required"&gt;Data Type&lt;/label&gt;
+      &lt;select class="field-select"&gt;
+        &lt;option ${input.dataType === 'Text' ? 'selected' : ''}&gt;Text&lt;/option&gt;
+        &lt;option ${input.dataType === 'JSON' ? 'selected' : ''}&gt;JSON&lt;/option&gt;
+        &lt;option ${input.dataType === 'Email' ? 'selected' : ''}&gt;Email&lt;/option&gt;
+        &lt;option ${input.dataType === 'File' ? 'selected' : ''}&gt;File&lt;/option&gt;
+        &lt;option&gt;Number&lt;/option&gt;
+        &lt;option&gt;Date&lt;/option&gt;
+        &lt;option&gt;Boolean&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label"&gt;Source Process Field&lt;/label&gt;
+      &lt;input class="field-input" value="${escapeAttr(input.sourceField || input.name)}" disabled style="background: var(--pp-page-bg); color: var(--pp-text-secondary);"&gt;
+      &lt;div class="field-hint"&gt;The parent process field this input draws from.${input.readOnly ? ' &lt;strong style="color: var(--pp-orange);"&gt;This field is read-only.&lt;/strong&gt;' : ''}&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="section-heading"&gt;Access&lt;/div&gt;
+
+    &lt;div class="field" style="margin-bottom: 8px;"&gt;
+      &lt;div style="display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: var(--pp-green-light); border-left: 3px solid var(--pp-green); border-radius: 0 4px 4px 0;"&gt;
+        &lt;span style="font-size: 16px; color: var(--pp-green);"&gt;↓&lt;/span&gt;
+        &lt;div&gt;
+          &lt;div style="font-size: 13px; font-weight: 500; color: var(--pp-green);"&gt;Read&lt;/div&gt;
+          &lt;div style="font-size: 12px; color: var(--pp-text-secondary);"&gt;Reference &lt;code style="font-family: 'Roboto Mono', monospace; font-size: 11px; background: white; padding: 1px 4px; border-radius: 3px;"&gt;[[ ${input.varName} ]]&lt;/code&gt; in any formula or prompt.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;div style="display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: ${input.readOnly ? 'var(--pp-page-bg)' : 'var(--pp-orange-light)'}; border-left: 3px solid ${input.readOnly ? '#bbb' : 'var(--pp-orange)'}; border-radius: 0 4px 4px 0;"&gt;
+        &lt;span style="font-size: 16px; color: ${input.readOnly ? '#999' : 'var(--pp-orange)'};"&gt;↑&lt;/span&gt;
+        &lt;div&gt;
+          &lt;div style="font-size: 13px; font-weight: 500; color: ${input.readOnly ? '#999' : 'var(--pp-orange)'};"&gt;Write ${input.readOnly ? '— disabled (read-only field)' : ''}&lt;/div&gt;
+          &lt;div style="font-size: 12px; color: var(--pp-text-secondary);"&gt;
+            ${input.readOnly
+              ? 'This field is marked read-only on the parent process. Use a Process Field action targeting a writable field instead.'
+              : 'Use a &lt;code style="font-family: \'Roboto Mono\', monospace; font-size: 11px; background: white; padding: 1px 4px; border-radius: 3px;"&gt;Process Field — Replace Text&lt;/code&gt; or &lt;code style="font-family: \'Roboto Mono\', monospace; font-size: 11px; background: white; padding: 1px 4px; border-radius: 3px;"&gt;Append Text&lt;/code&gt; action targeting &lt;code style="font-family: \'Roboto Mono\', monospace; font-size: 11px; background: white; padding: 1px 4px; border-radius: 3px;"&gt;${input.varName}&lt;/code&gt; to update the value mid-job.'
+            }
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="section-heading"&gt;Used by &lt;span style="font-size: 12px; font-weight: 400; color: var(--pp-text-secondary);"&gt;${usages.length} read${usages.length !== 1 ? 's' : ''}${writers.length ? ` · ${writers.length} write${writers.length !== 1 ? 's' : ''}` : ''}&lt;/span&gt;&lt;/div&gt;
+
+    ${usages.length === 0 &amp;&amp; writers.length === 0 ? `
+      &lt;div class="field-hint"&gt;Not yet referenced by any action.&lt;/div&gt;
+    ` : `
+      &lt;div class="usage-list"&gt;
+        ${[...usages.map(u =&gt; ({...u, mode: 'read'})), ...writers.map(w =&gt; ({...w, mode: 'write'}))].sort((a,b) =&gt; a.num - b.num).map(u =&gt; `
+          &lt;div class="usage-item"&gt;
+            &lt;span class="usage-num"&gt;#${u.num}&lt;/span&gt;
+            &lt;span class="usage-name"&gt;${u.name}&lt;/span&gt;
+            &lt;span style="font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 500; letter-spacing: 0.04em; ${u.mode === 'write' ? 'background: var(--pp-orange-light); color: var(--pp-orange);' : 'background: var(--pp-green-light); color: var(--pp-green);'}"&gt;${u.mode.toUpperCase()}&lt;/span&gt;
+          &lt;/div&gt;
+        `).join('')}
+      &lt;/div&gt;
+    `}
+
+    &lt;div style="margin-top: 32px; display: flex; gap: 8px;"&gt;
+      &lt;button class="btn btn-outline" style="flex: 1;"&gt;View Hold Value action&lt;/button&gt;
+      &lt;button class="btn btn-outline" style="color: var(--pp-red); border-color: var(--pp-red); flex-shrink: 0;" id="removeInputBtn"&gt;Remove Input&lt;/button&gt;
+    &lt;/div&gt;
+  `;
+
+  body.querySelector('#removeInputBtn')?.addEventListener('click', () =&gt; removeInput(input));
+
+  openDrawer();
+}
+
+function findInputWriters(input) {
+  // Actions that write to this input (Process Field write actions targeting it)
+  const writePrefixes = ['Process Field - Replace', 'Process Field - Append'];
+  const matches = [];
+  ACTIONS.forEach(a =&gt; {
+    if (a.isInput) return;
+    if (!writePrefixes.some(p =&gt; a.type.startsWith(p))) return;
+    const haystack = `${a.name}`.toLowerCase();
+    if (haystack.includes(input.varName.toLowerCase()) ||
+        haystack.includes((input.sourceField || '').toLowerCase())) {
+      matches.push(a);
+    }
+  });
+  return matches;
+}
+
+function findInputUsages(input) {
+  const matches = [];
+  ACTIONS.forEach(a =&gt; {
+    if (a.isInput) return;
+    const haystack = `${a.name} ${a.type} ${a.formula || ''}`.toLowerCase();
+    const needles = [
+      input.varName,
+      input.name.replace(/^Hold /, '').toLowerCase(),
+      `[[ Action ${input.num}`
+    ];
+    if (needles.some(n =&gt; haystack.includes(n.toLowerCase()))) {
+      matches.push(a);
+    }
+  });
+  return matches;
+}
+
+function openGroupConditionDrawer(group) {
+  setActiveRow(null);
+  document.getElementById('drawerTitle').textContent = 'Group Condition';
+
+  const body = document.getElementById('drawerBody');
+  const enabled = !!group.conditional;
+
+  body.innerHTML = `
+    &lt;div class="condition-callout"&gt;
+      &lt;div class="condition-callout-label"&gt;Conditional execution — concept&lt;/div&gt;
+      &lt;p&gt;
+        A group can be set to run only when a formula evaluates to true. This uses the same formula language
+        already used for Evaluate Formula actions, so there's nothing new to learn. When the formula evaluates
+        to false at runtime, the entire group is skipped.
+      &lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;div class="toggle-row"&gt;
+      &lt;div class="toggle ${enabled ? 'on' : ''}" id="conditionEnabledToggle"&gt;&lt;/div&gt;
+      &lt;span class="toggle-label"&gt;Run this group conditionally&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label"&gt;Group Name&lt;/label&gt;
+      &lt;input class="field-input" value="${escapeAttr(group.name)}"&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label"&gt;Run when (formula must return true)&lt;/label&gt;
+      &lt;div class="formula-row"&gt;
+        &lt;textarea class="field-textarea formula" id="condFormula"&gt;${escapeHtml(group.formula || '=EQUALS(\n   [[ Action # ]];\n   "expected_value"\n)')}&lt;/textarea&gt;
+        &lt;div class="formula-tools"&gt;
+          &lt;button class="drawer-action-btn" title="Import Field Tokens"&gt;⇲&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="field-hint"&gt;
+        Reference any prior action's result with &lt;code&gt;[[ Action #: name ]]&lt;/code&gt; tokens.
+        Available functions: &lt;code&gt;=IF&lt;/code&gt;, &lt;code&gt;=EQUALS&lt;/code&gt;, &lt;code&gt;=NOT_EQUALS&lt;/code&gt;, &lt;code&gt;=AND&lt;/code&gt;, &lt;code&gt;=OR&lt;/code&gt;, &lt;code&gt;=JSONQUERY&lt;/code&gt;.
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label"&gt;Plain-language summary&lt;/label&gt;
+      &lt;textarea class="field-textarea" id="condSummary"&gt;${escapeHtml(group.summary || '')}&lt;/textarea&gt;
+      &lt;div class="field-hint"&gt;Shown next to the formula. Helps reviewers understand the intent at a glance.&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="section-heading"&gt;If condition is false&lt;/div&gt;
+
+    &lt;div class="field"&gt;
+      &lt;label class="field-label"&gt;Behavior&lt;/label&gt;
+      &lt;select class="field-select"&gt;
+        &lt;option selected&gt;Skip entire group, continue to next group&lt;/option&gt;
+        &lt;option&gt;Skip group, exit job&lt;/option&gt;
+        &lt;option&gt;Skip group, run "else" group instead&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+
+    &lt;div style="margin-top: 32px; display: flex; gap: 8px;"&gt;
+      &lt;button class="btn btn-outline" style="flex: 1;" id="condCancel"&gt;Cancel&lt;/button&gt;
+      &lt;button class="btn btn-blue" style="flex: 1;" id="condSave"&gt;Save Condition&lt;/button&gt;
+    &lt;/div&gt;
+  `;
+
+  body.querySelector('#conditionEnabledToggle').addEventListener('click', e =&gt; {
+    e.target.classList.toggle('on');
+  });
+  body.querySelector('#condCancel').addEventListener('click', closeDrawer);
+  body.querySelector('#condSave').addEventListener('click', () =&gt; {
+    const enabledNow = body.querySelector('#conditionEnabledToggle').classList.contains('on');
+    if (enabledNow) {
+      group.conditional = true;
+      group.formula = body.querySelector('#condFormula').value;
+      group.summary = body.querySelector('#condSummary').value;
+    } else {
+      delete group.conditional; delete group.formula; delete group.summary;
+    }
+    renderGroups();
+    closeDrawer();
+  });
+
+  openDrawer();
+}
+
+document.querySelectorAll('.tab').forEach(tab =&gt; {
+  tab.addEventListener('click', () =&gt; {
+    document.querySelectorAll('.tab').forEach(t =&gt; t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c =&gt; c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    closeDrawer();
+  });
+});
+
+// ADD GROUP / ADD ACTION / MOVE ACTION
+document.getElementById('addGroupBtn').addEventListener('click', () =&gt; addNewGroup());
+document.getElementById('addActionBtn').addEventListener('click', () =&gt; addStandaloneAction());
+
+function addStandaloneAction() {
+  const maxNum = ACTIONS.reduce((m, a) =&gt; Math.max(m, a.num), 0);
+  const newAction = {
+    num: maxNum + 1,
+    name: 'New Action',
+    type: 'Computer Vision - Mouse Click',
+    success: 'Proceed',
+    failure: 'Exit and Shut Down A.I. Em...',
+    date: new Date().toISOString().slice(0, 10),
+    by: 'Easton (Support)',
+    disabled: false,
+    isNew: true,
+  };
+  ACTIONS.push(newAction);
+  ITEMS.push({ kind: 'action', num: newAction.num });
+  renumberActions();
+  renderGroups();
+  rebuildFlatTable();
+  rebuildInputs();
+  setTimeout(() =&gt; {
+    const row = document.querySelector(`[data-action-num="${newAction.num}"]`);
+    openActionDrawer(newAction, row);
+  }, 50);
+}
+
+// Pull the action out of wherever it is (group OR loose)
+function detachAction(actionNum) {
+  const looseIdx = ITEMS.findIndex(i =&gt; i.kind === 'action' &amp;&amp; i.num === actionNum);
+  if (looseIdx &gt;= 0) {
+    ITEMS.splice(looseIdx, 1);
+    return;
+  }
+  const grp = findGroupContainingAction(actionNum);
+  if (grp) {
+    grp.actions = grp.actions.filter(n =&gt; n !== actionNum);
+  }
+}
+
+function moveActionToGroup(actionNum, targetGroupId) {
+  const targetGroup = findGroup(targetGroupId);
+  if (!targetGroup) return;
+  if (targetGroup.actions.includes(actionNum)) return;
+  detachAction(actionNum);
+  targetGroup.actions.push(actionNum);
+  renumberActions();
+  renderGroups();
+  rebuildFlatTable();
+  rebuildInputs();
+}
+
+// Drop action at a top-level position in ITEMS (insertIdx points to where it should land)
+function moveActionToTopLevel(actionNum, insertIdx) {
+  const looseIdx = ITEMS.findIndex(i =&gt; i.kind === 'action' &amp;&amp; i.num === actionNum);
+  detachAction(actionNum);
+  // Adjust the insert index if the source was a loose item before insertIdx
+  let adjustedIdx = insertIdx;
+  if (looseIdx &gt;= 0 &amp;&amp; looseIdx &lt; insertIdx) adjustedIdx = insertIdx - 1;
+  if (adjustedIdx &lt; 0) adjustedIdx = 0;
+  if (adjustedIdx &gt; ITEMS.length) adjustedIdx = ITEMS.length;
+  ITEMS.splice(adjustedIdx, 0, { kind: 'action', num: actionNum });
+  renumberActions();
+  renderGroups();
+  rebuildFlatTable();
+  rebuildInputs();
+}
+
+function addNewGroup() {
+  const id = 'g_' + Date.now();
+  const newGroup = { kind: 'group', id, name: 'New Group', actions: [] };
+  ITEMS.push(newGroup);
+  renderGroups();
+  setTimeout(() =&gt; {
+    const section = document.querySelector(`[data-group-id="${id}"]`);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      startRenameGroup(id);
+    }
+  }, 50);
+}
+
+function addActionToGroup(groupId) {
+  const group = findGroup(groupId);
+  if (!group) return;
+  const maxNum = ACTIONS.reduce((m, a) =&gt; Math.max(m, a.num), 0);
+  const newAction = {
+    num: maxNum + 1,
+    name: 'New Action',
+    type: 'Computer Vision - Mouse Click',
+    success: 'Proceed',
+    failure: 'Exit and Shut Down A.I. Em...',
+    date: new Date().toISOString().slice(0, 10),
+    by: 'Easton (Support)',
+    disabled: false,
+    isNew: true,
+  };
+  ACTIONS.push(newAction);
+  group.actions.push(newAction.num);
+  renumberActions();
+  renderGroups();
+  rebuildFlatTable();
+  rebuildInputs();
+  setTimeout(() =&gt; {
+    const row = document.querySelector(`tr[data-action-num="${newAction.num}"]`);
+    openActionDrawer(newAction, row);
+  }, 50);
+}
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/&amp;/g, '&amp;amp;').replace(/&lt;/g, '&amp;lt;').replace(/&gt;/g, '&amp;gt;');
+}
+function escapeAttr(str) {
+  if (str == null) return '';
+  return String(str).replace(/"/g, '&amp;quot;').replace(/&lt;/g, '&amp;lt;').replace(/&gt;/g, '&amp;gt;');
+}
+</script>
+
+
+
+</body></html>
