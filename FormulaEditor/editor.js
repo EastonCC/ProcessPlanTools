@@ -451,7 +451,22 @@ function formatFormula(formula) {
     return result;
 }
 
-
+function formatTextAreaOnClick() {
+    let formatted = formatFormula(textarea.value);
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const newPos = start + formatted.length;
+    textarea.value = "";
+    
+    replaceTextRange(start, end, formatted, newPos);
+    
+    
+    updateEditor();
+    hideAutocomplete();
+    updateParameterHint();
+    extractAndDisplayFields();
+    showNotification('Formula formatted!');
+}
 
 
 // Tokenize for syntax highlighting
@@ -944,6 +959,7 @@ function copyRaw() {
         .then(() => showNotification('Copied raw!'))
         .catch(() => showNotification('Failed to copy', 'error'));
 }
+
 
 function clearEditor() {
     setTextareaContent('', 0);
